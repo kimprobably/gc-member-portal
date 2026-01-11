@@ -79,12 +79,17 @@ const GCLogin: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
+              <label htmlFor="email-input" className="sr-only">
+                Email address
+              </label>
               <Mail
                 className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${
                   isDarkMode ? 'text-slate-500' : 'text-slate-400'
                 }`}
+                aria-hidden="true"
               />
               <input
+                id="email-input"
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -92,6 +97,8 @@ const GCLogin: React.FC = () => {
                   setError('');
                 }}
                 placeholder="you@company.com"
+                aria-describedby={error ? 'email-error' : undefined}
+                aria-invalid={error ? 'true' : 'false'}
                 className={`w-full pl-11 pr-4 py-3 rounded-xl text-sm font-medium transition-all
                   ${
                     isDarkMode
@@ -105,7 +112,12 @@ const GCLogin: React.FC = () => {
             </div>
 
             {error && (
-              <div className="text-sm text-red-500 dark:text-red-400 text-center py-2 px-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div
+                id="email-error"
+                role="alert"
+                aria-live="polite"
+                className="text-sm text-red-500 dark:text-red-400 text-center py-2 px-3 bg-red-50 dark:bg-red-900/20 rounded-lg"
+              >
                 {error}
               </div>
             )}

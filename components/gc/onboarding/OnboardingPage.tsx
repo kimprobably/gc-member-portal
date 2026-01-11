@@ -32,6 +32,7 @@ const OnboardingPage: React.FC = () => {
 
   useEffect(() => {
     loadOnboardingData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gcMember]);
 
   const loadOnboardingData = async () => {
@@ -173,6 +174,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
       {/* Category Header */}
       <button
         onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-controls={`category-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
         className={`w-full px-5 py-4 flex items-center justify-between transition-colors ${
           isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'
         }`}
@@ -204,7 +207,10 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 
       {/* Category Items */}
       {isExpanded && (
-        <div className={`border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+        <div
+          id={`category-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+          className={`border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}
+        >
           {category.items.map((item) => (
             <ChecklistItem
               key={item.id}
@@ -237,7 +243,7 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({
   const isBlocked = item.progressStatus === 'Blocked';
   const isInProgress = item.progressStatus === 'In Progress';
 
-  const getStatusIcon = () => {
+  const _getStatusIcon = () => {
     if (isComplete) return <Check className="w-4 h-4 text-green-500" />;
     if (isBlocked) return <AlertCircle className="w-4 h-4 text-red-500" />;
     if (isInProgress) return <Clock className="w-4 h-4 text-yellow-500" />;
@@ -254,6 +260,9 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({
       <button
         onClick={onToggle}
         disabled={isUpdating}
+        role="checkbox"
+        aria-checked={isComplete}
+        aria-label={`Mark "${item.item}" as ${isComplete ? 'incomplete' : 'complete'}`}
         className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all
           ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           ${
@@ -265,7 +274,7 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({
           }
         `}
       >
-        {isComplete && <Check className="w-4 h-4 text-white" />}
+        {isComplete && <Check className="w-4 h-4 text-white" aria-hidden="true" />}
       </button>
 
       {/* Content */}

@@ -10,6 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  BarChart3,
+  List,
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
@@ -17,6 +19,9 @@ import StatusBadge from '../../shared/StatusBadge';
 import { LoadingState } from '../../shared/LoadingSpinner';
 import { fetchMemberCampaigns, updateCampaignMetrics } from '../../../services/gc-airtable';
 import { Campaign, CampaignMetrics } from '../../../types/gc-types';
+import CampaignAnalytics from './CampaignAnalytics';
+
+type ViewMode = 'analytics' | 'list';
 
 const CampaignsPage: React.FC = () => {
   const { gcMember } = useAuth();
@@ -25,9 +30,11 @@ const CampaignsPage: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
   const [editingCampaign, setEditingCampaign] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('analytics');
 
   useEffect(() => {
     loadCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gcMember]);
 
   const loadCampaigns = async () => {
@@ -66,92 +73,142 @@ const CampaignsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-          My Campaigns
-        </h1>
-        <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-          Track your outreach campaigns and update metrics
-        </p>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard
-          label="Total Reached"
-          value={campaigns.reduce((sum, c) => sum + c.metrics.contactsReached, 0)}
-          icon={Users}
-          isDarkMode={isDarkMode}
-        />
-        <SummaryCard
-          label="Total Replies"
-          value={campaigns.reduce((sum, c) => sum + c.metrics.replies, 0)}
-          icon={Mail}
-          isDarkMode={isDarkMode}
-        />
-        <SummaryCard
-          label="Positive Replies"
-          value={campaigns.reduce((sum, c) => sum + c.metrics.positiveReplies, 0)}
-          icon={TrendingUp}
-          isDarkMode={isDarkMode}
-        />
-        <SummaryCard
-          label="Meetings Booked"
-          value={campaigns.reduce((sum, c) => sum + c.metrics.meetingsBooked, 0)}
-          icon={Calendar}
-          isDarkMode={isDarkMode}
-        />
-      </div>
-
-      {/* Live Campaigns */}
-      {liveCampaigns.length > 0 && (
-        <CampaignSection
-          title="Live Campaigns"
-          campaigns={liveCampaigns}
-          expandedCampaign={expandedCampaign}
-          setExpandedCampaign={setExpandedCampaign}
-          editingCampaign={editingCampaign}
-          setEditingCampaign={setEditingCampaign}
-          onUpdateMetrics={handleUpdateMetrics}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {/* Warming Up */}
-      {warmingCampaigns.length > 0 && (
-        <CampaignSection
-          title="Warming Up"
-          campaigns={warmingCampaigns}
-          expandedCampaign={expandedCampaign}
-          setExpandedCampaign={setExpandedCampaign}
-          editingCampaign={editingCampaign}
-          setEditingCampaign={setEditingCampaign}
-          onUpdateMetrics={handleUpdateMetrics}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {/* Other Campaigns */}
-      {otherCampaigns.length > 0 && (
-        <CampaignSection
-          title="Other Campaigns"
-          campaigns={otherCampaigns}
-          expandedCampaign={expandedCampaign}
-          setExpandedCampaign={setExpandedCampaign}
-          editingCampaign={editingCampaign}
-          setEditingCampaign={setEditingCampaign}
-          onUpdateMetrics={handleUpdateMetrics}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {campaigns.length === 0 && (
-        <div className={`text-center py-12 rounded-xl ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
-          <Target
-            className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}
-          />
-          <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>No campaigns yet</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+            My Campaigns
+          </h1>
+          <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            Track your outreach campaigns and update metrics
+          </p>
         </div>
+
+        {/* View Mode Toggle */}
+        <div
+          className={`inline-flex rounded-lg p-1 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}
+        >
+          <button
+            onClick={() => setViewMode('analytics')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'analytics'
+                ? isDarkMode
+                  ? 'bg-slate-700 text-white'
+                  : 'bg-white text-slate-900 shadow-sm'
+                : isDarkMode
+                  ? 'text-slate-400 hover:text-slate-300'
+                  : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'list'
+                ? isDarkMode
+                  ? 'bg-slate-700 text-white'
+                  : 'bg-white text-slate-900 shadow-sm'
+                : isDarkMode
+                  ? 'text-slate-400 hover:text-slate-300'
+                  : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            Campaigns
+          </button>
+        </div>
+      </div>
+
+      {/* Analytics View */}
+      {viewMode === 'analytics' && (
+        <CampaignAnalytics campaigns={campaigns} isDarkMode={isDarkMode} />
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <SummaryCard
+              label="Total Reached"
+              value={campaigns.reduce((sum, c) => sum + c.metrics.contactsReached, 0)}
+              icon={Users}
+              isDarkMode={isDarkMode}
+            />
+            <SummaryCard
+              label="Total Replies"
+              value={campaigns.reduce((sum, c) => sum + c.metrics.replies, 0)}
+              icon={Mail}
+              isDarkMode={isDarkMode}
+            />
+            <SummaryCard
+              label="Positive Replies"
+              value={campaigns.reduce((sum, c) => sum + c.metrics.positiveReplies, 0)}
+              icon={TrendingUp}
+              isDarkMode={isDarkMode}
+            />
+            <SummaryCard
+              label="Meetings Booked"
+              value={campaigns.reduce((sum, c) => sum + c.metrics.meetingsBooked, 0)}
+              icon={Calendar}
+              isDarkMode={isDarkMode}
+            />
+          </div>
+
+          {/* Live Campaigns */}
+          {liveCampaigns.length > 0 && (
+            <CampaignSection
+              title="Live Campaigns"
+              campaigns={liveCampaigns}
+              expandedCampaign={expandedCampaign}
+              setExpandedCampaign={setExpandedCampaign}
+              editingCampaign={editingCampaign}
+              setEditingCampaign={setEditingCampaign}
+              onUpdateMetrics={handleUpdateMetrics}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {/* Warming Up */}
+          {warmingCampaigns.length > 0 && (
+            <CampaignSection
+              title="Warming Up"
+              campaigns={warmingCampaigns}
+              expandedCampaign={expandedCampaign}
+              setExpandedCampaign={setExpandedCampaign}
+              editingCampaign={editingCampaign}
+              setEditingCampaign={setEditingCampaign}
+              onUpdateMetrics={handleUpdateMetrics}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {/* Other Campaigns */}
+          {otherCampaigns.length > 0 && (
+            <CampaignSection
+              title="Other Campaigns"
+              campaigns={otherCampaigns}
+              expandedCampaign={expandedCampaign}
+              setExpandedCampaign={setExpandedCampaign}
+              editingCampaign={editingCampaign}
+              setEditingCampaign={setEditingCampaign}
+              onUpdateMetrics={handleUpdateMetrics}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {campaigns.length === 0 && (
+            <div
+              className={`text-center py-12 rounded-xl ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}
+            >
+              <Target
+                className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}
+              />
+              <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>No campaigns yet</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -269,6 +326,8 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
       {/* Header */}
       <button
         onClick={onToggleExpand}
+        aria-expanded={isExpanded}
+        aria-controls={`campaign-details-${campaign.id}`}
         className={`w-full px-5 py-4 flex items-center justify-between transition-colors ${
           isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'
         }`}
@@ -320,6 +379,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
       {/* Expanded Content */}
       {isExpanded && (
         <div
+          id={`campaign-details-${campaign.id}`}
           className={`px-5 pb-5 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}
         >
           {/* Metrics Funnel */}
@@ -426,10 +486,14 @@ const MetricsForm: React.FC<MetricsFormProps> = ({ metrics, onChange, onSave, is
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {fields.map((field) => (
           <div key={field.key}>
-            <label className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+            <label
+              htmlFor={`metric-${field.key}`}
+              className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
+            >
               {field.label}
             </label>
             <input
+              id={`metric-${field.key}`}
               type="number"
               value={metrics[field.key]}
               onChange={(e) => onChange({ ...metrics, [field.key]: parseInt(e.target.value) || 0 })}

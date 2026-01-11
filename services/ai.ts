@@ -82,6 +82,103 @@ export async function getYouTubeTranscript(
 /**
  * Uses Gemini to summarize the transcript.
  */
+/**
+ * ICP Generation result structure
+ */
+export interface ICPSuggestion {
+  targetDescription?: string;
+  verticals?: string;
+  companySize?: string;
+  jobTitles?: string;
+  geography?: string;
+  painPoints?: string;
+  offer?: string;
+  differentiator?: string;
+  socialProof?: string;
+  commonObjections?: string;
+}
+
+/**
+ * Uses Gemini to generate ICP suggestions based on company info and industry
+ */
+export async function generateICPSuggestions(
+  companyName: string,
+  website?: string,
+  existingData?: Partial<ICPSuggestion>
+): Promise<ICPSuggestion> {
+  try {
+    if (!process.env.API_KEY) {
+      throw new Error('API_KEY not configured');
+    }
+
+    const model = 'gemini-3-flash-preview';
+
+    const existingContext = existingData
+      ? `
+        The user has already provided some information:
+        - Target Description: ${existingData.targetDescription || 'Not provided'}
+        - Verticals: ${existingData.verticals || 'Not provided'}
+        - Offer: ${existingData.offer || 'Not provided'}
+
+        Use this to inform and enhance your suggestions.
+      `
+      : '';
+
+    const prompt = `
+      You are an expert B2B sales strategist helping define an Ideal Customer Profile (ICP).
+
+      Company: ${companyName}
+      ${website ? `Website: ${website}` : ''}
+      ${existingContext}
+
+      Generate a comprehensive ICP profile. Return a JSON object with these exact keys:
+      - targetDescription: A 2-3 sentence description of the ideal customer
+      - verticals: Comma-separated list of 3-5 target industries/verticals
+      - companySize: Employee count range and/or revenue range
+      - jobTitles: Comma-separated list of 4-6 decision-maker titles
+      - geography: Target geographic regions
+      - painPoints: 3-4 specific pain points the ideal customer faces (bullet points)
+      - offer: A compelling one-sentence value proposition
+      - differentiator: 2-3 key differentiators that set this company apart
+      - socialProof: Suggested types of social proof to collect (case studies, metrics, etc.)
+      - commonObjections: 3-4 likely objections and brief handling strategies
+
+      Make the suggestions specific, actionable, and tailored to B2B outbound sales.
+      Return ONLY valid JSON, no markdown or explanation.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+    });
+
+    const text = response.text || '{}';
+
+    // Parse the JSON response
+    const cleanedText = text
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const parsed = JSON.parse(cleanedText);
+
+    return {
+      targetDescription: parsed.targetDescription || '',
+      verticals: parsed.verticals || '',
+      companySize: parsed.companySize || '',
+      jobTitles: parsed.jobTitles || '',
+      geography: parsed.geography || '',
+      painPoints: parsed.painPoints || '',
+      offer: parsed.offer || '',
+      differentiator: parsed.differentiator || '',
+      socialProof: parsed.socialProof || '',
+      commonObjections: parsed.commonObjections || '',
+    };
+  } catch (error) {
+    console.error('ICP Generation Failed:', error);
+    throw new Error('Unable to generate ICP suggestions. Please try again.');
+  }
+}
+
 export async function summarizeLesson(
   lessonTitle: string,
   transcriptText: string

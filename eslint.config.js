@@ -43,6 +43,7 @@ export default [
         KeyboardEvent: 'readonly',
         MouseEvent: 'readonly',
         MutationObserver: 'readonly',
+        MediaQueryListEvent: 'readonly',
 
         // Web APIs
         FormData: 'readonly',

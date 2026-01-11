@@ -4,7 +4,6 @@ import {
   CheckSquare,
   Wrench,
   Target,
-  Users,
   BookOpen,
   ArrowRight,
   TrendingUp,
@@ -234,7 +233,7 @@ const DashboardHome: React.FC = () => {
   );
 };
 
-// Sub-components
+// Sub-components - Memoized for performance
 
 interface StatCardProps {
   label: string;
@@ -243,15 +242,19 @@ interface StatCardProps {
   isDarkMode: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, isDarkMode }) => (
+const StatCard = React.memo<StatCardProps>(({ label, value, icon: Icon, isDarkMode }) => (
   <div className={`rounded-xl p-4 ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/80'}`}>
     <div className="flex items-center gap-2 mb-1">
-      <Icon className={`w-4 h-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+      <Icon
+        className={`w-4 h-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+        aria-hidden="true"
+      />
       <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</span>
     </div>
     <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{value}</p>
   </div>
-);
+));
+StatCard.displayName = 'StatCard';
 
 interface DashboardCardProps {
   title: string;
@@ -262,44 +265,45 @@ interface DashboardCardProps {
   children: React.ReactNode;
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({
-  title,
-  icon: Icon,
-  linkTo,
-  isDarkMode,
-  alert,
-  children,
-}) => (
-  <div
-    className={`rounded-2xl p-5 ${
-      isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'
-    }`}
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <Icon className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
-        <h2 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{title}</h2>
-      </div>
-      {alert && (
-        <span className="flex items-center gap-1 text-xs text-amber-500">
-          <AlertCircle className="w-3 h-3" />
-          {alert}
-        </span>
-      )}
-    </div>
-
-    {children}
-
-    <Link
-      to={linkTo}
-      className={`mt-4 flex items-center gap-1 text-sm font-medium ${
-        isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+const DashboardCard = React.memo<DashboardCardProps>(
+  ({ title, icon: Icon, linkTo, isDarkMode, alert, children }) => (
+    <div
+      className={`rounded-2xl p-5 ${
+        isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'
       }`}
     >
-      View all
-      <ArrowRight className="w-4 h-4" />
-    </Link>
-  </div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Icon
+            className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            aria-hidden="true"
+          />
+          <h2 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+            {title}
+          </h2>
+        </div>
+        {alert && (
+          <span className="flex items-center gap-1 text-xs text-amber-500">
+            <AlertCircle className="w-3 h-3" aria-hidden="true" />
+            {alert}
+          </span>
+        )}
+      </div>
+
+      {children}
+
+      <Link
+        to={linkTo}
+        className={`mt-4 flex items-center gap-1 text-sm font-medium ${
+          isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+        }`}
+      >
+        View all
+        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+      </Link>
+    </div>
+  )
 );
+DashboardCard.displayName = 'DashboardCard';
 
 export default DashboardHome;

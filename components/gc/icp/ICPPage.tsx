@@ -6,14 +6,17 @@ import {
   MessageSquare,
   Award,
   AlertTriangle,
-  Gift,
   Loader2,
+  Sparkles,
+  Check,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { LoadingState } from '../../shared/LoadingSpinner';
 import { fetchMemberICP, updateMemberICP } from '../../../services/gc-airtable';
 import { MemberICP } from '../../../types/gc-types';
+import { generateICPSuggestions, ICPSuggestion } from '../../../services/ai';
 
 const ICPPage: React.FC = () => {
   const { gcMember } = useAuth();
@@ -23,9 +26,13 @@ const ICPPage: React.FC = () => {
   const [icp, setIcp] = useState<MemberICP | null>(null);
   const [formData, setFormData] = useState<Partial<MemberICP>>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<ICPSuggestion | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
     loadICP();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gcMember]);
 
   const loadICP = async () => {
@@ -63,6 +70,61 @@ const ICPPage: React.FC = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleGenerateAI = async () => {
+    if (!formData.companyName && !gcMember?.company) {
+      setAiError('Please enter a company name first');
+      return;
+    }
+
+    setGenerating(true);
+    setAiError(null);
+    setAiSuggestions(null);
+
+    try {
+      const suggestions = await generateICPSuggestions(
+        formData.companyName || gcMember?.company || '',
+        gcMember?.website,
+        formData
+      );
+      setAiSuggestions(suggestions);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : 'Failed to generate suggestions');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const applySuggestion = (field: keyof ICPSuggestion) => {
+    if (aiSuggestions && aiSuggestions[field]) {
+      handleChange(field as keyof MemberICP, aiSuggestions[field] as string);
+    }
+  };
+
+  const applyAllSuggestions = () => {
+    if (!aiSuggestions) return;
+
+    const fieldsToApply: (keyof ICPSuggestion)[] = [
+      'targetDescription',
+      'verticals',
+      'companySize',
+      'jobTitles',
+      'geography',
+      'painPoints',
+      'offer',
+      'differentiator',
+      'socialProof',
+      'commonObjections',
+    ];
+
+    fieldsToApply.forEach((field) => {
+      if (aiSuggestions[field]) {
+        handleChange(field as keyof MemberICP, aiSuggestions[field] as string);
+      }
+    });
+
+    setAiSuggestions(null);
   };
 
   if (loading) {
@@ -169,30 +231,157 @@ const ICPPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={!hasChanges || saving}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            hasChanges && !saving
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : isDarkMode
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleGenerateAI}
+            disabled={generating}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              generating
+                ? 'bg-purple-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+            } text-white`}
+          >
+            {generating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Generate with AI
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              hasChanges && !saving
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : isDarkMode
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* AI Error Message */}
+      {aiError && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm">{aiError}</p>
+          <button
+            onClick={() => setAiError(null)}
+            className="ml-auto p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* AI Suggestions Panel */}
+      {aiSuggestions && (
+        <div
+          className={`rounded-xl p-5 border-2 ${
+            isDarkMode
+              ? 'bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-500/30'
+              : 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200'
           }`}
         >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
-          )}
-        </button>
-      </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles
+                className={`w-5 h-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}
+              />
+              <h2 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                AI-Generated Suggestions
+              </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={applyAllSuggestions}
+                className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                <Check className="w-3 h-3" />
+                Apply All
+              </button>
+              <button
+                onClick={() => setAiSuggestions(null)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-200'
+                }`}
+              >
+                <X className={`w-4 h-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+              </button>
+            </div>
+          </div>
+
+          <p className={`text-sm mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+            Review the suggestions below and click on any field to apply it to your ICP.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-3">
+            {Object.entries(aiSuggestions).map(([key, value]) => {
+              if (!value) return null;
+              const fieldLabels: Record<string, string> = {
+                targetDescription: 'Target Description',
+                verticals: 'Verticals',
+                companySize: 'Company Size',
+                jobTitles: 'Job Titles',
+                geography: 'Geography',
+                painPoints: 'Pain Points',
+                offer: 'Offer',
+                differentiator: 'Differentiator',
+                socialProof: 'Social Proof',
+                commonObjections: 'Common Objections',
+              };
+
+              return (
+                <button
+                  key={key}
+                  onClick={() => applySuggestion(key as keyof ICPSuggestion)}
+                  className={`text-left p-3 rounded-lg border transition-all hover:scale-[1.02] ${
+                    isDarkMode
+                      ? 'bg-slate-800/50 border-slate-700 hover:border-purple-500'
+                      : 'bg-white/80 border-slate-200 hover:border-purple-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className={`text-xs font-medium ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}
+                    >
+                      {fieldLabels[key] || key}
+                    </span>
+                    <Check
+                      className={`w-3 h-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
+                    />
+                  </div>
+                  <p
+                    className={`text-sm line-clamp-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
+                  >
+                    {value}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Company Name Header */}
       <div

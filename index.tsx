@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 import { initSentry } from './lib/sentry';
 import { queryClient } from './lib/queryClient';
@@ -39,7 +40,9 @@ root.render(
         <BrowserRouter>
           <ThemeProvider>
             <AuthProvider>
-              <App />
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
             </AuthProvider>
           </ThemeProvider>
         </BrowserRouter>

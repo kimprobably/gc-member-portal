@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Menu, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useNotifications } from '../../context/NotificationContext';
 import StatusBadge from '../shared/StatusBadge';
+import NotificationPanel from './NotificationPanel';
 
 interface GCHeaderProps {
   onMenuClick: () => void;
@@ -12,6 +14,8 @@ interface GCHeaderProps {
 const GCHeader: React.FC<GCHeaderProps> = ({ onMenuClick, title }) => {
   const { gcMember } = useAuth();
   const { isDarkMode } = useTheme();
+  const { unreadCount } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   return (
     <header
@@ -26,11 +30,12 @@ const GCHeader: React.FC<GCHeaderProps> = ({ onMenuClick, title }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
+            aria-label="Open navigation menu"
             className={`md:hidden p-2 rounded-lg transition-colors ${
               isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600'
             }`}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
 
           {title && (
@@ -46,18 +51,31 @@ const GCHeader: React.FC<GCHeaderProps> = ({ onMenuClick, title }) => {
             <>
               <StatusBadge status={gcMember.status} size="sm" />
 
-              {/* Notification Bell (placeholder) */}
-              <button
-                className={`p-2 rounded-lg transition-colors relative ${
-                  isDarkMode
-                    ? 'hover:bg-slate-800 text-slate-400'
-                    : 'hover:bg-slate-100 text-slate-500'
-                }`}
-              >
-                <Bell className="w-5 h-5" />
-                {/* Notification dot */}
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
-              </button>
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  aria-label={`View notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                  aria-expanded={showNotifications}
+                  className={`p-2 rounded-lg transition-colors relative ${
+                    isDarkMode
+                      ? 'hover:bg-slate-800 text-slate-400'
+                      : 'hover:bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  <Bell className="w-5 h-5" aria-hidden="true" />
+                  {/* Notification badge */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                <NotificationPanel
+                  isOpen={showNotifications}
+                  onClose={() => setShowNotifications(false)}
+                />
+              </div>
 
               {/* User Avatar (desktop) */}
               <div className="hidden md:flex items-center gap-2">

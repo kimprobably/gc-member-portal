@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -35,7 +35,6 @@ const navItems = [
 const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgress = 0 }) => {
   const { gcMember, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
-  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -44,7 +43,13 @@ const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgre
   return (
     <>
       {/* Mobile Overlay */}
-      {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Sidebar */}
       <aside
@@ -73,9 +78,10 @@ const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgre
             </div>
             <button
               onClick={onClose}
+              aria-label="Close navigation menu"
               className="md:hidden p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              <X className="w-5 h-5 text-slate-500" />
+              <X className="w-5 h-5 text-slate-500" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -122,7 +128,7 @@ const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgre
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto" aria-label="Main navigation">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -152,13 +158,18 @@ const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgre
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
               isDarkMode
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDarkMode ? (
+              <Sun className="w-5 h-5" aria-hidden="true" />
+            ) : (
+              <Moon className="w-5 h-5" aria-hidden="true" />
+            )}
             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
 
@@ -178,11 +189,12 @@ const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgre
           {/* Logout */}
           <button
             onClick={handleLogout}
+            aria-label="Sign out of your account"
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
               isDarkMode ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'
             }`}
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-5 h-5" aria-hidden="true" />
             Sign Out
           </button>
         </div>

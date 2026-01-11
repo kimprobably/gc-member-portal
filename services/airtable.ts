@@ -1,5 +1,27 @@
-import { CourseData, Week, Lesson, ActionItem, User } from '../types';
+import { CourseData, Week, Lesson, User } from '../types';
 import { COURSE_DATA as MOCK_DATA } from '../constants';
+
+// Airtable record types for Bootcamp data
+interface LessonFields {
+  Title?: string;
+  'Embed URL'?: string;
+  Week?: string;
+  Description?: string;
+  Cohort?: string;
+}
+
+interface ActionItemFields {
+  Text?: string;
+  Week?: string;
+  Cohort?: string;
+  'Assigned To'?: string;
+}
+
+interface AirtableRecord<T> {
+  id: string;
+  fields: T;
+  createdTime?: string;
+}
 
 const AIRTABLE_API_KEY = import.meta.env.VITE_AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
@@ -11,7 +33,7 @@ const USERS_TABLE = 'Users';
 function normalizeEmbedUrl(url: string): string {
   if (!url) return '';
   const youtubeRegex =
-    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
   const match = url.match(youtubeRegex);
   if (match && match[1]) return `https://www.youtube.com/embed/${match[1]}?rel=0`;
 
@@ -100,7 +122,7 @@ export async function fetchCourseData(
       return recordCohort.toLowerCase() === targetCohort.toLowerCase();
     };
 
-    lessonsData.records.forEach((record: any) => {
+    lessonsData.records.forEach((record: AirtableRecord<LessonFields>) => {
       const fields = record.fields;
       if (!fields['Title'] || !fields['Embed URL']) return;
       if (!isVisible(fields['Cohort'])) return;
@@ -125,7 +147,7 @@ export async function fetchCourseData(
       weeksMap.get(weekName)!.lessons.push(lesson);
     });
 
-    actionItemsData.records.forEach((record: any) => {
+    actionItemsData.records.forEach((record: AirtableRecord<ActionItemFields>) => {
       const fields = record.fields;
       if (!fields['Text']) return;
       if (!isVisible(fields['Cohort'], fields['Assigned To'])) return;
