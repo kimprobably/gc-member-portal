@@ -216,7 +216,11 @@ function mapToolAccess(record: AirtableRecord<ToolAccessFields>): ToolAccess {
 export async function fetchOnboardingChecklist(): Promise<OnboardingChecklistItem[]> {
   try {
     const response = await airtableGet<OnboardingChecklistFields>(
-      `${GC_TABLES.ONBOARDING_CHECKLIST}?sort%5B0%5D%5Bfield%5D=Order&sort%5B0%5D%5Bdirection%5D=asc`
+      GC_TABLES.ONBOARDING_CHECKLIST,
+      {
+        'sort[0][field]': 'Order',
+        'sort[0][direction]': 'asc',
+      }
     );
 
     return response.records.map(mapOnboardingChecklistItem);
@@ -530,7 +534,11 @@ export async function updateCampaignMetrics(
 export async function fetchResources(memberPlan: MemberPlan): Promise<Resource[]> {
   try {
     const response = await airtableGet<ResourceFields>(
-      `${GC_TABLES.RESOURCES}?sort%5B0%5D%5Bfield%5D=Order&sort%5B0%5D%5Bdirection%5D=asc`
+      GC_TABLES.RESOURCES,
+      {
+        'sort[0][field]': 'Order',
+        'sort[0][direction]': 'asc',
+      }
     );
 
     const isFullPlan = memberPlan === 'Full ($1000/mo)';
