@@ -91,6 +91,8 @@ async function airtablePatch<T>(
   fields: Partial<T>
 ): Promise<AirtableRecord<T>> {
   const url = `${BASE_URL}/${encodeURIComponent(table)}/${recordId}`;
+  console.log('PATCH request:', { url, table, recordId, fields });
+
   const response = await fetch(url, {
     method: 'PATCH',
     headers: {
@@ -102,14 +104,19 @@ async function airtablePatch<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: { message: 'Update failed' } }));
+    console.error('PATCH failed:', error);
     throw new Error(error.error?.message || 'Failed to update record');
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('PATCH success:', result);
+  return result;
 }
 
 async function airtableCreate<T>(table: string, fields: Partial<T>): Promise<AirtableRecord<T>> {
   const url = `${BASE_URL}/${encodeURIComponent(table)}`;
+  console.log('POST request:', { url, table, fields });
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -121,10 +128,13 @@ async function airtableCreate<T>(table: string, fields: Partial<T>): Promise<Air
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: { message: 'Create failed' } }));
+    console.error('POST failed:', error);
     throw new Error(error.error?.message || 'Failed to create record');
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log('POST success:', result);
+  return result;
 }
 
 // ============================================
@@ -532,11 +542,19 @@ export async function fetchResources(memberPlan: MemberPlan): Promise<Resource[]
 
     const isFullPlan = memberPlan === 'Full ($1000/mo)';
 
-    return response.records.map(mapResource).filter((r) => {
+    const resources = response.records.map(mapResource).filter((r) => {
       if (r.planRequired === 'All Plans') return true;
       if (r.planRequired === 'Full Only' && isFullPlan) return true;
       return false;
     });
+
+    // Debug: Log resources with their URLs
+    console.log(
+      'Fetched resources:',
+      resources.map((r) => ({ title: r.title, url: r.url, hasUrl: !!r.url }))
+    );
+
+    return resources;
   } catch (error) {
     console.error('Failed to fetch resources:', error);
     return [];

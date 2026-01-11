@@ -1,16 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Search,
-  ExternalLink,
-  FileText,
-  Video,
-  FileCode,
-  Link as LinkIcon,
-  Wrench,
-  BookOpen,
-  Star,
-  Filter,
-} from 'lucide-react';
+import { Search, ExternalLink, FileText, BookOpen, Star, Filter } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { LoadingState } from '../../shared/LoadingSpinner';
@@ -285,6 +274,64 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, isDarkMode, compa
   };
 
   const TypeIcon = getTypeIcon();
+  const hasUrl = resource.url && resource.url.trim() !== '';
+
+  // If no URL, render as a non-clickable div
+  if (!hasUrl) {
+    return (
+      <div
+        className={`block rounded-xl p-4 border ${
+          isDarkMode
+            ? 'bg-slate-900 border-slate-800 opacity-75'
+            : 'bg-white border-slate-200 opacity-75'
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isDarkMode ? 'bg-slate-800' : 'bg-slate-100'
+            }`}
+          >
+            {TypeIcon ? (
+              <span className="text-xl">{TypeIcon}</span>
+            ) : (
+              <FileText className={`w-5 h-5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3
+              className={`font-medium text-sm ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              } ${compact ? 'line-clamp-1' : ''}`}
+            >
+              {resource.title}
+            </h3>
+            {!compact && resource.description && (
+              <p
+                className={`text-xs mt-1 line-clamp-2 ${
+                  isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                }`}
+              >
+                {resource.description}
+              </p>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                {resource.tool}
+              </span>
+              <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                No link available
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <a

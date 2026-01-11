@@ -1,3 +1,4 @@
+/* eslint-disable no-undef, no-unused-vars, no-empty */
 import { chromium } from '@playwright/test';
 
 (async () => {

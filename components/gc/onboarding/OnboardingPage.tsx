@@ -69,18 +69,53 @@ const OnboardingPage: React.FC = () => {
   };
 
   const handleStatusChange = async (item: OnboardingProgressItem, newStatus: ProgressStatus) => {
-    if (!gcMember) return;
+    if (!gcMember) {
+      console.error('No gcMember found');
+      return;
+    }
 
-    // Optimistic update
+    console.log('Updating progress:', {
+      progressId: item.progressId,
+      memberId: gcMember.id,
+      itemId: item.id,
+      newStatus,
+    });
+
+    // Optimistic update - immediately update UI
+    setCategories((prevCategories) =>
+      prevCategories.map((category) => ({
+        ...category,
+        items: category.items.map((i) =>
+          i.id === item.id ? { ...i, progressStatus: newStatus } : i
+        ),
+        completedCount: category.items.filter((i) =>
+          i.id === item.id ? newStatus === 'Complete' : i.progressStatus === 'Complete'
+        ).length,
+      }))
+    );
+
+    // Update total progress optimistically
+    setTotalProgress((_prev) => {
+      const totalItems = categories.reduce((sum, cat) => sum + cat.items.length, 0);
+      const wasComplete = item.progressStatus === 'Complete';
+      const willBeComplete = newStatus === 'Complete';
+      const currentCompleted = categories.reduce((sum, cat) => sum + cat.completedCount, 0);
+      const newCompleted = currentCompleted + (willBeComplete ? 1 : 0) - (wasComplete ? 1 : 0);
+      return Math.round((newCompleted / totalItems) * 100);
+    });
+
     setUpdatingItems((prev) => new Set(prev).add(item.id));
 
     try {
-      await updateMemberProgress(item.progressId, gcMember.id, item.id, newStatus);
+      const result = await updateMemberProgress(item.progressId, gcMember.id, item.id, newStatus);
+      console.log('Progress updated successfully:', result);
 
-      // Reload data to get updated progress
+      // Reload data to get server state
       await loadOnboardingData();
     } catch (error) {
       console.error('Failed to update progress:', error);
+      // Revert optimistic update on error
+      await loadOnboardingData();
     } finally {
       setUpdatingItems((prev) => {
         const next = new Set(prev);
