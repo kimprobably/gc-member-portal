@@ -43,6 +43,11 @@ export const queryKeys = {
   gcICP: (memberId: string) => ['gc', 'icp', memberId] as const,
   gcResources: () => ['gc', 'resources'] as const,
 
+  // Admin
+  adminMembers: () => ['admin', 'members'] as const,
+  adminChecklist: () => ['admin', 'checklist'] as const,
+  adminMemberProgress: (checklistItemId: string) => ['admin', 'progress', checklistItemId] as const,
+
   // Bootcamp
   bootcampUser: (email: string) => ['bootcamp', 'user', email] as const,
   bootcampModules: () => ['bootcamp', 'modules'] as const,

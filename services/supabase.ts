@@ -591,3 +591,143 @@ export async function fetchFeaturedResources(memberPlan: MemberPlan): Promise<Re
     return [];
   }
 }
+
+// ============================================
+// Admin: Members List
+// ============================================
+
+export async function fetchAllMembers(): Promise<GCMember[]> {
+  const { data, error } = await supabase
+    .from('gc_members')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapGCMember);
+}
+
+// ============================================
+// Admin: Tool Access CRUD
+// ============================================
+
+export async function createToolAccess(
+  memberId: string,
+  tool: Partial<ToolAccess>
+): Promise<ToolAccess> {
+  const insertData = {
+    member_id: memberId,
+    tool: tool.tool,
+    login_url: tool.loginUrl,
+    username: tool.username,
+    password: tool.password,
+    access_type: tool.accessType,
+    status: tool.status || 'Not Set Up',
+    setup_doc: tool.setupDoc,
+    notes: tool.notes,
+  };
+
+  const { data, error } = await supabase.from('tool_access').insert(insertData).select().single();
+
+  if (error) throw new Error(error.message);
+  return mapToolAccess(data);
+}
+
+export async function updateToolAccess(
+  toolId: string,
+  updates: Partial<ToolAccess>
+): Promise<ToolAccess> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.tool !== undefined) updateData.tool = updates.tool;
+  if (updates.loginUrl !== undefined) updateData.login_url = updates.loginUrl;
+  if (updates.username !== undefined) updateData.username = updates.username;
+  if (updates.password !== undefined) updateData.password = updates.password;
+  if (updates.accessType !== undefined) updateData.access_type = updates.accessType;
+  if (updates.status !== undefined) updateData.status = updates.status;
+  if (updates.setupDoc !== undefined) updateData.setup_doc = updates.setupDoc;
+  if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+  const { data, error } = await supabase
+    .from('tool_access')
+    .update(updateData)
+    .eq('id', toolId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapToolAccess(data);
+}
+
+export async function deleteToolAccess(toolId: string): Promise<void> {
+  const { error } = await supabase.from('tool_access').delete().eq('id', toolId);
+
+  if (error) throw new Error(error.message);
+}
+
+// ============================================
+// Admin: Onboarding Checklist CRUD
+// ============================================
+
+export async function createChecklistItem(
+  item: Partial<OnboardingChecklistItem>
+): Promise<OnboardingChecklistItem> {
+  const insertData = {
+    item: item.item,
+    category: item.category,
+    support_type: item.supportType,
+    sort_order: item.order || 0,
+    description: item.description,
+    doc_link: item.docLink,
+    plan_required: item.planRequired || 'All Plans',
+  };
+
+  const { data, error } = await supabase
+    .from('onboarding_checklist')
+    .insert(insertData)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapOnboardingChecklistItem(data);
+}
+
+export async function updateChecklistItem(
+  itemId: string,
+  updates: Partial<OnboardingChecklistItem>
+): Promise<OnboardingChecklistItem> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.item !== undefined) updateData.item = updates.item;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.supportType !== undefined) updateData.support_type = updates.supportType;
+  if (updates.order !== undefined) updateData.sort_order = updates.order;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.docLink !== undefined) updateData.doc_link = updates.docLink;
+  if (updates.planRequired !== undefined) updateData.plan_required = updates.planRequired;
+
+  const { data, error } = await supabase
+    .from('onboarding_checklist')
+    .update(updateData)
+    .eq('id', itemId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapOnboardingChecklistItem(data);
+}
+
+export async function deleteChecklistItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from('onboarding_checklist').delete().eq('id', itemId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function checkMemberProgressExists(checklistItemId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('member_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('checklist_item_id', checklistItemId);
+
+  if (error) throw new Error(error.message);
+  return count || 0;
+}

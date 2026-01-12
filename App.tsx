@@ -14,6 +14,11 @@ import CampaignsPage from './components/gc/campaigns/CampaignsPage';
 import ICPPage from './components/gc/icp/ICPPage';
 import ResourcesPage from './components/gc/resources/ResourcesPage';
 
+// Admin Components
+import AdminLayout from './components/admin/AdminLayout';
+import AdminToolsPage from './components/admin/tools/AdminToolsPage';
+import AdminOnboardingPage from './components/admin/onboarding/AdminOnboardingPage';
+
 import { useAuth } from './context/AuthContext';
 
 const App: React.FC = () => {
@@ -43,6 +48,13 @@ const App: React.FC = () => {
         <Route path="campaigns" element={<CampaignsPage />} />
         <Route path="icp" element={<ICPPage />} />
         <Route path="resources" element={<ResourcesPage />} />
+      </Route>
+
+      {/* Admin Dashboard */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="/admin/tools" replace />} />
+        <Route path="tools" element={<AdminToolsPage />} />
+        <Route path="onboarding" element={<AdminOnboardingPage />} />
       </Route>
 
       {/* Bootcamp LMS - /bootcamp path */}
