@@ -369,6 +369,14 @@ export async function updateMemberProgress(
   status: ProgressStatus,
   notes?: string
 ): Promise<MemberProgress> {
+  console.log('updateMemberProgress called with:', {
+    progressId,
+    memberId,
+    checklistItemId,
+    status,
+    notes,
+  });
+
   const fields: Partial<MemberProgressFields> = {
     Status: status,
   };
@@ -381,22 +389,35 @@ export async function updateMemberProgress(
     fields['Completed Date'] = new Date().toISOString().split('T')[0];
   }
 
-  if (progressId) {
-    // Update existing record
-    const updated = await airtablePatch<MemberProgressFields>(
-      GC_TABLES.MEMBER_PROGRESS,
-      progressId,
-      fields
-    );
-    return mapMemberProgress(updated);
-  } else {
-    // Create new record
-    const created = await airtableCreate<MemberProgressFields>(GC_TABLES.MEMBER_PROGRESS, {
-      ...fields,
-      Member: [memberId],
-      'Checklist Item': [checklistItemId],
-    });
-    return mapMemberProgress(created);
+  try {
+    if (progressId) {
+      // Update existing record
+      console.log('Updating existing progress record:', progressId);
+      const updated = await airtablePatch<MemberProgressFields>(
+        GC_TABLES.MEMBER_PROGRESS,
+        progressId,
+        fields
+      );
+      console.log('Update successful:', updated);
+      return mapMemberProgress(updated);
+    } else {
+      // Create new record
+      const createFields = {
+        ...fields,
+        Member: [memberId],
+        'Checklist Item': [checklistItemId],
+      };
+      console.log('Creating new progress record with fields:', createFields);
+      const created = await airtableCreate<MemberProgressFields>(
+        GC_TABLES.MEMBER_PROGRESS,
+        createFields
+      );
+      console.log('Create successful:', created);
+      return mapMemberProgress(created);
+    }
+  } catch (error) {
+    console.error('updateMemberProgress failed:', error);
+    throw error;
   }
 }
 
