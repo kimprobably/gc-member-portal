@@ -19,6 +19,12 @@ import AdminLayout from './components/admin/AdminLayout';
 import AdminToolsPage from './components/admin/tools/AdminToolsPage';
 import AdminOnboardingPage from './components/admin/onboarding/AdminOnboardingPage';
 
+// Bootcamp Admin Components
+import AdminBootcampLayout from './components/admin/bootcamp/AdminBootcampLayout';
+import AdminStudentsPage from './components/admin/bootcamp/students/AdminStudentsPage';
+import AdminBootcampOnboardingPage from './components/admin/bootcamp/onboarding/AdminBootcampOnboardingPage';
+import AdminBootcampSettingsPage from './components/admin/bootcamp/settings/AdminBootcampSettingsPage';
+
 import { useAuth } from './context/AuthContext';
 
 const App: React.FC = () => {
@@ -27,12 +33,10 @@ const App: React.FC = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-slate-950">
+      <div className="flex items-center justify-center h-screen bg-white dark:bg-zinc-950">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-slate-300 dark:border-slate-700 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Loading...
-          </p>
+          <div className="w-8 h-8 border-2 border-zinc-300 dark:border-zinc-700 border-t-violet-500 rounded-full animate-spin" />
+          <p className="text-xs font-medium text-zinc-400">Loading...</p>
         </div>
       </div>
     );
@@ -55,6 +59,14 @@ const App: React.FC = () => {
         <Route index element={<Navigate to="/admin/tools" replace />} />
         <Route path="tools" element={<AdminToolsPage />} />
         <Route path="onboarding" element={<AdminOnboardingPage />} />
+      </Route>
+
+      {/* Bootcamp Admin Dashboard */}
+      <Route path="/admin/bootcamp" element={<AdminBootcampLayout />}>
+        <Route index element={<Navigate to="/admin/bootcamp/students" replace />} />
+        <Route path="students" element={<AdminStudentsPage />} />
+        <Route path="onboarding" element={<AdminBootcampOnboardingPage />} />
+        <Route path="settings" element={<AdminBootcampSettingsPage />} />
       </Route>
 
       {/* Bootcamp LMS - /bootcamp path */}

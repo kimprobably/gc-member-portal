@@ -162,55 +162,55 @@ const LessonView: React.FC<LessonViewProps> = ({
       <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+            <span className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
               <ClipboardList size={12} /> {isChecklistHub ? 'Action Step' : 'Tutorial'}
             </span>
             {currentWeek && (
-              <span className="text-slate-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest">
+              <span className="text-zinc-400 dark:text-zinc-500 text-xs">
                 • {currentWeek.title}
               </span>
             )}
           </div>
-          <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">
             {isChecklistHub ? `Project Workflow` : cleanTitle(lesson.title)}
           </h2>
         </div>
       </header>
 
       {isChecklistHub ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {weekTasks.map((task, idx) => {
             const isActive = activeTaskId === task.id;
             const isDone = completedItems.has(task.id);
             return (
               <div
                 key={task.id}
-                className={`bg-white dark:bg-slate-900 rounded-2xl border transition-all ${isActive ? 'border-brand-500 shadow-xl' : 'border-slate-200 dark:border-slate-800'}`}
+                className={`bg-white dark:bg-zinc-900 rounded-lg border transition-all ${isActive ? 'border-violet-500 shadow-md' : 'border-zinc-200 dark:border-zinc-800'}`}
               >
                 <button
                   onClick={() => setActiveTaskId(isActive ? null : task.id)}
-                  className="w-full flex items-center gap-4 p-5 text-left"
+                  className="w-full flex items-center gap-4 p-4 text-left"
                 >
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border text-xs font-bold ${isDone ? 'bg-green-500 border-green-500 text-white' : isActive ? 'bg-brand-500 border-brand-500 text-white' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'}`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-medium ${isDone ? 'bg-green-500 text-white' : isActive ? 'bg-violet-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}
                   >
                     {isDone ? <Check size={14} strokeWidth={3} /> : idx + 1}
                   </div>
                   <h4
-                    className={`flex-1 text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}
+                    className={`flex-1 text-sm font-medium ${isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}`}
                   >
                     {cleanTitle(task.text)}
                   </h4>
                   {isActive ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
                 {isActive && (
-                  <div className="border-t border-slate-100 dark:border-slate-800 p-6 space-y-6">
+                  <div className="border-t border-zinc-100 dark:border-zinc-800 p-5 space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <textarea
                         placeholder="Observations..."
                         value={taskNotes[task.id] || ''}
                         onChange={(e) => onUpdateNote(task.id, e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none min-h-[100px]"
+                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm outline-none min-h-[100px] focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                       />
                       <div className="space-y-3">
                         <input
@@ -218,13 +218,13 @@ const LessonView: React.FC<LessonViewProps> = ({
                           placeholder="Proof URL..."
                           value={proofOfWork[task.id] || ''}
                           onChange={(e) => onUpdateProof(task.id, e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none"
+                          className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                         />
                         <button
                           onClick={() => onToggleItem(task.id)}
-                          className={`w-full py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 ${isDone ? 'bg-green-500 text-white' : 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'}`}
+                          className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${isDone ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-violet-500 hover:bg-violet-600 text-white'}`}
                         >
-                          {isDone ? <CheckCircle size={14} /> : <Target size={14} />}{' '}
+                          {isDone ? <CheckCircle size={16} /> : <Target size={16} />}{' '}
                           {isDone ? 'Step Verified' : 'Mark Complete'}
                         </button>
                       </div>
@@ -237,53 +237,51 @@ const LessonView: React.FC<LessonViewProps> = ({
         </div>
       ) : (
         <div className="animate-slide-in">
-          <div className="mb-10">
+          <div className="mb-8">
             {isTextContent ? (
               <div
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-10 md:p-16 shadow-xl text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap"
+                className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8 md:p-12 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: lesson.embedUrl.replace(/^text:\s*/, '') }}
               />
             ) : isPickaxe && pickaxeId ? (
-              <div className="w-full min-h-[800px] bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-inner flex flex-col">
+              <div className="w-full min-h-[800px] bg-white dark:bg-zinc-900 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col">
                 <div
                   key={pickaxeId}
                   id={pickaxeId}
                   className="w-full flex-grow min-h-[700px]"
                 ></div>
-                <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-center gap-2">
-                  <Bot size={14} className="text-brand-500" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                    Powered by Modern Agency Sales
-                  </span>
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center gap-2">
+                  <Bot size={14} className="text-violet-500" />
+                  <span className="text-xs text-zinc-500">Powered by Modern Agency Sales</span>
                 </div>
               </div>
             ) : isAistudio ? (
-              <div className="bg-slate-900 p-16 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center justify-center text-center gap-6">
-                <ShieldAlert size={32} className="text-brand-400" />
-                <h3 className="text-white font-bold text-xl mb-2">Google Security</h3>
+              <div className="bg-zinc-900 p-12 rounded-lg border border-zinc-800 flex flex-col items-center justify-center text-center gap-6">
+                <ShieldAlert size={32} className="text-violet-400" />
+                <h3 className="text-white font-semibold text-lg mb-2">Google Security</h3>
                 <a
                   href={lesson.embedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-brand-500 text-white px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-3"
+                  className="bg-violet-500 hover:bg-violet-600 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
                 >
                   Open AI Studio <ExternalLink size={16} />
                 </a>
               </div>
             ) : (
-              <div className="rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 aspect-video">
+              <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 aspect-video">
                 <iframe src={lesson.embedUrl} className="w-full h-full border-0" allowFullScreen />
               </div>
             )}
           </div>
 
           {!isPickaxe && !isAistudio && (
-            <div className="bg-slate-900 p-10 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-800 shadow-2xl">
-              <div className="flex items-center gap-6">
-                <Target size={36} className="text-brand-400" />
+            <div className="bg-zinc-900 p-8 rounded-lg flex flex-col md:flex-row items-center justify-between gap-6 border border-zinc-800">
+              <div className="flex items-center gap-5">
+                <Target size={28} className="text-violet-400" />
                 <div>
-                  <h4 className="font-bold text-white text-xl">Ready to implement?</h4>
-                  <p className="text-sm text-slate-400">
+                  <h4 className="font-semibold text-white text-lg">Ready to implement?</h4>
+                  <p className="text-sm text-zinc-400">
                     Log your progress in the project workflow.
                   </p>
                 </div>
@@ -296,9 +294,9 @@ const LessonView: React.FC<LessonViewProps> = ({
                     embedUrl: 'virtual:checklist',
                   })
                 }
-                className="bg-brand-500 text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest"
+                className="bg-violet-500 hover:bg-violet-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
               >
-                Go to Checklist <ArrowRight size={20} />
+                Go to Checklist <ArrowRight size={18} />
               </button>
             </div>
           )}

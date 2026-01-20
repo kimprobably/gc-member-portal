@@ -139,12 +139,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         }}
         className={`flex items-center w-full py-1.5 px-3 rounded-lg text-[11px] transition-all ${
           isActive
-            ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 font-bold'
-            : 'text-slate-500 hover:bg-white dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-100'
+            ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium'
+            : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
         }`}
       >
         <span
-          className={`mr-2.5 shrink-0 ${isActive ? 'text-brand-500' : 'text-slate-400 dark:text-slate-600'}`}
+          className={`mr-2.5 shrink-0 ${isActive ? 'text-violet-500' : 'text-zinc-400 dark:text-zinc-600'}`}
         >
           {getLessonIcon(tool, isActive)}
         </span>
@@ -159,56 +159,54 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 z-30 md:hidden backdrop-blur-sm"
           onClick={onCloseMobile}
         />
       )}
       <aside
-        className={`fixed md:relative z-40 w-64 h-full bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        className={`fixed md:relative z-40 w-64 h-full bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
-        <div className="p-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2.5 text-slate-900 dark:text-slate-100 mb-5">
-            <div className="w-8 h-8 bg-slate-900 dark:bg-slate-100 rounded-lg flex items-center justify-center text-white dark:text-slate-900 shrink-0">
+        <div className="p-5 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5 text-zinc-900 dark:text-zinc-100 mb-4">
+            <div className="w-8 h-8 bg-violet-500 rounded-lg flex items-center justify-center text-white shrink-0">
               <Terminal size={16} />
             </div>
-            <h1 className="font-bold text-[11px] uppercase tracking-widest leading-none">GTM OS</h1>
+            <h1 className="font-semibold text-sm">GTM OS</h1>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
+          <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <Globe size={10} /> {userDomain}
               </span>
-              <Zap size={10} className="text-brand-500" />
+              <Zap size={10} className="text-violet-500" />
             </div>
             <div className="flex items-end gap-2 mb-1.5">
-              <span className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-none">
+              <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 leading-none">
                 {Math.round(overallProgress)}%
               </span>
-              <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 pb-0.5 uppercase tracking-wide">
-                Shared Done
-              </span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 pb-0.5">complete</span>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-200 dark:bg-zinc-700 h-1 rounded-full overflow-hidden">
               <div
-                className="bg-slate-900 dark:bg-slate-100 h-full transition-all duration-700"
+                className="bg-violet-500 h-full transition-all duration-700"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-8 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto p-3 space-y-6 scrollbar-hide">
           {hasFullAccess ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <button
                 onClick={() => setShowResourcesSection(!showResourcesSection)}
-                className="w-full flex items-center justify-between px-2 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                className="w-full flex items-center justify-between px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <Box size={10} /> Resources
+                  <Box size={12} /> Resources
                 </div>
-                {showResourcesSection ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                {showResourcesSection ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
               </button>
 
               {showResourcesSection && (
@@ -217,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {
                       id: 'gpts',
                       label: 'AI Tools',
-                      icon: <Sparkles size={12} className="text-purple-500" />,
+                      icon: <Sparkles size={12} className="text-violet-500" />,
                       items: toolGroups.gpts,
                     },
                     {
@@ -238,20 +236,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <div key={group.id} className="space-y-0.5">
                           <button
                             onClick={() => toggleGroup(group.id)}
-                            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-400 transition-colors"
+                            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
                           >
-                            <div className="flex items-center gap-2.5 text-[10px] font-bold">
+                            <div className="flex items-center gap-2.5 text-xs font-medium">
                               {group.icon}
                               <span>{group.label}</span>
                             </div>
                             {isGroupExpanded(group.id) ? (
-                              <ChevronDown size={10} />
+                              <ChevronDown size={12} />
                             ) : (
-                              <ChevronRight size={10} />
+                              <ChevronRight size={12} />
                             )}
                           </button>
                           {isGroupExpanded(group.id) && (
-                            <div className="ml-4 border-l border-slate-200 dark:border-slate-800 pl-1.5">
+                            <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
                               {group.items.map(renderToolItem)}
                             </div>
                           )}
@@ -262,14 +260,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             </div>
           ) : (
-            <div className="px-2 py-3 bg-slate-100 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+            <div className="px-3 py-3 bg-zinc-100 dark:bg-zinc-800/30 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700">
               <div className="flex items-center gap-2 mb-1.5">
-                <Lock size={10} className="text-slate-400" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+                <Lock size={12} className="text-zinc-400" />
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                   Members Only
                 </span>
               </div>
-              <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 AI Tools and specialized tables are reserved for ongoing members.
               </p>
             </div>
@@ -278,12 +276,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-3">
             <button
               onClick={() => setShowCurriculumSection(!showCurriculumSection)}
-              className="w-full flex items-center justify-between px-2 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+              className="w-full flex items-center justify-between px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Wrench size={10} /> Curriculum
+                <Wrench size={12} /> Curriculum
               </div>
-              {showCurriculumSection ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+              {showCurriculumSection ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
             </button>
 
             {showCurriculumSection && (
@@ -299,19 +297,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <div key={week.id} className="mb-2">
                       <button
                         onClick={() => toggleWeek(week.id)}
-                        className="flex items-center justify-between w-full p-2 text-left text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-brand-600"
+                        className="flex items-center justify-between w-full p-2 text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-400"
                       >
                         <div className="flex items-center gap-2 truncate">
                           {week.actionItems.length > 0 &&
                             completedItems.size >= week.actionItems.length && (
-                              <CheckCircle2 size={10} className="text-green-500" />
+                              <CheckCircle2 size={12} className="text-green-500" />
                             )}
                           <span className="truncate">{week.title}</span>
                         </div>
                         {isWeekExpanded(week.id) ? (
-                          <ChevronDown size={10} />
+                          <ChevronDown size={12} />
                         ) : (
-                          <ChevronRight size={10} />
+                          <ChevronRight size={12} />
                         )}
                       </button>
                       {isWeekExpanded(week.id) && (
@@ -323,7 +321,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 onSelectLesson(lesson);
                                 onCloseMobile();
                               }}
-                              className={`flex items-start w-full p-2 rounded-lg text-[10px] transition-all ${lesson.id === currentLessonId ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'}`}
+                              className={`flex items-start w-full p-2 rounded-lg text-[11px] transition-all ${lesson.id === currentLessonId ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
                             >
                               <span className="mt-0.5 mr-2 shrink-0 opacity-70">
                                 {getLessonIcon(lesson, lesson.id === currentLessonId)}
@@ -343,10 +341,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                               });
                               onCloseMobile();
                             }}
-                            className={`flex items-center gap-2.5 w-full p-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all mt-1 ${
+                            className={`flex items-center gap-2.5 w-full p-2 rounded-lg text-[11px] font-medium transition-all mt-1 ${
                               currentLessonId === `${week.id}:checklist`
-                                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md'
-                                : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                                ? 'bg-violet-500 text-white'
+                                : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                             }`}
                           >
                             <ClipboardList size={12} />
@@ -362,25 +360,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3">
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 truncate">
-            <div className="w-7 h-7 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold text-[10px]">
+            <div className="w-8 h-8 rounded-lg bg-violet-500 flex items-center justify-center text-white font-medium text-xs">
               {displayUserLabel.substring(0, 2).toUpperCase()}
             </div>
             <div className="truncate">
-              <p className="text-[10px] text-slate-900 dark:text-white truncate font-bold uppercase tracking-widest">
+              <p className="text-sm text-zinc-900 dark:text-white truncate font-medium">
                 {displayUserLabel}
               </p>
-              <p className="text-[8px] text-slate-400 dark:text-slate-500 truncate font-medium">
-                {user?.status}
-              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user?.status}</p>
             </div>
           </div>
           <button
             onClick={onToggleTheme}
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"
           >
-            {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
         </div>
       </aside>

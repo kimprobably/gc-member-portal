@@ -1,0 +1,640 @@
+/**
+ * Bootcamp Supabase Service
+ * Handles all database operations for the LinkedIn Bootcamp Student Onboarding System
+ */
+
+import { supabase } from '../lib/supabaseClient';
+import {
+  BootcampStudent,
+  BootcampChecklistItem,
+  BootcampStudentProgress,
+  BootcampStudentSurvey,
+  BootcampOnboardingCategoryGroup,
+  BootcampOnboardingProgressItem,
+  BootcampSettings,
+  BootcampProgressStatus,
+  BootcampOnboardingCategory,
+  BOOTCAMP_ONBOARDING_CATEGORIES,
+  BootcampSurveyFormData,
+} from '../types/bootcamp-types';
+
+// ============================================
+// Bootcamp Students
+// ============================================
+
+export async function verifyBootcampStudent(email: string): Promise<BootcampStudent | null> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_students')
+      .select('*')
+      .ilike('email', email)
+      .single();
+
+    if (error || !data) {
+      console.log('Bootcamp student not found:', email);
+      return null;
+    }
+
+    return mapBootcampStudent(data);
+  } catch (error) {
+    console.error('Bootcamp student verification failed:', error);
+    return null;
+  }
+}
+
+export async function fetchAllBootcampStudents(): Promise<BootcampStudent[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampStudent);
+}
+
+export async function fetchBootcampStudentById(studentId: string): Promise<BootcampStudent | null> {
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .select('*')
+    .eq('id', studentId)
+    .single();
+
+  if (error || !data) return null;
+  return mapBootcampStudent(data);
+}
+
+export async function createBootcampStudent(
+  student: Partial<BootcampStudent>
+): Promise<BootcampStudent> {
+  const insertData = {
+    email: student.email,
+    name: student.name,
+    company: student.company,
+    cohort: student.cohort || 'Global',
+    status: student.status || 'Onboarding',
+    access_level: student.accessLevel || 'Full Access',
+    purchase_date: student.purchaseDate?.toISOString(),
+    payment_source: student.paymentSource,
+    payment_id: student.paymentId,
+    notes: student.notes,
+  };
+
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .insert(insertData)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampStudent(data);
+}
+
+export async function updateBootcampStudent(
+  studentId: string,
+  updates: Partial<BootcampStudent>
+): Promise<BootcampStudent> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.email !== undefined) updateData.email = updates.email;
+  if (updates.name !== undefined) updateData.name = updates.name;
+  if (updates.company !== undefined) updateData.company = updates.company;
+  if (updates.cohort !== undefined) updateData.cohort = updates.cohort;
+  if (updates.status !== undefined) updateData.status = updates.status;
+  if (updates.accessLevel !== undefined) updateData.access_level = updates.accessLevel;
+  if (updates.purchaseDate !== undefined)
+    updateData.purchase_date = updates.purchaseDate?.toISOString();
+  if (updates.onboardingCompletedAt !== undefined)
+    updateData.onboarding_completed_at = updates.onboardingCompletedAt?.toISOString();
+  if (updates.slackInvited !== undefined) updateData.slack_invited = updates.slackInvited;
+  if (updates.slackInvitedAt !== undefined)
+    updateData.slack_invited_at = updates.slackInvitedAt?.toISOString();
+  if (updates.calendarAdded !== undefined) updateData.calendar_added = updates.calendarAdded;
+  if (updates.calendarAddedAt !== undefined)
+    updateData.calendar_added_at = updates.calendarAddedAt?.toISOString();
+  if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .update(updateData)
+    .eq('id', studentId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampStudent(data);
+}
+
+export async function completeStudentOnboarding(studentId: string): Promise<BootcampStudent> {
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .update({
+      status: 'Active',
+      onboarding_completed_at: new Date().toISOString(),
+    })
+    .eq('id', studentId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampStudent(data);
+}
+
+function mapBootcampStudent(record: Record<string, unknown>): BootcampStudent {
+  return {
+    id: record.id as string,
+    email: record.email as string,
+    name: record.name as string | undefined,
+    company: record.company as string | undefined,
+    cohort: (record.cohort as string) || 'Global',
+    status: (record.status as BootcampStudent['status']) || 'Onboarding',
+    accessLevel: (record.access_level as BootcampStudent['accessLevel']) || 'Full Access',
+    purchaseDate: record.purchase_date ? new Date(record.purchase_date as string) : undefined,
+    onboardingCompletedAt: record.onboarding_completed_at
+      ? new Date(record.onboarding_completed_at as string)
+      : undefined,
+    slackInvited: (record.slack_invited as boolean) || false,
+    slackInvitedAt: record.slack_invited_at
+      ? new Date(record.slack_invited_at as string)
+      : undefined,
+    calendarAdded: (record.calendar_added as boolean) || false,
+    calendarAddedAt: record.calendar_added_at
+      ? new Date(record.calendar_added_at as string)
+      : undefined,
+    paymentSource: record.payment_source as string | undefined,
+    paymentId: record.payment_id as string | undefined,
+    notes: record.notes as string | undefined,
+    createdAt: new Date(record.created_at as string),
+    updatedAt: new Date(record.updated_at as string),
+  };
+}
+
+// ============================================
+// Onboarding Checklist
+// ============================================
+
+export async function fetchBootcampOnboardingChecklist(): Promise<BootcampChecklistItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_onboarding_checklist')
+      .select('*')
+      .eq('is_visible', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.error('Failed to fetch bootcamp checklist:', error);
+      return [];
+    }
+
+    return (data || []).map(mapBootcampChecklistItem);
+  } catch (error) {
+    console.error('Failed to fetch bootcamp checklist:', error);
+    return [];
+  }
+}
+
+export async function fetchAllBootcampChecklistItems(): Promise<BootcampChecklistItem[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_onboarding_checklist')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampChecklistItem);
+}
+
+export async function createBootcampChecklistItem(
+  item: Partial<BootcampChecklistItem>
+): Promise<BootcampChecklistItem> {
+  const insertData = {
+    item: item.item,
+    category: item.category,
+    description: item.description,
+    video_url: item.videoUrl,
+    doc_link: item.docLink,
+    ai_tool_id: item.aiToolId,
+    sort_order: item.sortOrder || 0,
+    is_required: item.isRequired !== false,
+    is_visible: item.isVisible !== false,
+  };
+
+  const { data, error } = await supabase
+    .from('bootcamp_onboarding_checklist')
+    .insert(insertData)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampChecklistItem(data);
+}
+
+export async function updateBootcampChecklistItem(
+  itemId: string,
+  updates: Partial<BootcampChecklistItem>
+): Promise<BootcampChecklistItem> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.item !== undefined) updateData.item = updates.item;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.videoUrl !== undefined) updateData.video_url = updates.videoUrl;
+  if (updates.docLink !== undefined) updateData.doc_link = updates.docLink;
+  if (updates.aiToolId !== undefined) updateData.ai_tool_id = updates.aiToolId;
+  if (updates.sortOrder !== undefined) updateData.sort_order = updates.sortOrder;
+  if (updates.isRequired !== undefined) updateData.is_required = updates.isRequired;
+  if (updates.isVisible !== undefined) updateData.is_visible = updates.isVisible;
+
+  const { data, error } = await supabase
+    .from('bootcamp_onboarding_checklist')
+    .update(updateData)
+    .eq('id', itemId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampChecklistItem(data);
+}
+
+export async function deleteBootcampChecklistItem(itemId: string): Promise<void> {
+  const { error } = await supabase.from('bootcamp_onboarding_checklist').delete().eq('id', itemId);
+
+  if (error) throw new Error(error.message);
+}
+
+function mapBootcampChecklistItem(record: Record<string, unknown>): BootcampChecklistItem {
+  return {
+    id: record.id as string,
+    item: record.item as string,
+    category: record.category as BootcampOnboardingCategory,
+    description: record.description as string | undefined,
+    videoUrl: record.video_url as string | undefined,
+    docLink: record.doc_link as string | undefined,
+    aiToolId: record.ai_tool_id as string | undefined,
+    sortOrder: (record.sort_order as number) || 0,
+    isRequired: (record.is_required as boolean) !== false,
+    isVisible: (record.is_visible as boolean) !== false,
+    createdAt: new Date(record.created_at as string),
+  };
+}
+
+// ============================================
+// Student Progress
+// ============================================
+
+export async function fetchBootcampStudentProgress(
+  studentId: string
+): Promise<BootcampStudentProgress[]> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_student_progress')
+      .select('*')
+      .eq('student_id', studentId);
+
+    if (error) {
+      console.error('Failed to fetch student progress:', error);
+      return [];
+    }
+
+    return (data || []).map(mapBootcampStudentProgress);
+  } catch (error) {
+    console.error('Failed to fetch student progress:', error);
+    return [];
+  }
+}
+
+export async function fetchBootcampOnboardingWithProgress(
+  studentId: string
+): Promise<{ categories: BootcampOnboardingCategoryGroup[]; totalProgress: number }> {
+  const [checklist, progress] = await Promise.all([
+    fetchBootcampOnboardingChecklist(),
+    fetchBootcampStudentProgress(studentId),
+  ]);
+
+  // Create lookup map for progress by checklist item ID
+  const progressMap = new Map<string, BootcampStudentProgress>();
+  progress.forEach((p) => {
+    progressMap.set(p.checklistItemId, p);
+  });
+
+  // Merge checklist with progress
+  const itemsWithProgress: BootcampOnboardingProgressItem[] = checklist.map((item) => {
+    const prog = progressMap.get(item.id);
+    return {
+      ...item,
+      progressId: prog?.id,
+      progressStatus: prog?.status || 'Not Started',
+      completedAt: prog?.completedAt,
+      progressNotes: prog?.notes,
+    };
+  });
+
+  // Group by category
+  const categoryMap = new Map<BootcampOnboardingCategory, BootcampOnboardingProgressItem[]>();
+
+  itemsWithProgress.forEach((item) => {
+    const existing = categoryMap.get(item.category) || [];
+    existing.push(item);
+    categoryMap.set(item.category, existing);
+  });
+
+  const categories: BootcampOnboardingCategoryGroup[] = BOOTCAMP_ONBOARDING_CATEGORIES.filter(
+    (cat) => categoryMap.has(cat)
+  ).map((name) => {
+    const items = categoryMap.get(name) || [];
+    const sortedItems = items.sort((a, b) => a.sortOrder - b.sortOrder);
+    const completedCount = items.filter((i) => i.progressStatus === 'Complete').length;
+    return {
+      name,
+      items: sortedItems,
+      completedCount,
+      totalCount: items.length,
+    };
+  });
+
+  // Calculate overall progress
+  const requiredItems = itemsWithProgress.filter((i) => i.isRequired);
+  const completedRequired = requiredItems.filter((i) => i.progressStatus === 'Complete').length;
+  const totalProgress =
+    requiredItems.length > 0 ? Math.round((completedRequired / requiredItems.length) * 100) : 0;
+
+  return { categories, totalProgress };
+}
+
+export async function updateBootcampStudentProgress(
+  progressId: string | undefined,
+  studentId: string,
+  checklistItemId: string,
+  status: BootcampProgressStatus,
+  notes?: string
+): Promise<BootcampStudentProgress> {
+  const updateData: Record<string, unknown> = {
+    status,
+  };
+
+  if (notes !== undefined) {
+    updateData.notes = notes;
+  }
+
+  if (status === 'Complete') {
+    updateData.completed_at = new Date().toISOString();
+  } else {
+    updateData.completed_at = null;
+  }
+
+  if (progressId) {
+    // Update existing record
+    const { data, error } = await supabase
+      .from('bootcamp_student_progress')
+      .update(updateData)
+      .eq('id', progressId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return mapBootcampStudentProgress(data);
+  } else {
+    // Create new record using upsert
+    const { data, error } = await supabase
+      .from('bootcamp_student_progress')
+      .upsert(
+        {
+          student_id: studentId,
+          checklist_item_id: checklistItemId,
+          ...updateData,
+        },
+        {
+          onConflict: 'student_id,checklist_item_id',
+        }
+      )
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return mapBootcampStudentProgress(data);
+  }
+}
+
+function mapBootcampStudentProgress(record: Record<string, unknown>): BootcampStudentProgress {
+  return {
+    id: record.id as string,
+    studentId: record.student_id as string,
+    checklistItemId: record.checklist_item_id as string,
+    status: (record.status as BootcampProgressStatus) || 'Not Started',
+    completedAt: record.completed_at ? new Date(record.completed_at as string) : undefined,
+    notes: record.notes as string | undefined,
+  };
+}
+
+// ============================================
+// Student Survey
+// ============================================
+
+export async function fetchBootcampStudentSurvey(
+  studentId: string
+): Promise<BootcampStudentSurvey | null> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_student_survey')
+      .select('*')
+      .eq('student_id', studentId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to fetch student survey:', error);
+      return null;
+    }
+
+    if (!data) return null;
+    return mapBootcampStudentSurvey(data);
+  } catch (error) {
+    console.error('Failed to fetch student survey:', error);
+    return null;
+  }
+}
+
+export async function saveBootcampStudentSurvey(
+  studentId: string,
+  surveyData: BootcampSurveyFormData,
+  markComplete: boolean = false
+): Promise<BootcampStudentSurvey> {
+  const data: Record<string, unknown> = {
+    student_id: studentId,
+  };
+
+  // Map form data to database columns
+  if (surveyData.companyName !== undefined) data.company_name = surveyData.companyName;
+  if (surveyData.website !== undefined) data.website = surveyData.website;
+  if (surveyData.industry !== undefined) data.industry = surveyData.industry;
+  if (surveyData.companySize !== undefined) data.company_size = surveyData.companySize;
+  if (surveyData.roleTitle !== undefined) data.role_title = surveyData.roleTitle;
+  if (surveyData.primaryGoal !== undefined) data.primary_goal = surveyData.primaryGoal;
+  if (surveyData.biggestChallenges !== undefined)
+    data.biggest_challenges = surveyData.biggestChallenges;
+  if (surveyData.linkedinExperience !== undefined)
+    data.linkedin_experience = surveyData.linkedinExperience;
+  if (surveyData.targetAudience !== undefined) data.target_audience = surveyData.targetAudience;
+  if (surveyData.currentLeadGenMethods !== undefined)
+    data.current_lead_gen_methods = surveyData.currentLeadGenMethods;
+  if (surveyData.monthlyOutreachVolume !== undefined)
+    data.monthly_outreach_volume = surveyData.monthlyOutreachVolume;
+  if (surveyData.toolsCurrentlyUsing !== undefined)
+    data.tools_currently_using = surveyData.toolsCurrentlyUsing;
+
+  if (markComplete) {
+    data.completed_at = new Date().toISOString();
+  }
+
+  const { data: result, error } = await supabase
+    .from('bootcamp_student_survey')
+    .upsert(data, {
+      onConflict: 'student_id',
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampStudentSurvey(result);
+}
+
+function mapBootcampStudentSurvey(record: Record<string, unknown>): BootcampStudentSurvey {
+  return {
+    id: record.id as string,
+    studentId: record.student_id as string,
+    companyName: record.company_name as string | undefined,
+    website: record.website as string | undefined,
+    industry: record.industry as string | undefined,
+    companySize: record.company_size as BootcampStudentSurvey['companySize'],
+    roleTitle: record.role_title as string | undefined,
+    primaryGoal: record.primary_goal as string | undefined,
+    biggestChallenges: record.biggest_challenges as string[] | undefined,
+    linkedinExperience: record.linkedin_experience as BootcampStudentSurvey['linkedinExperience'],
+    targetAudience: record.target_audience as string | undefined,
+    currentLeadGenMethods: record.current_lead_gen_methods as string[] | undefined,
+    monthlyOutreachVolume:
+      record.monthly_outreach_volume as BootcampStudentSurvey['monthlyOutreachVolume'],
+    toolsCurrentlyUsing: record.tools_currently_using as string[] | undefined,
+    completedAt: record.completed_at ? new Date(record.completed_at as string) : undefined,
+    createdAt: new Date(record.created_at as string),
+    updatedAt: new Date(record.updated_at as string),
+  };
+}
+
+// ============================================
+// Settings
+// ============================================
+
+export async function fetchBootcampSetting<K extends keyof BootcampSettings>(
+  key: K
+): Promise<BootcampSettings[K] | null> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_settings')
+      .select('value')
+      .eq('key', key)
+      .single();
+
+    if (error || !data) {
+      console.error(`Failed to fetch setting ${key}:`, error);
+      return null;
+    }
+
+    return data.value as BootcampSettings[K];
+  } catch (error) {
+    console.error(`Failed to fetch setting ${key}:`, error);
+    return null;
+  }
+}
+
+export async function fetchAllBootcampSettings(): Promise<Partial<BootcampSettings>> {
+  try {
+    const { data, error } = await supabase.from('bootcamp_settings').select('key, value');
+
+    if (error) {
+      console.error('Failed to fetch settings:', error);
+      return {};
+    }
+
+    const settings: Partial<BootcampSettings> = {};
+    data?.forEach((row) => {
+      const key = row.key as keyof BootcampSettings;
+      (settings as Record<string, unknown>)[key] = row.value;
+    });
+
+    return settings;
+  } catch (error) {
+    console.error('Failed to fetch settings:', error);
+    return {};
+  }
+}
+
+export async function updateBootcampSetting<K extends keyof BootcampSettings>(
+  key: K,
+  value: BootcampSettings[K]
+): Promise<void> {
+  const { error } = await supabase.from('bootcamp_settings').update({ value }).eq('key', key);
+
+  if (error) throw new Error(error.message);
+}
+
+// ============================================
+// Admin: Progress Calculations
+// ============================================
+
+export async function calculateStudentOnboardingProgress(studentId: string): Promise<number> {
+  const { totalProgress } = await fetchBootcampOnboardingWithProgress(studentId);
+  return totalProgress;
+}
+
+export async function fetchStudentsWithProgress(): Promise<
+  Array<BootcampStudent & { onboardingProgress: number; survey: BootcampStudentSurvey | null }>
+> {
+  const students = await fetchAllBootcampStudents();
+
+  const studentsWithProgress = await Promise.all(
+    students.map(async (student) => {
+      const [progress, survey] = await Promise.all([
+        calculateStudentOnboardingProgress(student.id),
+        fetchBootcampStudentSurvey(student.id),
+      ]);
+
+      return {
+        ...student,
+        onboardingProgress: progress,
+        survey,
+      };
+    })
+  );
+
+  return studentsWithProgress;
+}
+
+// ============================================
+// Admin: Automation Helpers
+// ============================================
+
+export async function markStudentSlackInvited(studentId: string): Promise<BootcampStudent> {
+  return updateBootcampStudent(studentId, {
+    slackInvited: true,
+    slackInvitedAt: new Date(),
+  });
+}
+
+export async function markStudentCalendarAdded(studentId: string): Promise<BootcampStudent> {
+  return updateBootcampStudent(studentId, {
+    calendarAdded: true,
+    calendarAddedAt: new Date(),
+  });
+}
+
+// ============================================
+// Admin: Check Progress Exists
+// ============================================
+
+export async function checkBootcampProgressExists(checklistItemId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('bootcamp_student_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('checklist_item_id', checklistItemId);
+
+  if (error) throw new Error(error.message);
+  return count || 0;
+}

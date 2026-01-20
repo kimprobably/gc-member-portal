@@ -17,6 +17,13 @@ interface ActionItemFields {
   'Assigned To'?: string;
 }
 
+interface CohortCurriculumFields {
+  Cohort?: string;
+  Week?: string;
+  'Sort Order'?: number;
+  'Is Visible'?: boolean;
+}
+
 interface AirtableRecord<T> {
   id: string;
   fields: T;
@@ -29,6 +36,7 @@ const AIRTABLE_BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
 const LESSONS_TABLE = 'Lessons';
 const ACTION_ITEMS_TABLE = 'Action Items';
 const USERS_TABLE = 'Users';
+const COHORT_CURRICULUM_TABLE = 'Cohort Curriculum';
 
 function normalizeEmbedUrl(url: string): string {
   if (!url) return '';
@@ -86,6 +94,50 @@ export async function verifyUser(email: string): Promise<User | null> {
   } catch (e) {
     console.error('Verification failed', e);
     return null;
+  }
+}
+
+async function fetchCohortCurriculum(
+  cohort: string
+): Promise<Map<string, { sortOrder: number; isVisible: boolean }>> {
+  try {
+    const res = await fetch(
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(COHORT_CURRICULUM_TABLE)}?view=Grid%20view`,
+      {
+        headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+      }
+    );
+
+    if (!res.ok) {
+      console.warn('Failed to fetch cohort curriculum, using default ordering');
+      return new Map();
+    }
+
+    const data = await res.json();
+    const cohortConfig = new Map<string, { sortOrder: number; isVisible: boolean }>();
+    const globalConfig = new Map<string, { sortOrder: number; isVisible: boolean }>();
+
+    for (const record of data.records as AirtableRecord<CohortCurriculumFields>[]) {
+      const fields = record.fields;
+      if (!fields.Week) continue;
+
+      const config = {
+        sortOrder: fields['Sort Order'] ?? 999,
+        isVisible: fields['Is Visible'] !== false,
+      };
+
+      if (fields.Cohort?.toLowerCase() === cohort.toLowerCase()) {
+        cohortConfig.set(fields.Week, config);
+      } else if (fields.Cohort === 'Global') {
+        globalConfig.set(fields.Week, config);
+      }
+    }
+
+    // Return cohort-specific if exists, otherwise Global
+    return cohortConfig.size > 0 ? cohortConfig : globalConfig;
+  } catch (error) {
+    console.error('Failed to fetch cohort curriculum', error);
+    return new Map();
   }
 }
 
@@ -169,7 +221,27 @@ export async function fetchCourseData(
       });
     });
 
-    const weeks = Array.from(weeksMap.values()).sort((a, b) => a.title.localeCompare(b.title));
+    // Fetch cohort curriculum config for ordering and visibility
+    const curriculumConfig = await fetchCohortCurriculum(targetCohort);
+
+    const weeks = Array.from(weeksMap.values())
+      .filter((week) => {
+        const config = curriculumConfig.get(week.title);
+        // If no config, show by default; if config exists, check isVisible
+        return !config || config.isVisible;
+      })
+      .sort((a, b) => {
+        const configA = curriculumConfig.get(a.title);
+        const configB = curriculumConfig.get(b.title);
+        const orderA = configA?.sortOrder ?? 999;
+        const orderB = configB?.sortOrder ?? 999;
+        // If same sort order, fall back to alphabetical
+        if (orderA === orderB) {
+          return a.title.localeCompare(b.title);
+        }
+        return orderA - orderB;
+      });
+
     return {
       title: 'GTM OS',
       weeks,

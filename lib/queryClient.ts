@@ -43,14 +43,29 @@ export const queryKeys = {
   gcICP: (memberId: string) => ['gc', 'icp', memberId] as const,
   gcResources: () => ['gc', 'resources'] as const,
 
-  // Admin
+  // Admin (GC)
   adminMembers: () => ['admin', 'members'] as const,
   adminChecklist: () => ['admin', 'checklist'] as const,
   adminMemberProgress: (checklistItemId: string) => ['admin', 'progress', checklistItemId] as const,
 
-  // Bootcamp
+  // Bootcamp (Legacy - Airtable)
   bootcampUser: (email: string) => ['bootcamp', 'user', email] as const,
   bootcampModules: () => ['bootcamp', 'modules'] as const,
   bootcampLessons: (moduleId: string) => ['bootcamp', 'lessons', moduleId] as const,
   bootcampProgress: (userId: string) => ['bootcamp', 'progress', userId] as const,
+
+  // Bootcamp Students (Supabase)
+  bootcampStudent: (email: string) => ['bootcamp', 'student', email] as const,
+  bootcampStudentById: (studentId: string) => ['bootcamp', 'student', 'id', studentId] as const,
+  bootcampStudentOnboarding: (studentId: string) =>
+    ['bootcamp', 'student', 'onboarding', studentId] as const,
+  bootcampStudentSurvey: (studentId: string) =>
+    ['bootcamp', 'student', 'survey', studentId] as const,
+  bootcampSettings: () => ['bootcamp', 'settings'] as const,
+
+  // Bootcamp Admin
+  bootcampAdminStudents: () => ['bootcamp', 'admin', 'students'] as const,
+  bootcampAdminChecklist: () => ['bootcamp', 'admin', 'checklist'] as const,
+  bootcampAdminStudentProgress: (checklistItemId: string) =>
+    ['bootcamp', 'admin', 'progress', checklistItemId] as const,
 };
