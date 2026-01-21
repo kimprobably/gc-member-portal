@@ -15,7 +15,6 @@ import Register from '../../components/bootcamp/Register';
 import {
   OnboardingLayout,
   OnboardingWelcome,
-  OnboardingVideo,
   OnboardingSurvey,
   OnboardingAITools,
   OnboardingComplete,
@@ -248,11 +247,6 @@ const BootcampApp: React.FC = () => {
 
   const handleWelcomeContinue = () => {
     completeStep('welcome');
-    goToStep('video');
-  };
-
-  const handleVideoContinue = () => {
-    completeStep('video');
     goToStep('survey');
   };
 
@@ -299,7 +293,7 @@ const BootcampApp: React.FC = () => {
 
   // Calculate onboarding progress percentage
   const calculateOnboardingProgress = () => {
-    const steps: OnboardingStep[] = ['welcome', 'video', 'survey', 'ai-tools', 'complete'];
+    const steps: OnboardingStep[] = ['welcome', 'survey', 'ai-tools', 'complete'];
     const completed = completedOnboardingSteps.length;
     const currentIndex = steps.indexOf(onboardingStep);
     const progress = Math.round(
@@ -354,18 +348,10 @@ const BootcampApp: React.FC = () => {
             welcomeMessage={
               typeof settings?.welcomeMessage === 'string' ? settings.welcomeMessage : undefined
             }
-            onContinue={handleWelcomeContinue}
-          />
-        )}
-
-        {onboardingStep === 'video' && (
-          <OnboardingVideo
             videoUrl={
               typeof settings?.introVideoUrl === 'string' ? settings.introVideoUrl : undefined
             }
-            onContinue={handleVideoContinue}
-            onSkip={handleVideoContinue}
-            onBack={() => goToStep('welcome')}
+            onContinue={handleWelcomeContinue}
           />
         )}
 

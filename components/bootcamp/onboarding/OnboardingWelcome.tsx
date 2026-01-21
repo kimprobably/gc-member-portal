@@ -1,39 +1,44 @@
-import React from 'react';
-import { ArrowRight, Sparkles, Users, Video, Wrench } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Sparkles, Play } from 'lucide-react';
 
 interface OnboardingWelcomeProps {
   studentName?: string;
   welcomeMessage?: string;
+  videoUrl?: string;
   onContinue: () => void;
 }
+
+// Convert YouTube/Loom URL to embed URL
+const getEmbedUrl = (url: string) => {
+  if (!url) return '';
+
+  // Handle various YouTube URL formats
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}?enablejsapi=1`;
+  }
+
+  // Handle Loom URLs
+  if (url.includes('loom.com')) {
+    const loomMatch = url.match(/loom\.com\/(share|embed)\/([a-zA-Z0-9]+)/);
+    if (loomMatch) {
+      return `https://www.loom.com/embed/${loomMatch[2]}`;
+    }
+  }
+
+  return url;
+};
 
 const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
   studentName,
   welcomeMessage,
+  videoUrl,
   onContinue,
 }) => {
-  const features = [
-    {
-      icon: Video,
-      title: 'Video Lessons',
-      description: 'Step-by-step training on LinkedIn outreach',
-    },
-    {
-      icon: Wrench,
-      title: 'AI-Powered Tools',
-      description: 'Access to automation and personalization tools',
-    },
-    {
-      icon: Users,
-      title: 'Community',
-      description: 'Connect with fellow bootcamp members',
-    },
-    {
-      icon: Sparkles,
-      title: 'Live Support',
-      description: 'Weekly calls and direct Slack access',
-    },
-  ];
+  const [isPlaying, setIsPlaying] = useState(false);
+  const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : '';
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -48,41 +53,39 @@ const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
         </h1>
         <p className="text-base text-violet-100 max-w-lg">
           {welcomeMessage ||
-            "You're about to master LinkedIn outreach and start generating quality leads for your business. Let's get you set up."}
+            "You're about to master LinkedIn outreach and start generating quality leads for your business. Watch the intro video below, then let's get you set up."}
         </p>
       </div>
 
-      {/* Features Grid */}
+      {/* Video Section */}
+      {embedUrl && (
+        <div className="relative bg-zinc-900">
+          <div className="aspect-video">
+            {isPlaying ? (
+              <iframe
+                src={embedUrl}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Intro Video"
+              />
+            ) : (
+              <button
+                onClick={() => setIsPlaying(true)}
+                className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 transition-colors"
+              >
+                <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur flex items-center justify-center">
+                  <Play className="w-8 h-8 text-white ml-1" fill="white" />
+                </div>
+                <span className="text-white font-medium">Watch Intro Video</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
       <div className="p-6 md:p-8">
-        <h2 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4">
-          What's Included
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-          {features.map((feature) => (
-            <div
-              key={feature.title}
-              className="flex items-start gap-3 p-4 rounded-lg bg-zinc-50 dark:bg-zinc-800/50"
-            >
-              <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                <feature.icon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div>
-                <h3 className="font-medium text-zinc-900 dark:text-white">{feature.title}</h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">{feature.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick Setup Info */}
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            <strong>Quick setup:</strong> We'll guide you through a few simple steps to personalize
-            your experience and get you access to everything you need.
-          </p>
-        </div>
-
-        {/* CTA */}
         <button
           onClick={onContinue}
           className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-violet-500 hover:bg-violet-600 text-white font-medium rounded-lg transition-colors"

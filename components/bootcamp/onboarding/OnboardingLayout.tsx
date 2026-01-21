@@ -13,11 +13,8 @@ interface OnboardingLayoutProps {
 
 const STEPS: { id: OnboardingStep; label: string }[] = [
   { id: 'welcome', label: 'Welcome' },
-  { id: 'video', label: 'Intro Video' },
   { id: 'survey', label: 'About You' },
   { id: 'ai-tools', label: 'AI Tools' },
-  { id: 'slack', label: 'Join Slack' },
-  { id: 'calendar', label: 'Calendar' },
   { id: 'complete', label: 'Complete' },
 ];
 
