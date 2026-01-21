@@ -372,6 +372,15 @@ const BootcampApp: React.FC = () => {
     const urlHasCode = new URLSearchParams(window.location.search).get('code');
     const urlHasRegister = window.location.pathname.includes('/register');
 
+    // Debug logging
+    console.log('Register check:', {
+      urlHasCode,
+      urlHasRegister,
+      showRegister,
+      pathname: window.location.pathname,
+      search: window.location.search,
+    });
+
     if (showRegister || urlHasCode || urlHasRegister) {
       return (
         <Register
