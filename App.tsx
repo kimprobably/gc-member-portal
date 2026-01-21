@@ -22,6 +22,8 @@ import AdminOnboardingPage from './components/admin/onboarding/AdminOnboardingPa
 // Bootcamp Admin Components
 import AdminBootcampLayout from './components/admin/bootcamp/AdminBootcampLayout';
 import AdminStudentsPage from './components/admin/bootcamp/students/AdminStudentsPage';
+import AdminBootcampCohortsPage from './components/admin/bootcamp/cohorts/AdminBootcampCohortsPage';
+import AdminBootcampInviteCodesPage from './components/admin/bootcamp/invite-codes/AdminBootcampInviteCodesPage';
 import AdminBootcampOnboardingPage from './components/admin/bootcamp/onboarding/AdminBootcampOnboardingPage';
 import AdminBootcampSettingsPage from './components/admin/bootcamp/settings/AdminBootcampSettingsPage';
 
@@ -65,6 +67,8 @@ const App: React.FC = () => {
       <Route path="/admin/bootcamp" element={<AdminBootcampLayout />}>
         <Route index element={<Navigate to="/admin/bootcamp/students" replace />} />
         <Route path="students" element={<AdminStudentsPage />} />
+        <Route path="cohorts" element={<AdminBootcampCohortsPage />} />
+        <Route path="invite-codes" element={<AdminBootcampInviteCodesPage />} />
         <Route path="onboarding" element={<AdminBootcampOnboardingPage />} />
         <Route path="settings" element={<AdminBootcampSettingsPage />} />
       </Route>

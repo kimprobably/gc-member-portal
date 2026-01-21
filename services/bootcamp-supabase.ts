@@ -16,6 +16,8 @@ import {
   BootcampOnboardingCategory,
   BOOTCAMP_ONBOARDING_CATEGORIES,
   BootcampSurveyFormData,
+  BootcampCohort,
+  BootcampInviteCode,
 } from '../types/bootcamp-types';
 
 // ============================================
@@ -637,4 +639,327 @@ export async function checkBootcampProgressExists(checklistItemId: string): Prom
 
   if (error) throw new Error(error.message);
   return count || 0;
+}
+
+// ============================================
+// Cohorts
+// ============================================
+
+export async function fetchAllCohorts(): Promise<BootcampCohort[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_cohorts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampCohort);
+}
+
+export async function fetchActiveCohorts(): Promise<BootcampCohort[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_cohorts')
+    .select('*')
+    .eq('status', 'Active')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampCohort);
+}
+
+export async function fetchCohortById(cohortId: string): Promise<BootcampCohort | null> {
+  const { data, error } = await supabase
+    .from('bootcamp_cohorts')
+    .select('*')
+    .eq('id', cohortId)
+    .single();
+
+  if (error || !data) return null;
+  return mapBootcampCohort(data);
+}
+
+export async function createCohort(cohort: Partial<BootcampCohort>): Promise<BootcampCohort> {
+  const insertData = {
+    name: cohort.name,
+    description: cohort.description,
+    status: cohort.status || 'Active',
+  };
+
+  const { data, error } = await supabase
+    .from('bootcamp_cohorts')
+    .insert(insertData)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampCohort(data);
+}
+
+export async function updateCohort(
+  cohortId: string,
+  updates: Partial<BootcampCohort>
+): Promise<BootcampCohort> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.name !== undefined) updateData.name = updates.name;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.status !== undefined) updateData.status = updates.status;
+
+  const { data, error } = await supabase
+    .from('bootcamp_cohorts')
+    .update(updateData)
+    .eq('id', cohortId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampCohort(data);
+}
+
+export async function deleteCohort(cohortId: string): Promise<void> {
+  const { error } = await supabase.from('bootcamp_cohorts').delete().eq('id', cohortId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function fetchCohortStudentCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from('bootcamp_students').select('cohort');
+
+  if (error) throw new Error(error.message);
+
+  const counts: Record<string, number> = {};
+  (data || []).forEach((row) => {
+    const cohort = (row.cohort as string) || 'Global';
+    counts[cohort] = (counts[cohort] || 0) + 1;
+  });
+
+  return counts;
+}
+
+function mapBootcampCohort(record: Record<string, unknown>): BootcampCohort {
+  return {
+    id: record.id as string,
+    name: record.name as string,
+    description: record.description as string | undefined,
+    status: (record.status as BootcampCohort['status']) || 'Active',
+    createdAt: new Date(record.created_at as string),
+  };
+}
+
+// ============================================
+// Invite Codes
+// ============================================
+
+export function generateInviteCode(): string {
+  // 8-char alphanumeric, uppercase, no confusing chars (0/O/1/I)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+export async function fetchAllInviteCodes(): Promise<BootcampInviteCode[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_invite_codes')
+    .select(
+      `
+      *,
+      bootcamp_cohorts (name)
+    `
+    )
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampInviteCode);
+}
+
+export async function fetchInviteCodesByCohort(cohortId: string): Promise<BootcampInviteCode[]> {
+  const { data, error } = await supabase
+    .from('bootcamp_invite_codes')
+    .select(
+      `
+      *,
+      bootcamp_cohorts (name)
+    `
+    )
+    .eq('cohort_id', cohortId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapBootcampInviteCode);
+}
+
+export async function createInviteCode(
+  cohortId: string,
+  options?: { maxUses?: number; expiresAt?: Date; customCode?: string }
+): Promise<BootcampInviteCode> {
+  const code = options?.customCode?.toUpperCase() || generateInviteCode();
+
+  const insertData: Record<string, unknown> = {
+    code,
+    cohort_id: cohortId,
+    status: 'Active',
+  };
+
+  if (options?.maxUses !== undefined) insertData.max_uses = options.maxUses;
+  if (options?.expiresAt !== undefined) insertData.expires_at = options.expiresAt.toISOString();
+
+  const { data, error } = await supabase
+    .from('bootcamp_invite_codes')
+    .insert(insertData)
+    .select(
+      `
+      *,
+      bootcamp_cohorts (name)
+    `
+    )
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampInviteCode(data);
+}
+
+export async function updateInviteCode(
+  codeId: string,
+  updates: Partial<BootcampInviteCode>
+): Promise<BootcampInviteCode> {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.maxUses !== undefined) updateData.max_uses = updates.maxUses;
+  if (updates.status !== undefined) updateData.status = updates.status;
+  if (updates.expiresAt !== undefined) updateData.expires_at = updates.expiresAt?.toISOString();
+
+  const { data, error } = await supabase
+    .from('bootcamp_invite_codes')
+    .update(updateData)
+    .eq('id', codeId)
+    .select(
+      `
+      *,
+      bootcamp_cohorts (name)
+    `
+    )
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapBootcampInviteCode(data);
+}
+
+export async function deleteInviteCode(codeId: string): Promise<void> {
+  const { error } = await supabase.from('bootcamp_invite_codes').delete().eq('id', codeId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function validateInviteCode(code: string): Promise<BootcampInviteCode | null> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_invite_codes')
+      .select(
+        `
+        *,
+        bootcamp_cohorts (name)
+      `
+      )
+      .eq('code', code.toUpperCase())
+      .eq('status', 'Active')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Invite code validation error:', error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    const inviteCode = mapBootcampInviteCode(data);
+
+    // Check if expired
+    if (inviteCode.expiresAt && new Date() > inviteCode.expiresAt) {
+      return null;
+    }
+
+    // Check if max uses reached
+    if (inviteCode.maxUses != null && inviteCode.useCount >= inviteCode.maxUses) {
+      return null;
+    }
+
+    return inviteCode;
+  } catch (err) {
+    console.error('Invite code validation failed:', err);
+    return null;
+  }
+}
+
+export async function incrementInviteCodeUsage(codeId: string): Promise<void> {
+  const { error } = await supabase.rpc('increment_invite_code_usage', { code_id: codeId });
+
+  // If RPC doesn't exist, fall back to manual increment
+  if (error) {
+    const { data: current } = await supabase
+      .from('bootcamp_invite_codes')
+      .select('use_count')
+      .eq('id', codeId)
+      .single();
+
+    if (current) {
+      await supabase
+        .from('bootcamp_invite_codes')
+        .update({ use_count: ((current.use_count as number) || 0) + 1 })
+        .eq('id', codeId);
+    }
+  }
+}
+
+function mapBootcampInviteCode(record: Record<string, unknown>): BootcampInviteCode {
+  const cohortData = record.bootcamp_cohorts as Record<string, unknown> | null;
+
+  return {
+    id: record.id as string,
+    code: record.code as string,
+    cohortId: record.cohort_id as string,
+    cohortName: cohortData?.name as string | undefined,
+    maxUses: record.max_uses as number | null | undefined,
+    useCount: (record.use_count as number) || 0,
+    status: (record.status as BootcampInviteCode['status']) || 'Active',
+    expiresAt: record.expires_at ? new Date(record.expires_at as string) : undefined,
+    createdAt: new Date(record.created_at as string),
+  };
+}
+
+// ============================================
+// Self-Registration
+// ============================================
+
+export async function registerBootcampStudent(
+  email: string,
+  inviteCode: string
+): Promise<BootcampStudent> {
+  // 1. Validate invite code
+  const validCode = await validateInviteCode(inviteCode);
+  if (!validCode) {
+    throw new Error('Invalid or expired invite code');
+  }
+
+  // 2. Check if email already registered
+  const existing = await verifyBootcampStudent(email);
+  if (existing) {
+    throw new Error('Email already registered');
+  }
+
+  // 3. Get cohort from invite code
+  const cohort = await fetchCohortById(validCode.cohortId);
+  if (!cohort) {
+    throw new Error('Cohort not found');
+  }
+
+  // 4. Create student with status 'Onboarding'
+  const student = await createBootcampStudent({
+    email,
+    cohort: cohort.name,
+    status: 'Onboarding',
+    accessLevel: 'Full Access',
+  });
+
+  // 5. Increment invite code usage
+  await incrementInviteCodeUsage(validCode.id);
+
+  return student;
 }

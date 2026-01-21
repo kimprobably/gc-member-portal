@@ -1,6 +1,15 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Users, ListChecks, Settings, ArrowLeft, X, GraduationCap } from 'lucide-react';
+import {
+  Users,
+  ListChecks,
+  Settings,
+  ArrowLeft,
+  X,
+  GraduationCap,
+  FolderKanban,
+  Ticket,
+} from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 
 interface AdminBootcampSidebarProps {
@@ -10,6 +19,8 @@ interface AdminBootcampSidebarProps {
 
 const navItems = [
   { to: '/admin/bootcamp/students', icon: Users, label: 'Student Roster' },
+  { to: '/admin/bootcamp/cohorts', icon: FolderKanban, label: 'Cohorts' },
+  { to: '/admin/bootcamp/invite-codes', icon: Ticket, label: 'Invite Codes' },
   { to: '/admin/bootcamp/onboarding', icon: ListChecks, label: 'Onboarding Checklist' },
   { to: '/admin/bootcamp/settings', icon: Settings, label: 'Settings' },
 ];

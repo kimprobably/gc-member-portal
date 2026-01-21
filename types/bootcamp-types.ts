@@ -164,6 +164,36 @@ export interface BootcampAutomationResult {
 }
 
 // ============================================
+// Cohorts
+// ============================================
+export type BootcampCohortStatus = 'Active' | 'Archived';
+
+export interface BootcampCohort {
+  id: string;
+  name: string;
+  description?: string;
+  status: BootcampCohortStatus;
+  createdAt: Date;
+}
+
+// ============================================
+// Invite Codes
+// ============================================
+export type BootcampInviteCodeStatus = 'Active' | 'Disabled';
+
+export interface BootcampInviteCode {
+  id: string;
+  code: string;
+  cohortId: string;
+  cohortName?: string; // Joined from cohort table for display
+  maxUses?: number | null;
+  useCount: number;
+  status: BootcampInviteCodeStatus;
+  expiresAt?: Date;
+  createdAt: Date;
+}
+
+// ============================================
 // Onboarding Flow State
 // ============================================
 export type OnboardingStep =

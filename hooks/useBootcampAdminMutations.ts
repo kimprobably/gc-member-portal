@@ -11,6 +11,12 @@ import {
   updateBootcampStudentProgress,
   saveBootcampStudentSurvey,
   completeStudentOnboarding,
+  createCohort,
+  updateCohort,
+  deleteCohort,
+  createInviteCode,
+  updateInviteCode,
+  deleteInviteCode,
 } from '../services/bootcamp-supabase';
 import { queryKeys } from '../lib/queryClient';
 import {
@@ -19,6 +25,8 @@ import {
   BootcampSettings,
   BootcampProgressStatus,
   BootcampSurveyFormData,
+  BootcampCohort,
+  BootcampInviteCode,
 } from '../types/bootcamp-types';
 
 // ============================================
@@ -216,6 +224,92 @@ export function useMarkCalendarAddedMutation() {
     onSuccess: (_, studentId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bootcampAdminStudents() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bootcampStudentById(studentId) });
+    },
+  });
+}
+
+// ============================================
+// Cohort Mutations
+// ============================================
+
+export function useCreateCohortMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cohort: Partial<BootcampCohort>) => createCohort(cohort),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampCohorts() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampActiveCohorts() });
+    },
+  });
+}
+
+export function useUpdateCohortMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cohortId, updates }: { cohortId: string; updates: Partial<BootcampCohort> }) =>
+      updateCohort(cohortId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampCohorts() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampActiveCohorts() });
+    },
+  });
+}
+
+export function useDeleteCohortMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (cohortId: string) => deleteCohort(cohortId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampCohorts() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampActiveCohorts() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampInviteCodes() });
+    },
+  });
+}
+
+// ============================================
+// Invite Code Mutations
+// ============================================
+
+export function useCreateInviteCodeMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      cohortId,
+      options,
+    }: {
+      cohortId: string;
+      options?: { maxUses?: number; expiresAt?: Date };
+    }) => createInviteCode(cohortId, options),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampInviteCodes() });
+    },
+  });
+}
+
+export function useUpdateInviteCodeMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ codeId, updates }: { codeId: string; updates: Partial<BootcampInviteCode> }) =>
+      updateInviteCode(codeId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampInviteCodes() });
+    },
+  });
+}
+
+export function useDeleteInviteCodeMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (codeId: string) => deleteInviteCode(codeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bootcampInviteCodes() });
     },
   });
 }

@@ -6,9 +6,10 @@ import { User } from '../../types';
 
 interface LoginProps {
   onLogin: (user: User) => void;
+  onRegisterClick?: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onRegisterClick }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +104,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
           </button>
         </form>
+
+        {onRegisterClick && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={onRegisterClick}
+              className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+            >
+              Don't have an account? <span className="font-medium">Register</span>
+            </button>
+          </div>
+        )}
 
         <div className="mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">

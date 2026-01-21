@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { fetchCourseData, verifyUser } from '../../services/airtable';
 import {
   verifyBootcampStudent,
@@ -12,6 +13,7 @@ import {
 import Sidebar from '../../components/bootcamp/Sidebar';
 import LessonView from '../../components/bootcamp/LessonView';
 import Login from '../../components/bootcamp/Login';
+import Register from '../../components/bootcamp/Register';
 import {
   OnboardingLayout,
   OnboardingWelcome,
@@ -33,6 +35,14 @@ import { Menu, X, Terminal, Users } from 'lucide-react';
 
 const BootcampApp: React.FC = () => {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Check for invite code in URL
+  const inviteCodeFromUrl = searchParams.get('code');
+  const isRegisterPath = window.location.pathname.includes('/register');
+
+  // Registration mode state
+  const [showRegister, setShowRegister] = useState(!!inviteCodeFromUrl || isRegisterPath);
 
   // Legacy state for curriculum
   const [courseData, setCourseData] = useState<CourseData | null>(null);
@@ -219,6 +229,31 @@ const BootcampApp: React.FC = () => {
     loadUserData(newUser);
   };
 
+  const handleRegister = async (newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem('lms_user_obj', JSON.stringify(newUser));
+
+    // Get the newly created student from Supabase
+    const student = await verifyBootcampStudent(newUser.email);
+    if (student) {
+      setBootcampStudent(student);
+    }
+
+    // Clear the invite code from URL
+    setSearchParams({});
+
+    loadUserData(newUser);
+  };
+
+  const handleShowRegister = () => {
+    setShowRegister(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowRegister(false);
+    setSearchParams({});
+  };
+
   // Onboarding flow handlers
   const goToStep = useCallback((step: OnboardingStep) => {
     setOnboardingStep(step);
@@ -328,8 +363,19 @@ const BootcampApp: React.FC = () => {
     );
   }
 
-  // Login screen
-  if (!user) return <Login onLogin={handleLogin} />;
+  // Login or Register screen
+  if (!user) {
+    if (showRegister) {
+      return (
+        <Register
+          initialCode={inviteCodeFromUrl || undefined}
+          onRegister={handleRegister}
+          onBackToLogin={handleBackToLogin}
+        />
+      );
+    }
+    return <Login onLogin={handleLogin} onRegisterClick={handleShowRegister} />;
+  }
 
   // Onboarding flow for new students
   if (needsOnboarding) {

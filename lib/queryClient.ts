@@ -68,4 +68,15 @@ export const queryKeys = {
   bootcampAdminChecklist: () => ['bootcamp', 'admin', 'checklist'] as const,
   bootcampAdminStudentProgress: (checklistItemId: string) =>
     ['bootcamp', 'admin', 'progress', checklistItemId] as const,
+
+  // Cohorts
+  bootcampCohorts: () => ['bootcamp', 'cohorts'] as const,
+  bootcampActiveCohorts: () => ['bootcamp', 'cohorts', 'active'] as const,
+  bootcampCohortById: (cohortId: string) => ['bootcamp', 'cohort', cohortId] as const,
+  bootcampCohortStudentCounts: () => ['bootcamp', 'cohorts', 'studentCounts'] as const,
+
+  // Invite Codes
+  bootcampInviteCodes: () => ['bootcamp', 'inviteCodes'] as const,
+  bootcampInviteCodesByCohort: (cohortId: string) =>
+    ['bootcamp', 'inviteCodes', 'cohort', cohortId] as const,
 };
