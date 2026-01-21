@@ -7,8 +7,6 @@ import {
   saveBootcampStudentSurvey,
   fetchAllBootcampSettings,
   completeStudentOnboarding,
-  markStudentSlackInvited,
-  markStudentCalendarAdded,
 } from '../../services/bootcamp-supabase';
 import Sidebar from '../../components/bootcamp/Sidebar';
 import LessonView from '../../components/bootcamp/LessonView';
@@ -20,8 +18,6 @@ import {
   OnboardingVideo,
   OnboardingSurvey,
   OnboardingAITools,
-  OnboardingSlack,
-  OnboardingCalendar,
   OnboardingComplete,
 } from '../../components/bootcamp/onboarding';
 import { CourseData, Lesson, User } from '../../types';
@@ -76,22 +72,6 @@ const BootcampApp: React.FC = () => {
     queryKey: queryKeys.bootcampSettings(),
     queryFn: fetchAllBootcampSettings,
     enabled: !!bootcampStudent && !bootcampStudent.onboardingCompletedAt,
-  });
-
-  // Slack invite mutation
-  const slackMutation = useMutation({
-    mutationFn: () => markStudentSlackInvited(bootcampStudent!.id),
-    onSuccess: (updatedStudent) => {
-      setBootcampStudent(updatedStudent);
-    },
-  });
-
-  // Calendar add mutation
-  const calendarMutation = useMutation({
-    mutationFn: () => markStudentCalendarAdded(bootcampStudent!.id),
-    onSuccess: (updatedStudent) => {
-      setBootcampStudent(updatedStudent);
-    },
   });
 
   // Survey mutation
@@ -292,29 +272,11 @@ const BootcampApp: React.FC = () => {
 
     // Check if AI tools should be shown
     const showAITools = settings?.aiToolsVisible !== false;
-    goToStep(showAITools ? 'ai-tools' : 'slack');
+    goToStep(showAITools ? 'ai-tools' : 'complete');
   };
 
   const handleAIToolsContinue = () => {
     completeStep('ai-tools');
-    goToStep('slack');
-  };
-
-  const handleSlackJoined = () => {
-    slackMutation.mutate();
-  };
-
-  const handleSlackContinue = () => {
-    completeStep('slack');
-    goToStep('calendar');
-  };
-
-  const handleCalendarAdded = () => {
-    calendarMutation.mutate();
-  };
-
-  const handleCalendarContinue = () => {
-    completeStep('calendar');
     goToStep('complete');
   };
 
@@ -337,15 +299,7 @@ const BootcampApp: React.FC = () => {
 
   // Calculate onboarding progress percentage
   const calculateOnboardingProgress = () => {
-    const steps: OnboardingStep[] = [
-      'welcome',
-      'video',
-      'survey',
-      'ai-tools',
-      'slack',
-      'calendar',
-      'complete',
-    ];
+    const steps: OnboardingStep[] = ['welcome', 'video', 'survey', 'ai-tools', 'complete'];
     const completed = completedOnboardingSteps.length;
     const currentIndex = steps.indexOf(onboardingStep);
     const progress = Math.round(
@@ -371,15 +325,6 @@ const BootcampApp: React.FC = () => {
     // Check URL directly at render time for invite code
     const urlHasCode = new URLSearchParams(window.location.search).get('code');
     const urlHasRegister = window.location.pathname.includes('/register');
-
-    // Debug logging
-    console.log('Register check:', {
-      urlHasCode,
-      urlHasRegister,
-      showRegister,
-      pathname: window.location.pathname,
-      search: window.location.search,
-    });
 
     if (showRegister || urlHasCode || urlHasRegister) {
       return (
@@ -435,28 +380,6 @@ const BootcampApp: React.FC = () => {
 
         {onboardingStep === 'ai-tools' && (
           <OnboardingAITools onContinue={handleAIToolsContinue} onBack={() => goToStep('survey')} />
-        )}
-
-        {onboardingStep === 'slack' && (
-          <OnboardingSlack
-            slackUrl={
-              typeof settings?.slackChannelIds === 'string' ? settings.slackChannelIds : undefined
-            }
-            onContinue={handleSlackContinue}
-            onBack={() => goToStep(settings?.aiToolsVisible !== false ? 'ai-tools' : 'survey')}
-            onMarkJoined={handleSlackJoined}
-          />
-        )}
-
-        {onboardingStep === 'calendar' && (
-          <OnboardingCalendar
-            calendarUrl={
-              typeof settings?.calendarEventIds === 'string' ? settings.calendarEventIds : undefined
-            }
-            onContinue={handleCalendarContinue}
-            onBack={() => goToStep('slack')}
-            onMarkAdded={handleCalendarAdded}
-          />
         )}
 
         {onboardingStep === 'complete' && (
