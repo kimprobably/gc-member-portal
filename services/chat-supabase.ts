@@ -156,6 +156,11 @@ export async function bulkUpdateAITools(
   if (updates.model !== undefined) updateData.model = updates.model;
   if (updates.maxTokens !== undefined) updateData.max_tokens = updates.maxTokens;
 
+  // Guard against empty toolIds or empty update payload
+  if (toolIds.length === 0 || Object.keys(updateData).length === 0) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('ai_tools')
     .update(updateData)

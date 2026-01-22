@@ -241,12 +241,18 @@ const AIToolModal: React.FC<AIToolModalProps> = ({
               <input
                 type="number"
                 value={formData.maxTokens}
-                onChange={(e) =>
-                  setFormData({ ...formData, maxTokens: parseInt(e.target.value) || 1024 })
-                }
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setFormData({
+                    ...formData,
+                    maxTokens: Number.isFinite(n)
+                      ? Math.max(256, Math.min(64000, Math.floor(n)))
+                      : 1024,
+                  });
+                }}
                 className={inputClass}
                 min={256}
-                max={4096}
+                max={64000}
               />
             </div>
           </div>

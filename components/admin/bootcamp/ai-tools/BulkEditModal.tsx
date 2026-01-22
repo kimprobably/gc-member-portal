@@ -160,14 +160,19 @@ const BulkEditModal: React.FC<BulkEditModalProps> = ({
               <input
                 type="number"
                 value={maxTokens}
-                onChange={(e) => setMaxTokens(parseInt(e.target.value) || 1024)}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setMaxTokens(
+                    Number.isFinite(n) ? Math.max(256, Math.min(64000, Math.floor(n))) : 1024
+                  );
+                }}
                 className={inputClass}
                 min={256}
-                max={4096}
+                max={64000}
                 disabled={!updateTokens}
               />
               <p className={`text-xs mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Range: 256 - 4096
+                Range: 256 - 64,000
               </p>
             </div>
           </div>
