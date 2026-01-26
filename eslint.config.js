@@ -104,6 +104,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'playwright-report/', 'test-results/', 'public/mockServiceWorker.js'],
+    ignores: ['dist/', 'node_modules/', 'playwright-report/', 'test-results/', 'public/mockServiceWorker.js', 'supabase/functions/'],
   },
 ];
