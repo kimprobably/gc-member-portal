@@ -20,6 +20,9 @@ import {
   OnboardingAITools,
   OnboardingComplete,
 } from '../../components/bootcamp/onboarding';
+import { useSubscription } from '../../hooks/useSubscription';
+import SubscriptionBanner from '../../components/bootcamp/SubscriptionBanner';
+import SubscriptionModal from '../../components/bootcamp/SubscriptionModal';
 import { CourseData, Lesson, User } from '../../types';
 import {
   BootcampStudent,
@@ -60,6 +63,13 @@ const BootcampApp: React.FC = () => {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
   const [completedOnboardingSteps, setCompletedOnboardingSteps] = useState<OnboardingStep[]>([]);
   const [surveyData, setSurveyData] = useState<BootcampSurveyFormData>({});
+
+  // Subscription UI state
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [dismissedBanner, setDismissedBanner] = useState(false);
+
+  // Subscription access state - pass null for cohort until we fetch it (gives unlimited access)
+  const { accessState, daysRemaining, isReadOnly } = useSubscription(bootcampStudent, null);
 
   // Legacy progress state
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set<string>());
@@ -444,6 +454,13 @@ const BootcampApp: React.FC = () => {
 
         <main className="flex-1 h-full overflow-y-auto pt-14 md:pt-0 bg-white dark:bg-zinc-950 transition-colors duration-300">
           <div className="p-6 md:p-10 lg:p-14">
+            {accessState === 'expiring' && !dismissedBanner && (
+              <SubscriptionBanner
+                daysRemaining={daysRemaining || 0}
+                onSubscribe={() => setShowSubscriptionModal(true)}
+                onDismiss={() => setDismissedBanner(true)}
+              />
+            )}
             <LessonView
               lesson={currentLesson}
               currentWeek={currentWeek}
@@ -461,6 +478,15 @@ const BootcampApp: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {bootcampStudent && (
+        <SubscriptionModal
+          isOpen={showSubscriptionModal || accessState === 'expired'}
+          onClose={() => setShowSubscriptionModal(false)}
+          studentId={bootcampStudent.id}
+          studentEmail={bootcampStudent.email}
+        />
+      )}
     </div>
   );
 };

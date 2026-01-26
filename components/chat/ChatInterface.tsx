@@ -17,6 +17,7 @@ import {
   useChatMessages,
   useConversationsByTool,
 } from '../../hooks/useChatHistory';
+import { useTheme } from '../../context/ThemeContext';
 import { createConversation, updateConversation } from '../../services/chat-supabase';
 import { ChatMessage as ChatMessageType, ChatConversation } from '../../types/chat-types';
 import ChatHeader from './ChatHeader';
@@ -26,9 +27,17 @@ import ChatInput from './ChatInput';
 interface ChatInterfaceProps {
   toolSlug: string;
   studentId: string;
+  isReadOnly?: boolean;
+  onSubscribeClick?: () => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ toolSlug, studentId }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  toolSlug,
+  studentId,
+  isReadOnly,
+  onSubscribeClick,
+}) => {
+  const { isDarkMode } = useTheme();
   const { data: tool, isLoading: toolLoading, error: toolError } = useAIToolBySlug(toolSlug);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
@@ -429,14 +438,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ toolSlug, studentId }) =>
           )}
         </div>
 
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
-          <ChatInput
-            onSend={sendMessage}
-            isLoading={isStreaming}
-            placeholder={tool.welcomeMessage ? 'Type your message...' : 'Ask me anything...'}
-            suggestedPrompts={showWelcome ? tool.suggestedPrompts || undefined : undefined}
-          />
-        </div>
+        {isReadOnly ? (
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div
+              className={`p-4 rounded-lg text-center ${isDarkMode ? 'bg-zinc-800' : 'bg-zinc-100'}`}
+            >
+              <p className="text-sm text-zinc-500 mb-2">Your AI tools access has expired</p>
+              <button
+                onClick={onSubscribeClick}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700"
+              >
+                Subscribe to Continue
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
+            <ChatInput
+              onSend={sendMessage}
+              isLoading={isStreaming}
+              placeholder={tool.welcomeMessage ? 'Type your message...' : 'Ask me anything...'}
+              suggestedPrompts={showWelcome ? tool.suggestedPrompts || undefined : undefined}
+            />
+          </div>
+        )}
 
         <div className="p-2 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-center gap-2">
           <Bot size={12} className="text-violet-500" />
