@@ -17,7 +17,9 @@ import {
   Moon,
   Lock,
   Globe,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   data: CourseData;
@@ -42,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   isDarkMode,
   onToggleTheme,
 }) => {
+  const { logout } = useAuth();
   const [expandedWeeks, setExpandedWeeks] = useState<string[]>(data.weeks.map((w) => w.id));
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['gpts', 'tables', 'logins']);
 
@@ -372,12 +375,22 @@ const Sidebar: React.FC<SidebarProps> = ({
               <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user?.status}</p>
             </div>
           </div>
-          <button
-            onClick={onToggleTheme}
-            className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"
-          >
-            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onToggleTheme}
+              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"
+              title="Toggle theme"
+            >
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              onClick={logout}
+              className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              title="Log out"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
       </aside>
     </>
