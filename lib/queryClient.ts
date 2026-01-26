@@ -90,4 +90,25 @@ export const queryKeys = {
   chatConversationsByTool: (studentId: string, toolId: string) =>
     ['chat', 'conversations', studentId, toolId] as const,
   chatMessages: (conversationId: string) => ['chat', 'messages', conversationId] as const,
+
+  // LMS (Learning Management System)
+  lmsCohorts: () => ['lms', 'cohorts'] as const,
+  lmsActiveCohorts: () => ['lms', 'cohorts', 'active'] as const,
+  lmsCohortById: (cohortId: string) => ['lms', 'cohort', cohortId] as const,
+  lmsCurriculum: (cohortId: string) => ['lms', 'curriculum', cohortId] as const,
+  lmsStudentCurriculum: (cohortName: string, email: string) =>
+    ['lms', 'curriculum', 'student', cohortName, email] as const,
+  lmsWeeks: (cohortId: string) => ['lms', 'weeks', cohortId] as const,
+  lmsWeekById: (weekId: string) => ['lms', 'week', weekId] as const,
+  lmsLessons: (weekId: string) => ['lms', 'lessons', weekId] as const,
+  lmsLessonById: (lessonId: string) => ['lms', 'lesson', lessonId] as const,
+  lmsContentItems: (lessonId: string) => ['lms', 'contentItems', lessonId] as const,
+  lmsContentItemById: (itemId: string) => ['lms', 'contentItem', itemId] as const,
+  lmsActionItems: (weekId: string) => ['lms', 'actionItems', weekId] as const,
+  lmsActionItemById: (itemId: string) => ['lms', 'actionItem', itemId] as const,
+  lmsStudentProgress: (studentId: string) => ['lms', 'progress', studentId] as const,
+  lmsLessonProgress: (studentId: string, lessonId: string) =>
+    ['lms', 'progress', 'lesson', studentId, lessonId] as const,
+  lmsActionItemProgress: (studentId: string, itemId: string) =>
+    ['lms', 'progress', 'actionItem', studentId, itemId] as const,
 };
