@@ -10,6 +10,7 @@ import {
   FolderKanban,
   Ticket,
   Bot,
+  BookOpen,
 } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 
@@ -20,7 +21,8 @@ interface AdminBootcampSidebarProps {
 
 const navItems = [
   { to: '/admin/bootcamp/students', icon: Users, label: 'Student Roster' },
-  { to: '/admin/bootcamp/cohorts', icon: FolderKanban, label: 'Cohorts' },
+  { to: '/admin/lms/cohorts', icon: FolderKanban, label: 'Cohorts' },
+  { to: '/admin/lms/curriculum', icon: BookOpen, label: 'Curriculum' },
   { to: '/admin/bootcamp/invite-codes', icon: Ticket, label: 'Invite Codes' },
   { to: '/admin/bootcamp/onboarding', icon: ListChecks, label: 'Onboarding Checklist' },
   { to: '/admin/bootcamp/ai-tools', icon: Bot, label: 'AI Tools' },

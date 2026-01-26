@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../../../../context/ThemeContext';
 import { BootcampStudent, BootcampStudentStatus } from '../../../../types/bootcamp-types';
+import { fetchActiveLmsCohorts } from '../../../../services/lms-supabase';
 
 interface StudentModalProps {
   isOpen: boolean;
@@ -27,6 +29,13 @@ const StudentModal: React.FC<StudentModalProps> = ({
   isLoading,
 }) => {
   const { isDarkMode } = useTheme();
+
+  // Fetch cohorts from LMS
+  const { data: cohorts = [] } = useQuery({
+    queryKey: ['lms', 'cohorts', 'active'],
+    queryFn: fetchActiveLmsCohorts,
+  });
+
   const [formData, setFormData] = useState<Partial<BootcampStudent>>({
     email: '',
     name: '',
@@ -146,8 +155,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Cohort</label>
-              <input
-                type="text"
+              <select
                 value={formData.cohort}
                 onChange={(e) => setFormData({ ...formData, cohort: e.target.value })}
                 className={`w-full px-4 py-2.5 rounded-lg border ${
@@ -155,7 +163,13 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     ? 'bg-slate-800 border-slate-700 text-white'
                     : 'bg-white border-slate-300 text-slate-900'
                 } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-              />
+              >
+                {cohorts.map((cohort) => (
+                  <option key={cohort.id} value={cohort.name}>
+                    {cohort.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Status</label>
