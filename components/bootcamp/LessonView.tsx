@@ -10,6 +10,9 @@ import {
   ExternalLink,
   ShieldAlert,
   Bot,
+  Copy,
+  CheckCheck,
+  Key,
 } from 'lucide-react';
 import { ChatInterface } from '../chat';
 
@@ -41,11 +44,35 @@ const LessonView: React.FC<LessonViewProps> = ({
   studentId,
 }) => {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const isChecklistHub =
     lesson.id.endsWith(':checklist') || lesson.embedUrl === 'virtual:checklist';
   const isAistudio = lesson.embedUrl.includes('aistudio.google.com');
   const isTextContent = lesson.embedUrl.startsWith('text:');
+
+  // Detect credentials content
+  const isCredentials = lesson.embedUrl.startsWith('credentials:');
+  const credentialsData = isCredentials
+    ? (() => {
+        try {
+          return JSON.parse(lesson.embedUrl.replace('credentials:', ''));
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
+  // Copy to clipboard handler
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   // 1. Detect Custom AI Tool (replaces Pickaxe)
   const isCustomAITool = lesson.embedUrl.startsWith('ai-tool:');
@@ -257,6 +284,112 @@ const LessonView: React.FC<LessonViewProps> = ({
                 className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8 md:p-12 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: lesson.embedUrl.replace(/^text:\s*/, '') }}
               />
+            ) : isCredentials && credentialsData ? (
+              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8 md:p-12">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                    <Key size={20} className="text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                      Access Credentials
+                    </h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Click to copy each field
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {credentialsData.loginUrl && (
+                    <div className="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                          Login URL
+                        </p>
+                        <a
+                          href={credentialsData.loginUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-violet-600 dark:text-violet-400 hover:underline truncate block"
+                        >
+                          {credentialsData.loginUrl}
+                        </a>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(credentialsData.loginUrl, 'loginUrl')}
+                        className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        title="Copy URL"
+                      >
+                        {copiedField === 'loginUrl' ? (
+                          <CheckCheck size={18} className="text-green-500" />
+                        ) : (
+                          <Copy size={18} className="text-zinc-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {credentialsData.username && (
+                    <div className="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                          Username / Email
+                        </p>
+                        <p className="text-sm text-zinc-900 dark:text-white font-mono">
+                          {credentialsData.username}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(credentialsData.username, 'username')}
+                        className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        title="Copy username"
+                      >
+                        {copiedField === 'username' ? (
+                          <CheckCheck size={18} className="text-green-500" />
+                        ) : (
+                          <Copy size={18} className="text-zinc-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {credentialsData.password && (
+                    <div className="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                          Password
+                        </p>
+                        <p className="text-sm text-zinc-900 dark:text-white font-mono">
+                          {credentialsData.password}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(credentialsData.password, 'password')}
+                        className="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        title="Copy password"
+                      >
+                        {copiedField === 'password' ? (
+                          <CheckCheck size={18} className="text-green-500" />
+                        ) : (
+                          <Copy size={18} className="text-zinc-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {credentialsData.notes && (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <p className="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">
+                        Notes
+                      </p>
+                      <p className="text-sm text-amber-800 dark:text-amber-300">
+                        {credentialsData.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : isCustomAITool && aiToolSlug ? (
               studentId ? (
                 <ChatInterface toolSlug={aiToolSlug} studentId={studentId} />

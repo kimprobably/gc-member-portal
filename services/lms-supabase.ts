@@ -899,3 +899,115 @@ async function fetchLmsCurriculumByCohortForStudent(
     weeks: weeksWithLessons,
   };
 }
+
+// ============================================
+// Legacy Adapter for Student Portal
+// Converts new LMS data to existing CourseData format
+// ============================================
+
+import { CourseData, Week, Lesson, ActionItem } from '../types';
+
+/**
+ * Convert content item to legacy embedUrl format
+ * LessonView already supports these formats:
+ * - Direct video URLs (YouTube, Loom, etc.)
+ * - text:content - for text content
+ * - ai-tool:slug - for AI tools
+ * - credentials:json - for credentials (needs LessonView addition)
+ */
+function contentItemToEmbedUrl(item: LmsContentItem): string {
+  switch (item.contentType) {
+    case 'video':
+    case 'slide_deck':
+    case 'guide':
+    case 'clay_table':
+    case 'external_link':
+      return item.embedUrl || '';
+
+    case 'ai_tool':
+      return `ai-tool:${item.aiToolSlug || ''}`;
+
+    case 'text':
+      return `text:${item.contentText || ''}`;
+
+    case 'credentials':
+      // Encode credentials as JSON for the credentials renderer
+      return `credentials:${JSON.stringify(item.credentialsData || {})}`;
+
+    default:
+      return item.embedUrl || '';
+  }
+}
+
+/**
+ * Fetch student curriculum and convert to legacy CourseData format
+ * This adapter allows the existing LessonView and Sidebar to work
+ * with the new Supabase LMS data without changes
+ */
+export async function fetchStudentCurriculumAsLegacy(
+  cohortName: string,
+  userEmail: string
+): Promise<CourseData> {
+  const curriculum = await fetchLmsCurriculumForStudent(cohortName, userEmail);
+
+  // If no curriculum found, return empty data
+  if (!curriculum) {
+    return {
+      title: 'GTM OS',
+      weeks: [],
+      cohort: cohortName,
+    };
+  }
+
+  // Convert LMS weeks to legacy Week format
+  const weeks: Week[] = curriculum.weeks.map((lmsWeek) => {
+    // Convert LMS lessons to legacy Lesson format
+    // Each content item becomes a separate "lesson" in the legacy format
+    const lessons: Lesson[] = [];
+
+    for (const lmsLesson of lmsWeek.lessons) {
+      // If lesson has content items, create a lesson for each
+      if (lmsLesson.contentItems.length > 0) {
+        for (const contentItem of lmsLesson.contentItems) {
+          lessons.push({
+            id: contentItem.id,
+            title: contentItem.title,
+            embedUrl: contentItemToEmbedUrl(contentItem),
+            description: contentItem.description || lmsLesson.description,
+            cohort: curriculum.cohort.name,
+          });
+        }
+      } else {
+        // Lesson with no content items - create placeholder
+        lessons.push({
+          id: lmsLesson.id,
+          title: lmsLesson.title,
+          embedUrl: `text:${lmsLesson.description || 'No content available'}`,
+          description: lmsLesson.description,
+          cohort: curriculum.cohort.name,
+        });
+      }
+    }
+
+    // Convert LMS action items to legacy ActionItem format
+    const actionItems: ActionItem[] = lmsWeek.actionItems.map((lmsAction) => ({
+      id: lmsAction.id,
+      text: lmsAction.text,
+      cohort: curriculum.cohort.name,
+      assignedTo: lmsAction.assignedToEmail,
+    }));
+
+    return {
+      id: lmsWeek.id,
+      title: lmsWeek.title,
+      lessons,
+      actionItems,
+    };
+  });
+
+  return {
+    title: 'GTM OS',
+    weeks,
+    cohort: curriculum.cohort.name,
+  };
+}

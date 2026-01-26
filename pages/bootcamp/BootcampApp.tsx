@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { fetchCourseData } from '../../services/airtable';
+import { fetchStudentCurriculumAsLegacy } from '../../services/lms-supabase';
 import {
   verifyBootcampStudent,
   saveBootcampStudentSurvey,
@@ -147,7 +148,14 @@ const BootcampApp: React.FC = () => {
       setSubmittedWeeks({});
     }
 
-    const data = await fetchCourseData(activeUser.cohort, activeUser.email);
+    // Try new Supabase LMS first, fall back to Airtable if no content
+    let data = await fetchStudentCurriculumAsLegacy(activeUser.cohort, activeUser.email);
+
+    // If Supabase LMS has no weeks, fall back to Airtable
+    if (!data.weeks.length) {
+      data = await fetchCourseData(activeUser.cohort, activeUser.email);
+    }
+
     setCourseData(data);
 
     if (data.weeks.length > 0 && data.weeks[0].lessons.length > 0) {

@@ -28,6 +28,11 @@ import AdminBootcampOnboardingPage from './components/admin/bootcamp/onboarding/
 import AdminBootcampSettingsPage from './components/admin/bootcamp/settings/AdminBootcampSettingsPage';
 import AdminAIToolsPage from './components/admin/bootcamp/ai-tools/AdminAIToolsPage';
 
+// LMS Admin Components
+import AdminLmsLayout from './components/admin/lms/AdminLmsLayout';
+import AdminLmsCohortsPage from './components/admin/lms/cohorts/AdminLmsCohortsPage';
+import AdminLmsCurriculumPage from './components/admin/lms/curriculum/AdminLmsCurriculumPage';
+
 import { useAuth } from './context/AuthContext';
 
 const App: React.FC = () => {
@@ -73,6 +78,14 @@ const App: React.FC = () => {
         <Route path="onboarding" element={<AdminBootcampOnboardingPage />} />
         <Route path="ai-tools" element={<AdminAIToolsPage />} />
         <Route path="settings" element={<AdminBootcampSettingsPage />} />
+      </Route>
+
+      {/* LMS Admin Dashboard */}
+      <Route path="/admin/lms" element={<AdminLmsLayout />}>
+        <Route index element={<Navigate to="/admin/lms/cohorts" replace />} />
+        <Route path="cohorts" element={<AdminLmsCohortsPage />} />
+        <Route path="curriculum" element={<AdminLmsCurriculumPage />} />
+        <Route path="curriculum/:cohortId" element={<AdminLmsCurriculumPage />} />
       </Route>
 
       {/* Bootcamp LMS - /bootcamp path */}
