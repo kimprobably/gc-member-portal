@@ -19,6 +19,7 @@ export interface AITool {
   welcomeMessage: string | null;
   suggestedPrompts: string[] | null;
   isActive: boolean;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }

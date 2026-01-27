@@ -30,6 +30,7 @@ function mapAITool(data: Record<string, unknown>): AITool {
     welcomeMessage: data.welcome_message as string | null,
     suggestedPrompts: data.suggested_prompts as string[] | null,
     isActive: data.is_active as boolean,
+    sortOrder: (data.sort_order as number) ?? 0,
     createdAt: data.created_at as string,
     updatedAt: data.updated_at as string,
   };
@@ -66,7 +67,7 @@ export async function fetchAllAITools(): Promise<AITool[]> {
   const { data, error } = await supabase
     .from('ai_tools')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('sort_order', { ascending: true });
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapAITool);
@@ -77,7 +78,7 @@ export async function fetchActiveAITools(): Promise<AITool[]> {
     .from('ai_tools')
     .select('*')
     .eq('is_active', true)
-    .order('name', { ascending: true });
+    .order('sort_order', { ascending: true });
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapAITool);
@@ -169,6 +170,24 @@ export async function bulkUpdateAITools(
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapAITool);
+}
+
+export async function reorderAITools(toolIds: string[]): Promise<void> {
+  // Update sort_order for each tool based on array position
+  const updates = toolIds.map((id, index) => ({
+    id,
+    sort_order: index,
+  }));
+
+  // Supabase doesn't have bulk upsert, so we update each one
+  for (const update of updates) {
+    const { error } = await supabase
+      .from('ai_tools')
+      .update({ sort_order: update.sort_order })
+      .eq('id', update.id);
+
+    if (error) throw new Error(error.message);
+  }
 }
 
 // ============================================

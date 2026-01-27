@@ -1,4 +1,21 @@
 import React, { useState, useMemo } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useTheme } from '../../../../context/ThemeContext';
 import { useAITools } from '../../../../hooks/useChatHistory';
 import {
@@ -6,6 +23,7 @@ import {
   useUpdateAIToolMutation,
   useDeleteAIToolMutation,
   useBulkUpdateAIToolsMutation,
+  useReorderAIToolsMutation,
 } from '../../../../hooks/useChatMutation';
 import { AITool, AIToolInput } from '../../../../types/chat-types';
 import AIToolModal from './AIToolModal';
@@ -21,7 +39,150 @@ import {
   XCircle,
   Copy,
   Settings2,
+  GripVertical,
 } from 'lucide-react';
+
+// Sortable table row component
+interface SortableToolRowProps {
+  tool: AITool;
+  isDarkMode: boolean;
+  isSelected: boolean;
+  copiedSlug: string | null;
+  onSelect: () => void;
+  onCopySlug: () => void;
+  onToggleActive: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+const SortableToolRow: React.FC<SortableToolRowProps> = ({
+  tool,
+  isDarkMode,
+  isSelected,
+  copiedSlug,
+  onSelect,
+  onCopySlug,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: tool.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`${isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'} ${
+        isSelected ? (isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50') : ''
+      }`}
+    >
+      <td className="px-2 py-3">
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600"
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+      </td>
+      <td className="px-2 py-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onSelect}
+          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+        />
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              isDarkMode ? 'bg-violet-900/30' : 'bg-violet-100'
+            }`}
+          >
+            <Bot className="w-4 h-4 text-violet-500" />
+          </div>
+          <div>
+            <p className="font-medium">{tool.name}</p>
+            <p className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              {tool.description || 'No description'}
+            </p>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <button
+          onClick={onCopySlug}
+          className={`flex items-center gap-2 px-2 py-1 rounded text-xs font-mono ${
+            isDarkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200'
+          }`}
+          title="Click to copy embed URL"
+        >
+          <span>{tool.slug}</span>
+          <Copy className="w-3 h-3" />
+          {copiedSlug === tool.slug && <span className="text-green-500">Copied!</span>}
+        </button>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+          {tool.model.replace('claude-', '')}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+          {tool.maxTokens.toLocaleString()}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-center">
+        <span
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+            tool.isActive
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+          }`}
+        >
+          {tool.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+          {tool.isActive ? 'Active' : 'Inactive'}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={onToggleActive}
+            className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'}`}
+            title={tool.isActive ? 'Deactivate' : 'Activate'}
+          >
+            {tool.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={onEdit}
+            className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'}`}
+            title="Edit"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            className={`p-2 rounded-lg text-red-500 ${
+              isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
+            }`}
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
 
 const AdminAIToolsPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -43,6 +204,15 @@ const AdminAIToolsPage: React.FC = () => {
   const updateMutation = useUpdateAIToolMutation();
   const deleteMutation = useDeleteAIToolMutation();
   const bulkUpdateMutation = useBulkUpdateAIToolsMutation();
+  const reorderMutation = useReorderAIToolsMutation();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Filter tools
   const filteredTools = useMemo(() => {
@@ -140,6 +310,19 @@ const AdminAIToolsPage: React.FC = () => {
     setIsBulkEditModalOpen(false);
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !filteredTools) return;
+
+    const oldIndex = filteredTools.findIndex((t) => t.id === active.id);
+    const newIndex = filteredTools.findIndex((t) => t.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newOrder = arrayMove(filteredTools, oldIndex, newIndex);
+      reorderMutation.mutate(newOrder.map((t) => t.id));
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -227,171 +410,71 @@ const AdminAIToolsPage: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div
-          className={`rounded-xl border overflow-hidden ${
-            isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-          }`}
-        >
-          <table className="w-full">
-            <thead className={`text-xs uppercase ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-              <tr>
-                <th className="px-4 py-3 text-left w-10">
-                  <input
-                    type="checkbox"
-                    checked={
-                      filteredTools.length > 0 && selectedToolIds.size === filteredTools.length
-                    }
-                    onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </th>
-                <th className="px-4 py-3 text-left">Tool</th>
-                <th className="px-4 py-3 text-left">Slug</th>
-                <th className="px-4 py-3 text-left">Model</th>
-                <th className="px-4 py-3 text-left">Max Tokens</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {filteredTools.length === 0 ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div
+            className={`rounded-xl border overflow-hidden ${
+              isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+            }`}
+          >
+            <table className="w-full">
+              <thead className={`text-xs uppercase ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
                 <tr>
-                  <td
-                    colSpan={7}
-                    className={`px-4 py-8 text-center ${
-                      isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                    }`}
-                  >
-                    {searchQuery ? 'No AI tools match your search' : 'No AI tools yet'}
-                  </td>
+                  <th className="px-2 py-3 w-8"></th>
+                  <th className="px-2 py-3 text-left w-10">
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredTools.length > 0 && selectedToolIds.size === filteredTools.length
+                      }
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left">Tool</th>
+                  <th className="px-4 py-3 text-left">Slug</th>
+                  <th className="px-4 py-3 text-left">Model</th>
+                  <th className="px-4 py-3 text-left">Max Tokens</th>
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
-              ) : (
-                filteredTools.map((tool) => (
-                  <tr
-                    key={tool.id}
-                    className={`${isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'} ${
-                      selectedToolIds.has(tool.id)
-                        ? isDarkMode
-                          ? 'bg-blue-900/20'
-                          : 'bg-blue-50'
-                        : ''
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedToolIds.has(tool.id)}
-                        onChange={() => handleSelectTool(tool.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              </thead>
+              <SortableContext
+                items={filteredTools.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {filteredTools.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className={`px-4 py-8 text-center ${
+                          isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                        }`}
+                      >
+                        {searchQuery ? 'No AI tools match your search' : 'No AI tools yet'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTools.map((tool) => (
+                      <SortableToolRow
+                        key={tool.id}
+                        tool={tool}
+                        isDarkMode={isDarkMode}
+                        isSelected={selectedToolIds.has(tool.id)}
+                        copiedSlug={copiedSlug}
+                        onSelect={() => handleSelectTool(tool.id)}
+                        onCopySlug={() => handleCopySlug(tool.slug)}
+                        onToggleActive={() => handleToggleActive(tool)}
+                        onEdit={() => handleEditTool(tool)}
+                        onDelete={() => setDeletingTool(tool)}
                       />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            isDarkMode ? 'bg-violet-900/30' : 'bg-violet-100'
-                          }`}
-                        >
-                          <Bot className="w-4 h-4 text-violet-500" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{tool.name}</p>
-                          <p
-                            className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
-                          >
-                            {tool.description || 'No description'}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleCopySlug(tool.slug)}
-                        className={`flex items-center gap-2 px-2 py-1 rounded text-xs font-mono ${
-                          isDarkMode
-                            ? 'bg-slate-800 hover:bg-slate-700'
-                            : 'bg-slate-100 hover:bg-slate-200'
-                        }`}
-                        title="Click to copy embed URL"
-                      >
-                        <span>{tool.slug}</span>
-                        <Copy className="w-3 h-3" />
-                        {copiedSlug === tool.slug && (
-                          <span className="text-green-500">Copied!</span>
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
-                      >
-                        {tool.model.replace('claude-', '')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
-                      >
-                        {tool.maxTokens.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          tool.isActive
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                        }`}
-                      >
-                        {tool.isActive ? (
-                          <CheckCircle className="w-3 h-3" />
-                        ) : (
-                          <XCircle className="w-3 h-3" />
-                        )}
-                        {tool.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleToggleActive(tool)}
-                          className={`p-2 rounded-lg ${
-                            isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                          }`}
-                          title={tool.isActive ? 'Deactivate' : 'Activate'}
-                        >
-                          {tool.isActive ? (
-                            <XCircle className="w-4 h-4" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleEditTool(tool)}
-                          className={`p-2 rounded-lg ${
-                            isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                          }`}
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeletingTool(tool)}
-                          className={`p-2 rounded-lg text-red-500 ${
-                            isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                          }`}
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    ))
+                  )}
+                </tbody>
+              </SortableContext>
+            </table>
+          </div>
+        </DndContext>
       )}
 
       {/* AI Tool Modal */}
