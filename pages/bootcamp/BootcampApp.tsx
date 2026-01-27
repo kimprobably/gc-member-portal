@@ -8,8 +8,11 @@ import {
   fetchAllBootcampSettings,
   completeStudentOnboarding,
 } from '../../services/bootcamp-supabase';
+import { fetchLmsCurriculumForStudent } from '../../services/lms-supabase';
+import { LmsCurriculumData, LmsLessonWithContent } from '../../types/lms-types';
 import Sidebar from '../../components/bootcamp/Sidebar';
 import LessonView from '../../components/bootcamp/LessonView';
+import LmsLessonView from '../../components/bootcamp/LmsLessonView';
 import Login from '../../components/bootcamp/Login';
 import Register from '../../components/bootcamp/Register';
 import {
@@ -28,6 +31,34 @@ import {
 import { queryKeys } from '../../lib/queryClient';
 import { Menu, X, Terminal, Users } from 'lucide-react';
 
+/**
+ * Transform LMS curriculum data to legacy CourseData format for sidebar compatibility
+ */
+function transformLmsToLegacyCourseData(lmsData: LmsCurriculumData): CourseData {
+  return {
+    title: lmsData.cohort.name,
+    cohort: lmsData.cohort.name,
+    weeks: lmsData.weeks.map((week) => ({
+      id: week.id,
+      title: week.title,
+      lessons: week.lessons.map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        // Use first content item's embedUrl or a placeholder
+        embedUrl: lesson.contentItems[0]?.embedUrl || `lms:${lesson.id}`,
+        cohort: lmsData.cohort.name,
+      })),
+      actionItems: week.actionItems.map((action) => ({
+        id: action.id,
+        text: action.text,
+        cohort: lmsData.cohort.name,
+        assignedTo: action.assignedToEmail,
+      })),
+    })),
+  };
+}
+
 const BootcampApp: React.FC = () => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,9 +73,11 @@ const BootcampApp: React.FC = () => {
     return !!params.get('code') || window.location.pathname.includes('/register');
   });
 
-  // Legacy state for curriculum
+  // Curriculum state - LMS or legacy
+  const [lmsCurriculum, setLmsCurriculum] = useState<LmsCurriculumData | null>(null);
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [currentLmsLesson, setCurrentLmsLesson] = useState<LmsLessonWithContent | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -147,6 +180,29 @@ const BootcampApp: React.FC = () => {
       setSubmittedWeeks({});
     }
 
+    // Try to fetch from Supabase LMS first
+    try {
+      const lmsData = await fetchLmsCurriculumForStudent(activeUser.cohort, activeUser.email);
+      if (lmsData && lmsData.weeks.length > 0) {
+        setLmsCurriculum(lmsData);
+        const legacyData = transformLmsToLegacyCourseData(lmsData);
+        setCourseData(legacyData);
+
+        // Set initial lesson (prefer LMS lesson object)
+        if (lmsData.weeks[0].lessons.length > 0) {
+          setCurrentLmsLesson(lmsData.weeks[0].lessons[0]);
+          setCurrentLesson(legacyData.weeks[0].lessons[0]);
+        }
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.log('LMS fetch failed, falling back to Airtable:', e);
+    }
+
+    // Fall back to Airtable
+    setLmsCurriculum(null);
+    setCurrentLmsLesson(null);
     const data = await fetchCourseData(activeUser.cohort, activeUser.email);
     setCourseData(data);
 
@@ -392,12 +448,35 @@ const BootcampApp: React.FC = () => {
     );
   }
 
+  // Handler to select a lesson (updates both legacy and LMS state)
+  const handleSelectLesson = (lesson: Lesson) => {
+    setCurrentLesson(lesson);
+
+    // If we have LMS data, find the corresponding LMS lesson
+    if (lmsCurriculum) {
+      for (const week of lmsCurriculum.weeks) {
+        const lmsLesson = week.lessons.find((l) => l.id === lesson.id);
+        if (lmsLesson) {
+          setCurrentLmsLesson(lmsLesson);
+          return;
+        }
+      }
+      // Not found in LMS - clear LMS lesson (this handles checklist views)
+      setCurrentLmsLesson(null);
+    }
+  };
+
   // Curriculum loading
   if (!courseData || !currentLesson) return <div className="p-8">Syncing content...</div>;
 
   const currentWeek = courseData.weeks.find(
     (w) =>
       w.lessons.some((l) => l.id === currentLesson.id) || currentLesson.id === `${w.id}:checklist`
+  );
+
+  // Find current LMS week for LmsLessonView
+  const currentLmsWeek = lmsCurriculum?.weeks.find((w) =>
+    w.lessons.some((l) => l.id === currentLesson.id)
   );
 
   // Main curriculum view
@@ -425,7 +504,7 @@ const BootcampApp: React.FC = () => {
         <Sidebar
           data={courseData}
           currentLessonId={currentLesson.id}
-          onSelectLesson={setCurrentLesson}
+          onSelectLesson={handleSelectLesson}
           isOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
           completedItems={completedItems}
@@ -436,20 +515,29 @@ const BootcampApp: React.FC = () => {
 
         <main className="flex-1 h-full overflow-y-auto pt-14 md:pt-0 bg-white dark:bg-zinc-950 transition-colors duration-300">
           <div className="p-6 md:p-10 lg:p-14">
-            <LessonView
-              lesson={currentLesson}
-              currentWeek={currentWeek}
-              completedItems={completedItems}
-              proofOfWork={proofOfWork}
-              taskNotes={taskNotes}
-              onToggleItem={toggleActionItem}
-              onUpdateProof={updateProofOfWork}
-              onUpdateNote={updateTaskNote}
-              isWeekSubmitted={currentWeek ? submittedWeeks[currentWeek.id] : false}
-              onWeekSubmit={handleWeekSubmit}
-              onSelectLesson={setCurrentLesson}
-              studentId={bootcampStudent?.id}
-            />
+            {/* Use LmsLessonView for LMS content, LessonView for legacy Airtable content */}
+            {currentLmsLesson && lmsCurriculum ? (
+              <LmsLessonView
+                lesson={currentLmsLesson}
+                currentWeek={currentLmsWeek}
+                studentId={bootcampStudent?.id}
+              />
+            ) : (
+              <LessonView
+                lesson={currentLesson}
+                currentWeek={currentWeek}
+                completedItems={completedItems}
+                proofOfWork={proofOfWork}
+                taskNotes={taskNotes}
+                onToggleItem={toggleActionItem}
+                onUpdateProof={updateProofOfWork}
+                onUpdateNote={updateTaskNote}
+                isWeekSubmitted={currentWeek ? submittedWeeks[currentWeek.id] : false}
+                onWeekSubmit={handleWeekSubmit}
+                onSelectLesson={handleSelectLesson}
+                studentId={bootcampStudent?.id}
+              />
+            )}
           </div>
         </main>
       </div>
