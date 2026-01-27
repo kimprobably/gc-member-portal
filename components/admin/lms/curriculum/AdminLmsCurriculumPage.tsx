@@ -302,12 +302,12 @@ const AdminLmsCurriculumPage: React.FC = () => {
                     cohortId,
                   })
                 }
-                onUpdateAction={(actionId, text) =>
+                onUpdateAction={(actionId, updates) =>
                   updateActionMutation.mutate({
                     itemId: actionId,
                     weekId: week.id,
                     cohortId,
-                    updates: { text },
+                    updates,
                   })
                 }
                 onDeleteAction={(actionId) =>

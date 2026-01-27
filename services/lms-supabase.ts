@@ -555,6 +555,7 @@ export async function createLmsActionItem(item: LmsActionItemFormData): Promise<
     week_id: item.weekId,
     text: item.text,
     description: item.description,
+    video_url: item.videoUrl || null,
     sort_order: item.sortOrder,
     assigned_to_email: item.assignedToEmail || null,
     is_visible: item.isVisible ?? true,
@@ -578,6 +579,7 @@ export async function updateLmsActionItem(
 
   if (updates.text !== undefined) updateData.text = updates.text;
   if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.videoUrl !== undefined) updateData.video_url = updates.videoUrl || null;
   if (updates.sortOrder !== undefined) updateData.sort_order = updates.sortOrder;
   if (updates.assignedToEmail !== undefined)
     updateData.assigned_to_email = updates.assignedToEmail || null;
@@ -623,6 +625,7 @@ function mapLmsActionItem(record: Record<string, unknown>): LmsActionItem {
     weekId: record.week_id as string,
     text: record.text as string,
     description: record.description as string | undefined,
+    videoUrl: record.video_url as string | undefined,
     sortOrder: (record.sort_order as number) || 0,
     assignedToEmail: record.assigned_to_email as string | undefined,
     isVisible: record.is_visible !== false,

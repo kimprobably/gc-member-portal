@@ -95,6 +95,7 @@ export interface LmsActionItem {
   weekId: string;
   text: string;
   description?: string;
+  videoUrl?: string;
   sortOrder: number;
   assignedToEmail?: string;
   isVisible: boolean;
@@ -209,6 +210,7 @@ export interface LmsActionItemFormData {
   weekId: string;
   text: string;
   description?: string;
+  videoUrl?: string;
   sortOrder: number;
   assignedToEmail?: string;
   isVisible: boolean;

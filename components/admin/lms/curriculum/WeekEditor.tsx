@@ -39,7 +39,7 @@ interface WeekEditorProps {
   onUpdateContent: (contentId: string, data: { title?: string; embedUrl?: string }) => void;
   onDeleteContent: (contentId: string) => void;
   onAddAction: (text: string) => void;
-  onUpdateAction: (actionId: string, text: string) => void;
+  onUpdateAction: (actionId: string, updates: { text?: string; videoUrl?: string }) => void;
   onDeleteAction: (actionId: string) => void;
   onOpenContentModal: (lessonId: string, contentType: 'credentials' | 'ai_tool') => void;
 }
@@ -254,31 +254,44 @@ const WeekEditor: React.FC<WeekEditorProps> = ({
             <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
               Action Items
             </h4>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {week.actionItems.map((action) => (
                 <div
                   key={action.id}
-                  className={`flex items-center gap-2 py-1.5 px-2 rounded text-sm ${
-                    isDarkMode ? 'hover:bg-zinc-800' : 'hover:bg-zinc-50'
+                  className={`rounded-lg border p-2 ${
+                    isDarkMode ? 'border-zinc-700 bg-zinc-800/30' : 'border-zinc-200 bg-zinc-50'
                   }`}
                   onMouseEnter={() => setHoveredItem(`action-${action.id}`)}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <GripVertical className="w-3 h-3 text-zinc-400 cursor-grab" />
-                  <span className="text-zinc-400">☐</span>
-                  <InlineInput
-                    value={action.text}
-                    onSave={(text) => onUpdateAction(action.id, text)}
-                    className="flex-1"
-                  />
-                  {hoveredItem === `action-${action.id}` && (
-                    <button
-                      onClick={() => onDeleteAction(action.id)}
-                      className="p-0.5 text-red-500 hover:text-red-600"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="w-3 h-3 text-zinc-400 cursor-grab" />
+                    <span className="text-zinc-400">☐</span>
+                    <InlineInput
+                      value={action.text}
+                      onSave={(text) => onUpdateAction(action.id, { text })}
+                      className="flex-1 text-sm"
+                    />
+                    {hoveredItem === `action-${action.id}` && (
+                      <button
+                        onClick={() => onDeleteAction(action.id)}
+                        className="p-0.5 text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 ml-6">
+                    <Video className="w-3 h-3 text-zinc-400" />
+                    <InlineInput
+                      value={action.videoUrl || ''}
+                      onSave={(videoUrl) =>
+                        onUpdateAction(action.id, { videoUrl: videoUrl || undefined })
+                      }
+                      placeholder="Loom/video URL (optional)"
+                      className="flex-1 text-xs text-zinc-500"
+                    />
+                  </div>
                 </div>
               ))}
 
