@@ -21,6 +21,7 @@ import {
   OnboardingComplete,
 } from '../../components/bootcamp/onboarding';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useActiveAITools } from '../../hooks/useChatHistory';
 import SubscriptionBanner from '../../components/bootcamp/SubscriptionBanner';
 import SubscriptionModal from '../../components/bootcamp/SubscriptionModal';
 import { CourseData, Lesson, User } from '../../types';
@@ -70,6 +71,9 @@ const BootcampApp: React.FC = () => {
 
   // Subscription access state - pass null for cohort until we fetch it (gives unlimited access)
   const { accessState, daysRemaining, isReadOnly } = useSubscription(bootcampStudent, null);
+
+  // Fetch AI tools for Resources section (global, all cohorts)
+  const { data: aiTools } = useActiveAITools();
 
   // Legacy progress state
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set<string>());
@@ -450,6 +454,7 @@ const BootcampApp: React.FC = () => {
           user={user}
           isDarkMode={isDarkMode}
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+          aiTools={aiTools}
         />
 
         <main className="flex-1 h-full overflow-y-auto pt-14 md:pt-0 bg-white dark:bg-zinc-950 transition-colors duration-300">

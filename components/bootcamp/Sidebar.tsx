@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CourseData, Lesson, User } from '../../types';
+import { AITool } from '../../types/chat-types';
 import {
   ChevronDown,
   ChevronRight,
@@ -31,6 +32,7 @@ interface SidebarProps {
   user?: User | null;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  aiTools?: AITool[];
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -43,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   user,
   isDarkMode,
   onToggleTheme,
+  aiTools = [],
 }) => {
   const { logout } = useAuth();
 
@@ -161,6 +164,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
+  // Render AI tool from database (uses ai-tool: URL scheme)
+  const renderAIToolItem = (tool: AITool) => {
+    const toolLessonId = `ai-tool:${tool.slug}`;
+    const isActive = currentLessonId === toolLessonId;
+    return (
+      <button
+        key={tool.id}
+        onClick={() => {
+          onSelectLesson({
+            id: toolLessonId,
+            title: tool.name,
+            embedUrl: `ai-tool:${tool.slug}`,
+          });
+          onCloseMobile();
+        }}
+        className={`flex items-center w-full py-1.5 px-3 rounded-lg text-[11px] transition-all ${
+          isActive
+            ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium'
+            : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+        }`}
+      >
+        <span
+          className={`mr-2.5 shrink-0 ${isActive ? 'text-violet-500' : 'text-zinc-400 dark:text-zinc-600'}`}
+        >
+          <Sparkles size={14} />
+        </span>
+        <span className="truncate">{tool.name}</span>
+      </button>
+    );
+  };
+
   const displayUserLabel = user?.name || user?.email.split('@')[0] || 'User';
 
   return (
@@ -219,50 +253,80 @@ const Sidebar: React.FC<SidebarProps> = ({
 
               {showResourcesSection && (
                 <div className="space-y-1 animate-slide-in">
-                  {[
-                    {
-                      id: 'gpts',
-                      label: 'AI Tools',
-                      icon: <Sparkles size={12} className="text-violet-500" />,
-                      items: toolGroups.gpts,
-                    },
-                    {
-                      id: 'tables',
-                      label: 'Clay Tables',
-                      icon: <Database size={12} className="text-blue-500" />,
-                      items: toolGroups.tables,
-                    },
-                    {
-                      id: 'logins',
-                      label: 'Access & Links',
-                      icon: <Key size={12} className="text-amber-500" />,
-                      items: toolGroups.logins,
-                    },
-                  ].map(
-                    (group) =>
-                      group.items.length > 0 && (
-                        <div key={group.id} className="space-y-0.5">
-                          <button
-                            onClick={() => toggleGroup(group.id)}
-                            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5 text-xs font-medium">
-                              {group.icon}
-                              <span>{group.label}</span>
-                            </div>
-                            {isGroupExpanded(group.id) ? (
-                              <ChevronDown size={12} />
-                            ) : (
-                              <ChevronRight size={12} />
-                            )}
-                          </button>
-                          {isGroupExpanded(group.id) && (
-                            <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
-                              {group.items.map(renderToolItem)}
-                            </div>
-                          )}
+                  {/* AI Tools - from database (global) + curriculum-embedded */}
+                  {(aiTools.length > 0 || toolGroups.gpts.length > 0) && (
+                    <div className="space-y-0.5">
+                      <button
+                        onClick={() => toggleGroup('gpts')}
+                        className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 text-xs font-medium">
+                          <Sparkles size={12} className="text-violet-500" />
+                          <span>AI Tools</span>
                         </div>
-                      )
+                        {isGroupExpanded('gpts') ? (
+                          <ChevronDown size={12} />
+                        ) : (
+                          <ChevronRight size={12} />
+                        )}
+                      </button>
+                      {isGroupExpanded('gpts') && (
+                        <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
+                          {aiTools.map(renderAIToolItem)}
+                          {toolGroups.gpts.map(renderToolItem)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Clay Tables - from curriculum */}
+                  {toolGroups.tables.length > 0 && (
+                    <div className="space-y-0.5">
+                      <button
+                        onClick={() => toggleGroup('tables')}
+                        className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 text-xs font-medium">
+                          <Database size={12} className="text-blue-500" />
+                          <span>Clay Tables</span>
+                        </div>
+                        {isGroupExpanded('tables') ? (
+                          <ChevronDown size={12} />
+                        ) : (
+                          <ChevronRight size={12} />
+                        )}
+                      </button>
+                      {isGroupExpanded('tables') && (
+                        <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
+                          {toolGroups.tables.map(renderToolItem)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Access & Links - from curriculum */}
+                  {toolGroups.logins.length > 0 && (
+                    <div className="space-y-0.5">
+                      <button
+                        onClick={() => toggleGroup('logins')}
+                        className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 text-xs font-medium">
+                          <Key size={12} className="text-amber-500" />
+                          <span>Access & Links</span>
+                        </div>
+                        {isGroupExpanded('logins') ? (
+                          <ChevronDown size={12} />
+                        ) : (
+                          <ChevronRight size={12} />
+                        )}
+                      </button>
+                      {isGroupExpanded('logins') && (
+                        <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
+                          {toolGroups.logins.map(renderToolItem)}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
