@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { User, Bot } from 'lucide-react';
 import { ChatMessage as ChatMessageType } from '../../types/chat-types';
 
@@ -28,8 +29,53 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-md'
         }`}
       >
-        <div className="text-sm whitespace-pre-wrap break-words">
-          {message.content}
+        <div className="text-sm break-words">
+          {isUser ? (
+            <span className="whitespace-pre-wrap">{message.content}</span>
+          ) : (
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                li: ({ children }) => <li className="mb-1">{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                code: ({ children, className }) => {
+                  const isBlock = className?.includes('language-');
+                  return isBlock ? (
+                    <code className="block bg-zinc-200 dark:bg-zinc-900 rounded p-2 my-2 text-xs overflow-x-auto">
+                      {children}
+                    </code>
+                  ) : (
+                    <code className="bg-zinc-200 dark:bg-zinc-900 rounded px-1 py-0.5 text-xs">
+                      {children}
+                    </code>
+                  );
+                },
+                pre: ({ children }) => <pre className="my-2">{children}</pre>,
+                h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-base font-bold mb-2">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-sm font-bold mb-1">{children}</h3>,
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    className="text-violet-600 dark:text-violet-400 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {children}
+                  </a>
+                ),
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-2 border-zinc-300 dark:border-zinc-600 pl-3 italic my-2">
+                    {children}
+                  </blockquote>
+                ),
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          )}
           {isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />}
         </div>
       </div>
