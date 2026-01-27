@@ -8,8 +8,24 @@ interface ChatMessageProps {
   isStreaming?: boolean;
 }
 
+// Preprocess content to convert emoji lists to proper markdown
+const preprocessMarkdown = (content: string): string => {
+  return content
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      // Convert lines starting with list-like emojis to proper markdown lists
+      if (/^[✅☑✓□☐◻◼•▪▸➡→►‣⁃]\s/.test(trimmed)) {
+        return `- ${trimmed}`;
+      }
+      return line;
+    })
+    .join('\n');
+};
+
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const isUser = message.role === 'user';
+  const processedContent = isUser ? message.content : preprocessMarkdown(message.content);
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
@@ -36,7 +52,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
             <ReactMarkdown
               components={{
                 p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                ul: ({ children }) => <ul className="list-none ml-0 mb-2 space-y-1">{children}</ul>,
                 ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
                 li: ({ children }) => <li className="mb-1">{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
@@ -73,7 +89,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
                 ),
               }}
             >
-              {message.content}
+              {processedContent}
             </ReactMarkdown>
           )}
           {isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />}
