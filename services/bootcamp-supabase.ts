@@ -114,6 +114,7 @@ export async function updateBootcampStudent(
   if (updates.calendarAddedAt !== undefined)
     updateData.calendar_added_at = updates.calendarAddedAt?.toISOString();
   if (updates.notes !== undefined) updateData.notes = updates.notes;
+  if (updates.prospectId !== undefined) updateData.prospect_id = updates.prospectId;
 
   const { data, error } = await supabase
     .from('bootcamp_students')
@@ -175,6 +176,7 @@ function mapBootcampStudent(record: Record<string, unknown>): BootcampStudent {
       : undefined,
     stripeCustomerId: record.stripe_customer_id as string | undefined,
     notes: record.notes as string | undefined,
+    prospectId: record.prospect_id as string | undefined,
     createdAt: new Date(record.created_at as string),
     updatedAt: new Date(record.updated_at as string),
   };
@@ -1000,23 +1002,26 @@ export async function findProspectByEmail(email: string): Promise<string | null>
  * Link a bootcamp student to their prospect record
  * @param studentId - The bootcamp student ID
  * @param prospectId - The prospect ID to link
+ * @returns The updated student record
  */
-async function linkStudentToProspect(studentId: string, prospectId: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('bootcamp_students')
-      .update({ prospect_id: prospectId })
-      .eq('id', studentId);
+export async function linkStudentToProspect(
+  studentId: string,
+  prospectId: string
+): Promise<BootcampStudent> {
+  const { data, error } = await supabase
+    .from('bootcamp_students')
+    .update({ prospect_id: prospectId })
+    .eq('id', studentId)
+    .select()
+    .single();
 
-    if (error) {
-      console.error('Failed to link student to prospect:', error);
-      return;
-    }
-
-    console.log('Successfully linked student', studentId, 'to prospect', prospectId);
-  } catch (error) {
-    console.error('Error linking student to prospect:', error);
+  if (error) {
+    console.error('Failed to link student to prospect:', error);
+    throw new Error(error.message);
   }
+
+  console.log('Successfully linked student', studentId, 'to prospect', prospectId);
+  return mapBootcampStudent(data);
 }
 
 // ============================================

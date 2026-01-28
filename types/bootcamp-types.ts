@@ -51,6 +51,8 @@ export interface BootcampStudent {
   subscriptionEndsAt?: Date;
   stripeCustomerId?: string;
   notes?: string;
+  /** Link to prospect record for Blueprint access */
+  prospectId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

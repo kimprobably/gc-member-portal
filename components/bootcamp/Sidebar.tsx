@@ -19,6 +19,7 @@ import {
   Lock,
   Globe,
   LogOut,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -33,6 +34,7 @@ interface SidebarProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   aiTools?: AITool[];
+  onOpenSettings?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -46,6 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   isDarkMode,
   onToggleTheme,
   aiTools = [],
+  onOpenSettings,
 }) => {
   const { logout } = useAuth();
 
@@ -445,6 +448,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"
+                title="Settings"
+              >
+                <Settings size={16} />
+              </button>
+            )}
             <button
               onClick={onToggleTheme}
               className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"

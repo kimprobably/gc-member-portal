@@ -24,6 +24,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useActiveAITools } from '../../hooks/useChatHistory';
 import SubscriptionBanner from '../../components/bootcamp/SubscriptionBanner';
 import SubscriptionModal from '../../components/bootcamp/SubscriptionModal';
+import { StudentSettingsModal } from '../../components/bootcamp/settings';
 import { CourseData, Lesson, User } from '../../types';
 import {
   BootcampStudent,
@@ -74,6 +75,9 @@ const BootcampApp: React.FC = () => {
 
   // Fetch AI tools for Resources section (global, all cohorts)
   const { data: aiTools } = useActiveAITools();
+
+  // Settings modal state
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Legacy progress state
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set<string>());
@@ -325,6 +329,16 @@ const BootcampApp: React.FC = () => {
     return Math.min(progress, 100);
   };
 
+  // Handle student update from settings (e.g., Blueprint connection)
+  const handleStudentUpdate = async () => {
+    if (user) {
+      const student = await verifyBootcampStudent(user.email);
+      if (student) {
+        setBootcampStudent(student);
+      }
+    }
+  };
+
   // Loading state
   if (loading && !user) {
     return (
@@ -455,6 +469,7 @@ const BootcampApp: React.FC = () => {
           isDarkMode={isDarkMode}
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}
           aiTools={aiTools}
+          onOpenSettings={bootcampStudent ? () => setShowSettingsModal(true) : undefined}
         />
 
         <main className="flex-1 h-full overflow-y-auto pt-14 md:pt-0 bg-white dark:bg-zinc-950 transition-colors duration-300">
@@ -490,6 +505,16 @@ const BootcampApp: React.FC = () => {
           onClose={() => setShowSubscriptionModal(false)}
           studentId={bootcampStudent.id}
           studentEmail={bootcampStudent.email}
+        />
+      )}
+
+      {/* Student Settings Modal */}
+      {bootcampStudent && (
+        <StudentSettingsModal
+          student={bootcampStudent}
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          onUpdate={handleStudentUpdate}
         />
       )}
     </div>
