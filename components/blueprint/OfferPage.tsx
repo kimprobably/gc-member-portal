@@ -233,10 +233,8 @@ const OfferPage: React.FC = () => {
 
   const { prospect, settings } = data;
 
-  // Check if offer is unlocked
-  if (!prospect.offerUnlocked) {
-    return <OfferLocked prospectName={prospect.firstName || getProspectDisplayName(prospect)} />;
-  }
+  // Offer page is now publicly accessible from blueprint
+  // (Previously gated by prospect.offerUnlocked)
 
   // Determine recommended offer
   // Map recommendedOffer to foundations/engineering: bootcamp -> foundations, gc/dfy -> engineering
