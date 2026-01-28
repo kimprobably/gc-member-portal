@@ -37,12 +37,15 @@ export default [
         HTMLInputElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
         HTMLElement: 'readonly',
+        HTMLDivElement: 'readonly',
         HTMLIFrameElement: 'readonly',
         Element: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly',
         MouseEvent: 'readonly',
         MutationObserver: 'readonly',
+        IntersectionObserver: 'readonly',
+        IntersectionObserverEntry: 'readonly',
         MediaQueryListEvent: 'readonly',
 
         // Web APIs
