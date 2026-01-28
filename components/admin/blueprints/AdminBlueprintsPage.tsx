@@ -7,6 +7,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { Prospect, ProspectStatus } from '../../../types/blueprint-types';
 import BlueprintTable from './BlueprintTable';
 import BlueprintDetailPanel from './BlueprintDetailPanel';
+import BlueprintSettingsModal from './BlueprintSettingsModal';
 
 type StatusFilter = 'all' | 'complete' | 'pending' | 'error';
 type OfferFilter = 'all' | 'unlocked' | 'locked';
@@ -117,8 +118,10 @@ const AdminBlueprintsPage: React.FC = () => {
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);
-    // TODO: Implement settings modal (for later task)
-    console.log('Open settings modal');
+  };
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
   };
 
   return (
@@ -239,25 +242,8 @@ const AdminBlueprintsPage: React.FC = () => {
         />
       )}
 
-      {/* Settings Modal Placeholder */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div
-            className={`w-full max-w-md p-6 rounded-xl ${isDarkMode ? 'bg-zinc-900' : 'bg-white'}`}
-          >
-            <h3 className="text-lg font-semibold mb-4">Blueprint Settings</h3>
-            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              Settings modal coming in a future task.
-            </p>
-            <button
-              onClick={() => setIsSettingsOpen(false)}
-              className="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Settings Modal */}
+      <BlueprintSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
       {/* Blueprint Detail Panel */}
       <BlueprintDetailPanel

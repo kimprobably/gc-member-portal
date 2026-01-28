@@ -229,6 +229,10 @@ function mapProspectPost(record: Record<string, unknown>): ProspectPost {
 function mapBlueprintSettings(record: Record<string, unknown>): BlueprintSettings {
   return {
     id: record.id as string,
+    stickyCTAEnabled: (record.sticky_cta_enabled as boolean) ?? true,
+    foundationsPaymentUrl: (record.foundations_payment_url as string) || '',
+    engineeringPaymentUrl: (record.engineering_payment_url as string) || '',
+    calBookingLink: (record.cal_booking_link as string) || '',
     showBootcampOffer: (record.show_bootcamp_offer as boolean) ?? true,
     showGcOffer: (record.show_gc_offer as boolean) ?? true,
     showDfyOffer: (record.show_dfy_offer as boolean) ?? true,
@@ -493,6 +497,10 @@ export async function getBlueprintSettings(): Promise<BlueprintSettings | null> 
  */
 export async function updateBlueprintSettings(
   settings: Partial<{
+    stickyCTAEnabled: boolean;
+    foundationsPaymentUrl: string;
+    engineeringPaymentUrl: string;
+    calBookingLink: string;
     showBootcampOffer: boolean;
     showGcOffer: boolean;
     showDfyOffer: boolean;
@@ -513,6 +521,18 @@ export async function updateBlueprintSettings(
 ): Promise<BlueprintSettings> {
   const updateData: Record<string, unknown> = {};
 
+  if (settings.stickyCTAEnabled !== undefined) {
+    updateData.sticky_cta_enabled = settings.stickyCTAEnabled;
+  }
+  if (settings.foundationsPaymentUrl !== undefined) {
+    updateData.foundations_payment_url = settings.foundationsPaymentUrl;
+  }
+  if (settings.engineeringPaymentUrl !== undefined) {
+    updateData.engineering_payment_url = settings.engineeringPaymentUrl;
+  }
+  if (settings.calBookingLink !== undefined) {
+    updateData.cal_booking_link = settings.calBookingLink;
+  }
   if (settings.showBootcampOffer !== undefined) {
     updateData.show_bootcamp_offer = settings.showBootcampOffer;
   }

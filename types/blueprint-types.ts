@@ -286,6 +286,11 @@ export interface ProspectPost {
  */
 export interface BlueprintSettings {
   id: string;
+  // Global settings
+  stickyCTAEnabled: boolean;
+  foundationsPaymentUrl: string;
+  engineeringPaymentUrl: string;
+  calBookingLink: string;
   // Offer visibility controls
   showBootcampOffer: boolean;
   showGcOffer: boolean;
@@ -314,6 +319,10 @@ export interface BlueprintSettings {
  * Form data for editing blueprint settings
  */
 export interface BlueprintSettingsFormData {
+  stickyCTAEnabled: boolean;
+  foundationsPaymentUrl: string;
+  engineeringPaymentUrl: string;
+  calBookingLink: string;
   showBootcampOffer: boolean;
   showGcOffer: boolean;
   showDfyOffer: boolean;
