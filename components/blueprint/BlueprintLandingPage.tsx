@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText, Target } from 'lucide-react';
+import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText } from 'lucide-react';
 import { createProspectFromLanding } from '../../services/blueprint-supabase';
 import ThemeToggle from './ThemeToggle';
 
@@ -353,6 +353,14 @@ const BlueprintLandingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (formData: FormData) => {
+    const linkedinPattern = /linkedin\.com\/in\//i;
+    if (!linkedinPattern.test(formData.linkedinUrl)) {
+      setError(
+        'Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/your-name)'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 

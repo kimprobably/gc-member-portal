@@ -70,7 +70,9 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, paymentUrl, calBookingLink
           <div className="space-y-8 mb-6 border-t border-zinc-200 dark:border-zinc-800 pt-6">
             {/* Curriculum Summary */}
             <div>
-              <h4 className="text-lg font-semibold text-zinc-100 mb-4">What We Build Together</h4>
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                What We Build Together
+              </h4>
               <div className="space-y-4">
                 {offer.weeks.map((week) => (
                   <div
@@ -90,7 +92,9 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, paymentUrl, calBookingLink
 
             {/* AI Tools */}
             <div>
-              <h4 className="text-lg font-semibold text-zinc-100 mb-3">AI Tools Included</h4>
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
+                AI Tools Included
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {offer.toolsIncluded.map((tool) => (
                   <div key={tool.name} className="flex items-start gap-2 text-sm">

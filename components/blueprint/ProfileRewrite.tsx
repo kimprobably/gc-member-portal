@@ -102,7 +102,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text }) => {
     <div className="relative inline-block">
       <button
         type="button"
-        className="text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
         onFocus={() => setIsVisible(true)}

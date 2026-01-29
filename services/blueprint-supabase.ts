@@ -469,7 +469,7 @@ export async function createProspectFromLanding(data: {
   const slug = generateSlug(nameFromUrl);
 
   const insertData: Record<string, unknown> = {
-    linkedin_url: data.linkedinUrl.trim(),
+    linkedin_url: normalizedUrl,
     normalized_linkedin_url: normalizedUrl,
     email: data.email.trim(),
     business_type: data.businessType,

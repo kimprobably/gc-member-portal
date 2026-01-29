@@ -49,8 +49,10 @@ interface BlueprintData {
 
 const BlueprintLoadingState: React.FC = () => (
   <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col items-center justify-center">
-    <div className="w-12 h-12 border-2 border-zinc-700 border-t-blue-500 rounded-full animate-spin" />
-    <p className="mt-4 text-zinc-400 text-sm font-medium">Loading your blueprint...</p>
+    <div className="w-12 h-12 border-2 border-zinc-300 dark:border-zinc-700 border-t-blue-500 rounded-full animate-spin" />
+    <p className="mt-4 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+      Loading your blueprint...
+    </p>
   </div>
 );
 

@@ -38,7 +38,9 @@ const BlueprintThankYou: React.FC = () => {
   const [settings, setSettings] = useState<BlueprintSettings | null>(null);
 
   useEffect(() => {
-    getBlueprintSettings().then(setSettings);
+    getBlueprintSettings()
+      .then(setSettings)
+      .catch(() => {});
   }, []);
 
   const calBookingLink = settings?.calBookingLink || 'timkeen/30min';
