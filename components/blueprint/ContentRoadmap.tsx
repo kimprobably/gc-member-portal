@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Copy, Check, ChevronDown, ChevronUp, FileText, X } from 'lucide-react';
+import { Copy, Check, FileText, X } from 'lucide-react';
 import { ProspectPost } from '../../types/blueprint-types';
 
 // ============================================
@@ -14,7 +14,8 @@ interface ContentRoadmapProps {
 // Constants
 // ============================================
 
-const INITIAL_DISPLAY_COUNT = 12;
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+const WEEKDAYS_PER_WEEK = 5;
 
 // ============================================
 // Copy Button Component
@@ -205,46 +206,44 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
 };
 
 // ============================================
-// Post Card Component
+// Calendar Cell Component
 // ============================================
 
-interface PostCardProps {
+interface CalendarCellProps {
   post: ProspectPost;
   onOpen: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onOpen }) => {
+const CalendarCell: React.FC<CalendarCellProps> = ({ post, onOpen }) => {
   const hasContent = post.postContent && post.postContent.trim() !== '';
-  const hasFirstSentence = post.firstSentence && post.firstSentence.trim() !== '';
 
   return (
-    <div
-      className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 transition-colors cursor-pointer"
+    <button
+      type="button"
       onClick={hasContent ? onOpen : undefined}
+      className={`relative w-full text-left rounded-md border p-1.5 sm:p-2 min-h-[56px] sm:min-h-[72px] transition-colors ${
+        hasContent
+          ? 'bg-violet-500/10 border-violet-500/30 hover:border-violet-400/50 cursor-pointer'
+          : 'bg-zinc-900 border-zinc-800 cursor-default'
+      }`}
     >
-      <div className="p-4">
-        {/* Top Row: Status Badge */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <StatusBadge postReady={post.postReady} toFix={post.toFix} />
-          {post.number && <span className="text-xs text-zinc-500 font-medium">#{post.number}</span>}
-        </div>
-
-        {/* Title */}
-        {post.name && (
-          <h4 className="font-semibold text-zinc-100 mb-2 line-clamp-2" title={post.name}>
-            {post.name}
-          </h4>
-        )}
-
-        {/* Preview Text */}
-        {hasFirstSentence && (
-          <p className="text-sm text-zinc-400 line-clamp-2 mb-3">{post.firstSentence}</p>
-        )}
-
-        {/* View prompt */}
-        {hasContent && <span className="text-sm font-medium text-violet-400">View post →</span>}
-      </div>
-    </div>
+      {/* Status dot */}
+      {(post.postReady || post.toFix) && (
+        <span
+          className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+            post.postReady ? 'bg-green-400' : 'bg-amber-400'
+          }`}
+        />
+      )}
+      <span className="block text-[10px] sm:text-xs text-zinc-500 font-medium">
+        #{post.number ?? ''}
+      </span>
+      {post.name && (
+        <span className="block text-[11px] sm:text-xs text-zinc-300 line-clamp-1 sm:line-clamp-2 leading-tight mt-0.5">
+          {post.name}
+        </span>
+      )}
+    </button>
   );
 };
 
@@ -263,12 +262,76 @@ const EmptyState: React.FC = () => (
 );
 
 // ============================================
+// Month Grid Component
+// ============================================
+
+interface MonthGridProps {
+  label: string;
+  posts: ProspectPost[];
+  onSelectPost: (post: ProspectPost) => void;
+}
+
+/**
+ * Renders a 7-column calendar grid (Mon-Sun).
+ * Posts fill weekday slots (Mon-Fri) sequentially; weekend columns stay empty.
+ */
+const MonthGrid: React.FC<MonthGridProps> = ({ label, posts, onSelectPost }) => {
+  // Build rows: each row = 1 week (7 cells). Posts fill Mon-Fri sequentially.
+  const totalWeeks = Math.ceil(posts.length / WEEKDAYS_PER_WEEK);
+  const weeks: (ProspectPost | null)[][] = [];
+
+  let postIdx = 0;
+  for (let w = 0; w < totalWeeks; w++) {
+    const row: (ProspectPost | null)[] = [];
+    for (let d = 0; d < 7; d++) {
+      if (d < 5 && postIdx < posts.length) {
+        row.push(posts[postIdx]);
+        postIdx++;
+      } else {
+        row.push(null); // weekend or no more posts
+      }
+    }
+    weeks.push(row);
+  }
+
+  return (
+    <div className="flex-1 min-w-0">
+      <h3 className="text-sm font-semibold text-zinc-300 mb-3">{label}</h3>
+      {/* Day headers */}
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {DAY_LABELS.map((d) => (
+          <span key={d} className="text-[10px] sm:text-xs text-zinc-500 font-medium text-center">
+            {d}
+          </span>
+        ))}
+      </div>
+      {/* Week rows */}
+      <div className="grid gap-1">
+        {weeks.map((week, wi) => (
+          <div key={wi} className="grid grid-cols-7 gap-1">
+            {week.map((cell, di) =>
+              cell ? (
+                <CalendarCell key={cell.id} post={cell} onOpen={() => onSelectPost(cell)} />
+              ) : (
+                <div
+                  key={`empty-${wi}-${di}`}
+                  className="min-h-[56px] sm:min-h-[72px] rounded-md bg-zinc-900/40 border border-zinc-800/50"
+                />
+              )
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ============================================
 // ContentRoadmap Component
 // ============================================
 
 const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
   const [selectedPost, setSelectedPost] = useState<ProspectPost | null>(null);
-  const [showAll, setShowAll] = useState(false);
 
   // Sort posts by number if available, otherwise by creation date
   const sortedPosts = [...posts].sort((a, b) => {
@@ -278,11 +341,10 @@ const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 
-  // Determine how many posts to display
-  const displayedPosts = showAll ? sortedPosts : sortedPosts.slice(0, INITIAL_DISPLAY_COUNT);
-
-  const hasMorePosts = sortedPosts.length > INITIAL_DISPLAY_COUNT;
-  const remainingCount = sortedPosts.length - INITIAL_DISPLAY_COUNT;
+  // Split into two months: first 30, rest in second
+  const midpoint = Math.ceil(sortedPosts.length / 2);
+  const month1Posts = sortedPosts.slice(0, midpoint);
+  const month2Posts = sortedPosts.slice(midpoint);
 
   // Count ready posts
   const readyCount = posts.filter((p) => p.postReady).length;
@@ -319,34 +381,27 @@ const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
         Copy, customize, and post.
       </p>
 
-      {/* Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedPosts.map((post) => (
-          <PostCard key={post.id} post={post} onOpen={() => setSelectedPost(post)} />
-        ))}
+      {/* Calendar Grids */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        <MonthGrid label="Month 1" posts={month1Posts} onSelectPost={setSelectedPost} />
+        {month2Posts.length > 0 && (
+          <MonthGrid label="Month 2" posts={month2Posts} onSelectPost={setSelectedPost} />
+        )}
       </div>
 
-      {/* Show More / Show Less Button */}
-      {hasMorePosts && (
-        <div className="text-center pt-4">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-violet-400 hover:text-violet-300 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-lg transition-colors"
-          >
-            {showAll ? (
-              <>
-                <ChevronUp className="w-4 h-4" />
-                Show fewer posts
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-4 h-4" />
-                Show {remainingCount} more {remainingCount === 1 ? 'post' : 'posts'}
-              </>
-            )}
-          </button>
-        </div>
-      )}
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500 pt-2">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-green-400" /> Ready
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-amber-400" /> Needs review
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-4 h-3 rounded-sm bg-violet-500/20 border border-violet-500/30" />{' '}
+          Has content
+        </span>
+      </div>
 
       {/* Post Detail Modal */}
       {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
