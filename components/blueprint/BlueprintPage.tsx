@@ -35,6 +35,7 @@ import ValueStack from './ValueStack';
 import SimpleSteps from './SimpleSteps';
 import TestimonialQuote from './TestimonialQuote';
 import ThemeToggle from './ThemeToggle';
+import ScrollReveal from './ScrollReveal';
 
 // ============================================
 // Types
@@ -289,118 +290,158 @@ const BlueprintPage: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
       <ThemeToggle />
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-12 sm:space-y-16">
+      <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 space-y-20 sm:space-y-28">
         {/* 1. Hero — BlueprintHeader (no CTA button, hook subtitle, score context) */}
-        <BlueprintHeader prospect={prospect} scorecardCount={scorecardCount} />
+        <ScrollReveal>
+          <BlueprintHeader prospect={prospect} scorecardCount={scorecardCount} />
+        </ScrollReveal>
 
         {/* 2. ValueStack — what's in your blueprint */}
-        <ValueStack />
+        <ScrollReveal delay={100}>
+          <ValueStack />
+        </ScrollReveal>
 
         {/* 3. Logo Bar — instant social proof */}
-        <LogoBar logos={clientLogos} />
+        <ScrollReveal delay={200}>
+          <LogoBar logos={clientLogos} />
+        </ScrollReveal>
 
         {/* 3. Bridge: problem identification intro */}
-        <SectionBridge
-          text="Here's where you stand right now — and what's standing between you and a full pipeline."
-          variant="accent"
-          stepNumber={1}
-          stepLabel="Diagnose"
-        />
+        <ScrollReveal>
+          <SectionBridge
+            text="Here's where you stand right now — and what's standing between you and a full pipeline."
+            variant="accent"
+            stepNumber={1}
+            stepLabel="Diagnose"
+          />
+        </ScrollReveal>
 
         {/* 4. ScoreRadar — problem identification */}
-        <ScoreRadar prospect={prospect} />
+        <ScrollReveal delay={100}>
+          <ScoreRadar prospect={prospect} />
+        </ScrollReveal>
 
         {/* 5. Video walkthrough */}
         {settings?.blueprintVideoUrl && (
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              Watch: Your Scorecard Explained
-            </h2>
-            <p className="text-zinc-600 dark:text-zinc-400">
-              A quick walkthrough of what your scores mean and what to do next.
-            </p>
-            <div
-              className="relative w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
-              style={{ paddingBottom: '56.25%' }}
-            >
-              <iframe
-                src={settings.blueprintVideoUrl}
-                title="Blueprint scorecard walkthrough"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </section>
+          <ScrollReveal delay={100}>
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                Watch: Your Scorecard Explained
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                A quick walkthrough of what your scores mean and what to do next.
+              </p>
+              <div
+                className="relative w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
+                style={{ paddingBottom: '56.25%' }}
+              >
+                <iframe
+                  src={settings.blueprintVideoUrl}
+                  title="Blueprint scorecard walkthrough"
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </section>
+          </ScrollReveal>
         )}
 
         {/* 6. AnalysisSection — with score-based intro */}
-        <AnalysisSection prospect={prospect} introParagraph={introParagraph} />
+        <ScrollReveal delay={150}>
+          <AnalysisSection prospect={prospect} introParagraph={introParagraph} />
+        </ScrollReveal>
 
         {/* 7. Bridge: transition to solution */}
-        <SectionBridge
-          text="Now let's fix it. Here's your new profile — optimized to attract and convert your ideal buyers."
-          variant="gradient"
-          stepNumber={2}
-          stepLabel="Rebuild"
-        />
+        <ScrollReveal>
+          <SectionBridge
+            text="Now let's fix it. Here's your new profile — optimized to attract and convert your ideal buyers."
+            variant="gradient"
+            stepNumber={2}
+            stepLabel="Rebuild"
+          />
+        </ScrollReveal>
 
         {/* 8. LinkedInProfileMock — visual showcase */}
-        <LinkedInProfileMock prospect={prospect} />
+        <ScrollReveal delay={100}>
+          <LinkedInProfileMock prospect={prospect} />
+        </ScrollReveal>
 
         {/* 9. ProfileRewrite — detailed before/after */}
-        <ProfileRewrite prospect={prospect} />
+        <ScrollReveal delay={150}>
+          <ProfileRewrite prospect={prospect} />
+        </ScrollReveal>
 
         {/* 10. Bridge: transition to content engine */}
-        <SectionBridge
-          text="A great profile gets attention. Now you need a content engine that turns that attention into pipeline."
-          variant="accent"
-          stepNumber={3}
-          stepLabel="Activate"
-        />
+        <ScrollReveal>
+          <SectionBridge
+            text="A great profile gets attention. Now you need a content engine that turns that attention into pipeline."
+            variant="accent"
+            stepNumber={3}
+            stepLabel="Activate"
+          />
+        </ScrollReveal>
 
         {/* 11. LeadMagnets */}
-        <LeadMagnets prospect={prospect} />
+        <ScrollReveal delay={100}>
+          <LeadMagnets prospect={prospect} />
+        </ScrollReveal>
 
         {/* 12. ContentRoadmap */}
-        <ContentRoadmap posts={posts} />
+        <ScrollReveal delay={150}>
+          <ContentRoadmap posts={posts} />
+        </ScrollReveal>
 
         {/* 14. CTA #1 — "Book Your 30-Min Strategy Call" */}
-        <div className="flex justify-center">
-          <CTAButton
-            text="Book Your 30-Min Strategy Call"
-            subtext="We'll map your quickest wins and build your 90-day plan"
-            onClick={scrollToCalEmbed}
-            size="large"
-            icon="calendar"
-          />
-        </div>
+        <ScrollReveal delay={100}>
+          <div className="flex justify-center">
+            <CTAButton
+              text="Book Your 30-Min Strategy Call"
+              subtext="We'll map your quickest wins and build your 90-day plan"
+              onClick={scrollToCalEmbed}
+              size="large"
+              icon="calendar"
+            />
+          </div>
+        </ScrollReveal>
 
         {/* 15. TestimonialQuote — specific, with before/after metrics */}
-        <TestimonialQuote
-          quote="I was posting randomly with zero strategy — maybe 1 inbound lead a quarter. After implementing the content roadmap, I booked 5 calls in my first month. The profile rewrite alone doubled my connection acceptance rate."
-          author="Marketing Agency Owner"
-          role="$500K+ revenue"
-          result="5 calls in first month"
-        />
+        <ScrollReveal>
+          <TestimonialQuote
+            quote="I was posting randomly with zero strategy — maybe 1 inbound lead a quarter. After implementing the content roadmap, I booked 5 calls in my first month. The profile rewrite alone doubled my connection acceptance rate."
+            author="Marketing Agency Owner"
+            role="$500K+ revenue"
+            result="5 calls in first month"
+          />
+        </ScrollReveal>
 
         {/* 15.5. Senja testimonials wall */}
-        <SenjaEmbed />
+        <ScrollReveal delay={100}>
+          <SenjaEmbed />
+        </ScrollReveal>
 
         {/* 16. FAQ — objections cleared before final CTA */}
-        <MarketingBlock block={faqBlock} />
+        <ScrollReveal delay={100}>
+          <MarketingBlock block={faqBlock} />
+        </ScrollReveal>
 
         {/* 17. What Happens Next — rewritten SimpleSteps */}
-        <SimpleSteps />
+        <ScrollReveal>
+          <SimpleSteps />
+        </ScrollReveal>
 
         {/* 18. CalEmbed */}
-        <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
+        <ScrollReveal>
+          <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
+        </ScrollReveal>
 
         {/* 20. Facilitator credibility note */}
-        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Your call is with a senior strategist from the Modern Agency Sales team — 200+ blueprints
-          delivered, $4.7M+ in client pipeline. No juniors, no scripts.
-        </p>
+        <ScrollReveal delay={100}>
+          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+            Your call is with a senior strategist from the Modern Agency Sales team — 200+
+            blueprints delivered, $4.7M+ in client pipeline. No juniors, no scripts.
+          </p>
+        </ScrollReveal>
       </div>
 
       {/* 22. StickyCTA (fixed position) */}
