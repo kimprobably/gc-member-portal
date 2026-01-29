@@ -146,7 +146,7 @@ const BlueprintThankYou: React.FC = () => {
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-sm text-zinc-500">
-            &copy; {new Date().getFullYear()} Tim Keen. All rights reserved.
+            &copy; {new Date().getFullYear()} Modern Agency Sales. All rights reserved.
           </p>
         </div>
       </footer>

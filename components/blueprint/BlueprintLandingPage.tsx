@@ -72,7 +72,9 @@ const PROOF_NAMES = [
 const NavBar: React.FC = () => (
   <nav className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Tim Keen</span>
+      <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+        Modern Agency Sales
+      </span>
       <a
         href="https://cal.com/timkeen/30min"
         target="_blank"
@@ -361,7 +363,7 @@ const Footer: React.FC = () => (
   <footer className="bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 py-8">
     <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
       <p className="text-sm text-zinc-500">
-        &copy; {new Date().getFullYear()} Tim Keen. All rights reserved.
+        &copy; {new Date().getFullYear()} Modern Agency Sales. All rights reserved.
       </p>
     </div>
   </footer>
