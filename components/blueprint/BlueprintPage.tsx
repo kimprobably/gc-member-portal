@@ -429,13 +429,20 @@ const BlueprintPage: React.FC = () => {
         <ScrollReveal>
           <SimpleSteps />
         </ScrollReveal>
+      </div>
 
-        {/* 18. CalEmbed */}
+      {/* Bottom section — headline, Cal embed, credibility note */}
+      <div className="max-w-4xl mx-auto px-4 pb-12 sm:pb-16 space-y-6">
+        <ScrollReveal>
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-zinc-900 dark:text-zinc-100">
+            Book Your Free Strategy Call Now
+          </h2>
+        </ScrollReveal>
+
         <ScrollReveal>
           <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
         </ScrollReveal>
 
-        {/* 20. Facilitator credibility note */}
         <ScrollReveal delay={100}>
           <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
             Your call is with a senior strategist from the Modern Agency Sales team — 200+
