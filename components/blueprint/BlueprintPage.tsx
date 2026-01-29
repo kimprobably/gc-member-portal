@@ -276,10 +276,13 @@ const BlueprintPage: React.FC = () => {
 
   // Scroll to CalEmbed handler
   const scrollToCalEmbed = () => {
-    calEmbedRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
+    const el = calEmbedRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Re-scroll after a brief delay in case layout shifts from lazy-loaded content
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
   return (
