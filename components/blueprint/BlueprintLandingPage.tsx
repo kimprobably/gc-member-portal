@@ -102,7 +102,7 @@ const Hero: React.FC<HeroProps> = ({ onSubmit, isSubmitting, error }) => {
   };
 
   return (
-    <section className="bg-white dark:bg-zinc-950 py-16 sm:py-24">
+    <section className="bg-white dark:bg-zinc-950 py-10 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Trust Badge */}
         <div className="flex justify-center mb-8">
