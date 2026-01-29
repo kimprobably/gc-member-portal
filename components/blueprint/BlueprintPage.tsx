@@ -278,7 +278,7 @@ const BlueprintPage: React.FC = () => {
   const scrollToCalEmbed = () => {
     calEmbedRef.current?.scrollIntoView({
       behavior: 'smooth',
-      block: 'start',
+      block: 'center',
     });
   };
 
@@ -415,18 +415,7 @@ const BlueprintPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 20. CTA #2 — "Book Your 30-Min Strategy Call" */}
-        <div className="flex justify-center">
-          <CTAButton
-            text="Book Your 30-Min Strategy Call"
-            subtext="We'll map your quickest wins and build your 90-day plan"
-            onClick={scrollToCalEmbed}
-            size="large"
-            icon="calendar"
-          />
-        </div>
-
-        {/* 21. CalEmbed */}
+        {/* 20. CalEmbed */}
         <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
       </div>
 
