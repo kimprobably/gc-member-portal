@@ -15,7 +15,7 @@ interface ContentRoadmapProps {
 // ============================================
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-const WEEKDAYS_PER_WEEK = 5;
+const DAYS_PER_WEEK = 7;
 
 // ============================================
 // Copy Button Component
@@ -280,19 +280,19 @@ interface MonthGridProps {
  * Posts fill weekday slots (Mon-Fri) sequentially; weekend columns stay empty.
  */
 const MonthGrid: React.FC<MonthGridProps> = ({ label, posts, onSelectPost }) => {
-  // Build rows: each row = 1 week (7 cells). Posts fill Mon-Fri sequentially.
-  const totalWeeks = Math.ceil(posts.length / WEEKDAYS_PER_WEEK);
+  // Build rows: each row = 1 week (7 cells). Posts fill all 7 days sequentially.
+  const totalWeeks = Math.ceil(posts.length / DAYS_PER_WEEK);
   const weeks: (ProspectPost | null)[][] = [];
 
   let postIdx = 0;
   for (let w = 0; w < totalWeeks; w++) {
     const row: (ProspectPost | null)[] = [];
     for (let d = 0; d < 7; d++) {
-      if (d < 5 && postIdx < posts.length) {
+      if (postIdx < posts.length) {
         row.push(posts[postIdx]);
         postIdx++;
       } else {
-        row.push(null); // weekend or no more posts
+        row.push(null);
       }
     }
     weeks.push(row);
