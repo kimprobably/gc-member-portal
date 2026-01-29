@@ -16,6 +16,7 @@ import {
 
 // Import blueprint components
 import BlueprintHeader from './BlueprintHeader';
+import LogoBar from './LogoBar';
 import ScoreRadar from './ScoreRadar';
 import AnalysisSection from './AnalysisSection';
 import LinkedInProfileMock from './LinkedInProfileMock';
@@ -226,23 +227,26 @@ const BlueprintPage: React.FC = () => {
       <ThemeToggle />
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12 sm:space-y-16">
-        {/* 1. Hero — BlueprintHeader with bold hook + authority score + CTA */}
+        {/* 1. Hero — BlueprintHeader with stats bar + authority score + CTA */}
         <BlueprintHeader
           prospect={prospect}
           onCTAClick={scrollToCalEmbed}
           ctaText="See What You're Missing"
         />
 
-        {/* 2. Bridge: problem identification intro */}
+        {/* 2. Logo Bar — instant social proof */}
+        <LogoBar />
+
+        {/* 3. Bridge: problem identification intro */}
         <SectionBridge
           text="Here's where you stand right now — and what's standing between you and a full pipeline."
           variant="accent"
         />
 
-        {/* 3. ScoreRadar — problem identification */}
+        {/* 4. ScoreRadar — problem identification */}
         <ScoreRadar prospect={prospect} />
 
-        {/* 3.5. Video walkthrough */}
+        {/* 4.5. Video walkthrough */}
         {settings?.blueprintVideoUrl && (
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -266,50 +270,70 @@ const BlueprintPage: React.FC = () => {
           </section>
         )}
 
-        {/* 4. AnalysisSection — what's working vs revenue leaks */}
+        {/* 5. AnalysisSection — what's working vs revenue leaks */}
         <AnalysisSection
           prospect={prospect}
           introParagraph="We analyzed your LinkedIn presence across 5 key dimensions. Here's what stands out."
         />
 
-        {/* 5. MarketingBlock: allbound system (if exists) */}
+        {/* 6. Testimonial #1 — social proof right after problem reveal */}
+        <TestimonialQuote
+          quote="The blueprint showed me exactly where I was leaving money on the table. Within 30 days of implementing the profile rewrite and content plan, I had 3 new discovery calls booked from LinkedIn alone."
+          author="Recent Blueprint Client"
+          role="B2B Consultant"
+          result="3 calls in 30 days"
+        />
+
+        {/* 7. MarketingBlock: allbound system (if exists) */}
         <MarketingBlock block={allboundSystemBlock} />
 
-        {/* 6. Bridge: transition to solution */}
+        {/* 8. Bridge: transition to solution */}
         <SectionBridge
           text="Now let's fix it. Here's your new profile — optimized to attract and convert your ideal buyers."
           variant="gradient"
         />
 
-        {/* 7. LinkedInProfileMock — visual showcase */}
+        {/* 9. LinkedInProfileMock — visual showcase */}
         <LinkedInProfileMock prospect={prospect} />
 
-        {/* 8. ProfileRewrite — detailed before/after */}
+        {/* 10. ProfileRewrite — detailed before/after */}
         <ProfileRewrite prospect={prospect} />
 
-        {/* 9. CTA #1 */}
+        {/* 11. CTA #1 (secondary — save primary for later) */}
         <div className="flex justify-center">
           <CTAButton
             text="Get Help Implementing This"
             subtext="Book a 30-min strategy call"
             onClick={scrollToCalEmbed}
             size="large"
+            variant="secondary"
           />
         </div>
 
-        {/* 10. Bridge: transition to content engine */}
+        {/* 12. Bridge: transition to content engine */}
         <SectionBridge
           text="But a great profile isn't enough. You need a content engine that keeps your pipeline full."
           variant="accent"
         />
 
-        {/* 11. LeadMagnets */}
+        {/* 13. LeadMagnets */}
         <LeadMagnets prospect={prospect} />
 
-        {/* 12. ContentRoadmap */}
+        {/* 14. ValueStack — moved up before calendar to establish value */}
+        <ValueStack />
+
+        {/* 15. ContentRoadmap */}
         <ContentRoadmap posts={posts} />
 
-        {/* 13. CTA #2 */}
+        {/* 16. Testimonial #2 — proof before the conversion push */}
+        <TestimonialQuote
+          quote="I was posting on LinkedIn randomly with no strategy. After implementing this blueprint, my pipeline went from empty to consistently booking 5+ calls per week. The content roadmap alone was a game changer."
+          author="Agency Owner"
+          role="Marketing Services"
+          result="5+ calls/week"
+        />
+
+        {/* 17. CTA #2 (primary — main conversion point) */}
         <div className="flex justify-center">
           <CTAButton
             text="Turn This Blueprint Into Revenue"
@@ -320,11 +344,8 @@ const BlueprintPage: React.FC = () => {
           />
         </div>
 
-        {/* 14. ValueStack — "Everything in Your Blueprint" */}
-        <ValueStack />
-
-        {/* 15. Testimonials — Senja embed or fallback quote */}
-        {settings?.senjaWidgetUrl ? (
+        {/* 18. Testimonials — Senja embed if available */}
+        {settings?.senjaWidgetUrl && (
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
               What People Are Saying
@@ -339,21 +360,19 @@ const BlueprintPage: React.FC = () => {
               />
             </div>
           </section>
-        ) : (
-          <TestimonialQuote />
         )}
 
-        {/* 16. SimpleSteps — "3 Steps to Get Started" */}
+        {/* 19. SimpleSteps — right before final CTA to reduce friction */}
         <SimpleSteps />
 
-        {/* 17. MarketingBlock: bootcamp pitch */}
+        {/* 20. MarketingBlock: bootcamp pitch */}
         <MarketingBlock block={bootcampPitchBlock} />
 
-        {/* 18. MarketingBlock: FAQs */}
+        {/* 21. MarketingBlock: FAQs — address objections before final ask */}
         <MarketingBlock block={faqBlock} />
 
-        {/* 19. CTA #3 */}
-        <div className="flex justify-center">
+        {/* 22. CTA #3 (primary + urgency) */}
+        <div className="flex flex-col items-center gap-3">
           <CTAButton
             text="Book Your Strategy Call Now"
             subtext="30 minutes. Zero pressure. Let's talk."
@@ -361,13 +380,16 @@ const BlueprintPage: React.FC = () => {
             size="large"
             icon="calendar"
           />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Limited spots available each month for hands-on implementation support.
+          </p>
         </div>
 
-        {/* 20. CalEmbed */}
+        {/* 23. CalEmbed */}
         <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
       </div>
 
-      {/* 21. StickyCTA (fixed position) */}
+      {/* 24. StickyCTA (fixed position) */}
       <StickyCTA
         text="Book Your Strategy Call"
         calEmbedRef={calEmbedRef}

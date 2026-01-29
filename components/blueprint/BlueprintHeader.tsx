@@ -100,9 +100,27 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, onCTAClick,
         </div>
       )}
 
+      {/* Stats Bar */}
+      <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <div className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">300+</div>
+          <div className="text-xs text-zinc-500">Blueprints Delivered</div>
+        </div>
+        <div>
+          <div className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            $4.7M+
+          </div>
+          <div className="text-xs text-zinc-500">Pipeline Generated</div>
+        </div>
+        <div>
+          <div className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">20K+</div>
+          <div className="text-xs text-zinc-500">Leads Created</div>
+        </div>
+      </div>
+
       {/* CTA Button */}
       {onCTAClick && (
-        <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <button
             type="button"
             onClick={onCTAClick}

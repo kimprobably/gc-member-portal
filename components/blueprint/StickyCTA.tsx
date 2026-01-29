@@ -47,8 +47,9 @@ const StickyCTA: React.FC<StickyCTAProps> = ({
       {
         // Trigger when any part of the CalEmbed is visible
         threshold: 0,
-        // Start observing a bit before it comes into view
-        rootMargin: '100px 0px 0px 0px',
+        // Show sticky CTA until CalEmbed is nearly in view, hide while visible,
+        // reappear when user scrolls back up past it
+        rootMargin: '0px 0px -100px 0px',
       }
     );
 
