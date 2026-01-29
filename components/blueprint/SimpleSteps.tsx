@@ -9,21 +9,18 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: '01',
-    title: 'Book Your Strategy Call',
-    description:
-      "Pick a time that works for you. We'll review your blueprint together and map out your priorities.",
+    title: 'Book a 30-Min Call',
+    description: "We'll review your blueprint together and identify your 3 quickest wins.",
   },
   {
     number: '02',
     title: 'Get Your Implementation Plan',
-    description:
-      'Walk away with a clear, sequenced action plan — what to do first, second, and third.',
+    description: 'Walk away with a concrete 30-day action plan you can start today.',
   },
   {
     number: '03',
-    title: 'Start Generating Leads',
-    description:
-      'Implement your optimized profile, content system, and lead magnets to start filling your pipeline.',
+    title: 'See Results in 30 Days',
+    description: 'Most clients see their first inbound lead within 2-4 weeks of implementing.',
   },
 ];
 
@@ -32,10 +29,10 @@ const SimpleSteps: React.FC = () => {
     <div className="py-12 sm:py-16 px-4 bg-gradient-to-b from-violet-50 to-transparent dark:from-violet-950/10 dark:to-transparent">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 text-center mb-3">
-          3 Steps to Get Started
+          What Happens Next
         </h2>
         <p className="text-zinc-600 dark:text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
-          Turning this blueprint into real pipeline growth is simpler than you think.
+          Here&apos;s exactly what to expect when you book your strategy call.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {STEPS.map((step) => (

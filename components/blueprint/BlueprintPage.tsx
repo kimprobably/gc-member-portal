@@ -122,6 +122,59 @@ const BlueprintError: React.FC<BlueprintErrorProps> = ({
 );
 
 // ============================================
+// Senja Embed Component
+// ============================================
+
+const SENJA_WIDGET_ID = 'ec06dbf2-1417-4d3e-ba0a-0ade12fa83e1';
+
+const SenjaEmbed: React.FC = () => {
+  useEffect(() => {
+    const scriptId = `senja-script-${SENJA_WIDGET_ID}`;
+    if (document.getElementById(scriptId)) return;
+
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = `https://widget.senja.io/widget/${SENJA_WIDGET_ID}/platform.js`;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      const el = document.getElementById(scriptId);
+      if (el) el.remove();
+    };
+  }, []);
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+        What People Are Saying
+      </h2>
+      <div
+        className="senja-embed"
+        data-id={SENJA_WIDGET_ID}
+        data-mode="shadow"
+        data-lazyload="false"
+        style={{ display: 'block', width: '100%' }}
+      />
+    </section>
+  );
+};
+
+// ============================================
+// Score-based intro paragraph helper
+// ============================================
+
+function getScoreBasedIntro(authorityScore: number): string {
+  if (authorityScore > 70) {
+    return "You're ahead of most professionals on LinkedIn. These refinements will help you maximize the pipeline from your existing presence.";
+  }
+  if (authorityScore >= 40) {
+    return "You have a solid foundation. These targeted optimizations will help you convert more of the attention you're already getting.";
+  }
+  return 'Your LinkedIn presence has significant untapped potential. The good news: small changes here will have an outsized impact on your pipeline.';
+}
+
+// ============================================
 // Main BlueprintPage Component
 // ============================================
 
@@ -211,14 +264,15 @@ const BlueprintPage: React.FC = () => {
 
   const { prospect, posts, settings, contentBlocks, scorecardCount, clientLogos } = data;
 
-  // Filter content blocks by type for marketing sections
-  const bootcampPitchBlock = contentBlocks.find(
-    (b) => b.blockType === 'cta' || b.title?.toLowerCase().includes('bootcamp')
-  );
+  // Filter content blocks — only FAQ needed now (bootcamp removed)
   const faqBlock = contentBlocks.find((b) => b.blockType === 'faq');
 
   // Get calBookingLink from settings with fallback
   const calBookingLink = settings?.calBookingLink || 'timkeen/30min';
+
+  // Score-based intro paragraph
+  const authorityScore = prospect.authorityScore ?? 0;
+  const introParagraph = getScoreBasedIntro(authorityScore);
 
   // Scroll to CalEmbed handler
   const scrollToCalEmbed = () => {
@@ -233,13 +287,8 @@ const BlueprintPage: React.FC = () => {
       <ThemeToggle />
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12 sm:space-y-16">
-        {/* 1. Hero — BlueprintHeader with stats bar + authority score + CTA */}
-        <BlueprintHeader
-          prospect={prospect}
-          onCTAClick={scrollToCalEmbed}
-          ctaText="See What You're Missing"
-          scorecardCount={scorecardCount}
-        />
+        {/* 1. Hero — BlueprintHeader (no CTA button, hook subtitle, score context) */}
+        <BlueprintHeader prospect={prospect} scorecardCount={scorecardCount} />
 
         {/* 2. Logo Bar — instant social proof */}
         <LogoBar logos={clientLogos} />
@@ -255,7 +304,7 @@ const BlueprintPage: React.FC = () => {
         {/* 4. ScoreRadar — problem identification */}
         <ScoreRadar prospect={prospect} />
 
-        {/* 4.5. Video walkthrough */}
+        {/* 5. Video walkthrough */}
         {settings?.blueprintVideoUrl && (
           <section className="space-y-4">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -279,13 +328,10 @@ const BlueprintPage: React.FC = () => {
           </section>
         )}
 
-        {/* 5. AnalysisSection — what's working vs revenue leaks */}
-        <AnalysisSection
-          prospect={prospect}
-          introParagraph="We analyzed your LinkedIn presence across 5 key dimensions. Here's what stands out."
-        />
+        {/* 6. AnalysisSection — with score-based intro */}
+        <AnalysisSection prospect={prospect} introParagraph={introParagraph} />
 
-        {/* 8. Bridge: transition to solution */}
+        {/* 7. Bridge: transition to solution */}
         <SectionBridge
           text="Now let's fix it. Here's your new profile — optimized to attract and convert your ideal buyers."
           variant="gradient"
@@ -293,24 +339,13 @@ const BlueprintPage: React.FC = () => {
           stepLabel="Rebuild"
         />
 
-        {/* 9. LinkedInProfileMock — visual showcase */}
+        {/* 8. LinkedInProfileMock — visual showcase */}
         <LinkedInProfileMock prospect={prospect} />
 
-        {/* 10. ProfileRewrite — detailed before/after */}
+        {/* 9. ProfileRewrite — detailed before/after */}
         <ProfileRewrite prospect={prospect} />
 
-        {/* 11. CTA #1 (secondary — save primary for later) */}
-        <div className="flex justify-center">
-          <CTAButton
-            text="Get Help Implementing This"
-            subtext="Book a 30-min strategy call"
-            onClick={scrollToCalEmbed}
-            size="large"
-            variant="secondary"
-          />
-        </div>
-
-        {/* 12. Bridge: transition to content engine */}
+        {/* 10. Bridge: transition to content engine */}
         <SectionBridge
           text="A great profile gets attention. Now you need a content engine that turns that attention into pipeline."
           variant="accent"
@@ -318,80 +353,84 @@ const BlueprintPage: React.FC = () => {
           stepLabel="Activate"
         />
 
-        {/* 13. LeadMagnets */}
+        {/* 11. LeadMagnets */}
         <LeadMagnets prospect={prospect} />
 
-        {/* 14. ValueStack — moved up before calendar to establish value */}
+        {/* 12. ValueStack */}
         <ValueStack />
 
-        {/* 15. ContentRoadmap */}
+        {/* 13. ContentRoadmap */}
         <ContentRoadmap posts={posts} />
 
-        {/* 16. Testimonial #2 — proof before the conversion push */}
-        <TestimonialQuote
-          quote="I was posting on LinkedIn randomly with no strategy. After implementing this blueprint, my pipeline went from empty to consistently booking 5+ calls per week. The content roadmap alone was a game changer."
-          author="Agency Owner"
-          role="Marketing Services"
-          result="5+ calls/week"
-        />
-
-        {/* 17. CTA #2 (primary — main conversion point) */}
+        {/* 14. CTA #1 — "Book Your 30-Min Strategy Call" */}
         <div className="flex justify-center">
           <CTAButton
-            text="Turn This Blueprint Into Revenue"
-            subtext="Let's map out your implementation plan"
-            onClick={scrollToCalEmbed}
-            size="large"
-            icon="arrow"
-          />
-        </div>
-
-        {/* 18. Testimonials — Senja embed if available */}
-        {settings?.senjaWidgetUrl && (
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              What People Are Saying
-            </h2>
-            <div className="rounded-xl overflow-hidden">
-              <iframe
-                src={settings.senjaWidgetUrl}
-                title="Client testimonials"
-                className="w-full border-0"
-                style={{ minHeight: '500px' }}
-                loading="lazy"
-              />
-            </div>
-          </section>
-        )}
-
-        {/* 19. SimpleSteps — right before final CTA to reduce friction */}
-        <SimpleSteps />
-
-        {/* 20. MarketingBlock: bootcamp pitch */}
-        <MarketingBlock block={bootcampPitchBlock} />
-
-        {/* 21. MarketingBlock: FAQs — address objections before final ask */}
-        <MarketingBlock block={faqBlock} />
-
-        {/* 22. CTA #3 (primary + urgency) */}
-        <div className="flex flex-col items-center gap-3">
-          <CTAButton
-            text="Book Your Strategy Call Now"
-            subtext="30 minutes. Zero pressure. Let's talk."
+            text="Book Your 30-Min Strategy Call"
+            subtext="We'll map your quickest wins and build your 90-day plan"
             onClick={scrollToCalEmbed}
             size="large"
             icon="calendar"
           />
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Limited spots available each month for hands-on implementation support.
-          </p>
         </div>
 
-        {/* 23. CalEmbed */}
+        {/* 15. TestimonialQuote — specific, with before/after metrics */}
+        <TestimonialQuote
+          quote="I was posting randomly with zero strategy — maybe 1 inbound lead a quarter. After implementing the content roadmap, I booked 5 calls in my first month. The profile rewrite alone doubled my connection acceptance rate."
+          author="Marketing Agency Owner"
+          role="$500K+ revenue"
+          result="5 calls in first month"
+        />
+
+        {/* 15.5. Senja testimonials wall */}
+        <SenjaEmbed />
+
+        {/* 16. FAQ — objections cleared before final CTA */}
+        <MarketingBlock block={faqBlock} />
+
+        {/* 17. What Happens Next — rewritten SimpleSteps */}
+        <SimpleSteps />
+
+        {/* 18. Risk reversal callout */}
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl p-6 sm:p-8 text-center">
+            <h3 className="text-sm font-medium text-green-700 dark:text-green-400 uppercase tracking-wider mb-3">
+              Our Guarantee
+            </h3>
+            <p className="text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed max-w-2xl mx-auto">
+              If you implement the top 3 recommendations from your strategy call and don&apos;t see
+              at least one new qualified conversation within 30 days, we&apos;ll extend your
+              implementation support at no cost.
+            </p>
+          </div>
+        </div>
+
+        {/* 19. Facilitator credibility card */}
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6 sm:p-8 text-center">
+            <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed max-w-2xl mx-auto">
+              Your call is with a senior strategist from the Modern Agency Sales team — the same
+              team that&apos;s delivered 200+ LinkedIn blueprints generating $4.7M+ in client
+              pipeline. No juniors, no scripts.
+            </p>
+          </div>
+        </div>
+
+        {/* 20. CTA #2 — "Book Your 30-Min Strategy Call" */}
+        <div className="flex justify-center">
+          <CTAButton
+            text="Book Your 30-Min Strategy Call"
+            subtext="We'll map your quickest wins and build your 90-day plan"
+            onClick={scrollToCalEmbed}
+            size="large"
+            icon="calendar"
+          />
+        </div>
+
+        {/* 21. CalEmbed */}
         <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
       </div>
 
-      {/* 24. StickyCTA (fixed position) */}
+      {/* 22. StickyCTA (fixed position) */}
       <StickyCTA
         text="Book Your Strategy Call"
         calEmbedRef={calEmbedRef}

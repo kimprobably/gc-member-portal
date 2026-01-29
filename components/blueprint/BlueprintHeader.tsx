@@ -7,8 +7,6 @@ import { Prospect, getProspectDisplayName } from '../../types/blueprint-types';
 
 interface BlueprintHeaderProps {
   prospect: Prospect;
-  onCTAClick?: () => void;
-  ctaText?: string;
   scorecardCount?: number;
 }
 
@@ -45,19 +43,29 @@ const Avatar: React.FC<AvatarProps> = ({ src, name }) => {
 };
 
 // ============================================
+// Score Context Label
+// ============================================
+
+function getScoreContext(score: number): { label: string; colorClass: string } {
+  if (score >= 70) {
+    return { label: 'Above Average', colorClass: 'text-green-600 dark:text-green-400' };
+  }
+  if (score >= 40) {
+    return { label: 'Average', colorClass: 'text-yellow-600 dark:text-yellow-400' };
+  }
+  return { label: 'Below Average', colorClass: 'text-red-600 dark:text-red-400' };
+}
+
+// ============================================
 // BlueprintHeader Component
 // ============================================
 
-const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({
-  prospect,
-  onCTAClick,
-  ctaText,
-  scorecardCount,
-}) => {
+const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, scorecardCount }) => {
   const displayName = getProspectDisplayName(prospect);
   const authorityScore = prospect.authorityScore ?? 0;
   const scoreSummary = prospect.scoreSummary;
   const companyAndTitle = [prospect.company, prospect.jobTitle].filter(Boolean).join(' | ');
+  const scoreContext = getScoreContext(authorityScore);
 
   return (
     <div>
@@ -81,7 +89,7 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({
           {/* Text Content */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-2">
-              Your Custom LinkedIn Authority Blueprint Is Ready
+              We found 3 gaps costing you pipeline. Here&apos;s how to fix them.
             </p>
             {/* Title */}
             <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
@@ -99,13 +107,16 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({
             )}
           </div>
 
-          {/* Authority Score */}
+          {/* Authority Score with context label */}
           <div className="flex-shrink-0 text-center sm:text-right">
             <div className="text-6xl sm:text-7xl font-bold text-violet-500 leading-none">
               {authorityScore}
             </div>
             <div className="mt-1 text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Authority Score
+            </div>
+            <div className={`mt-1 text-xs font-semibold ${scoreContext.colorClass}`}>
+              {scoreContext.label}
             </div>
           </div>
         </div>
@@ -140,19 +151,6 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({
             <div className="text-xs text-zinc-500">Leads Created</div>
           </div>
         </div>
-
-        {/* CTA Button */}
-        {onCTAClick && (
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              onClick={onCTAClick}
-              className="inline-flex items-center justify-center gap-2 font-medium rounded-lg px-8 py-4 text-lg bg-violet-500 hover:bg-violet-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-200"
-            >
-              {ctaText || "See What You're Missing"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
