@@ -254,6 +254,7 @@ function mapBlueprintSettings(record: Record<string, unknown>): BlueprintSetting
     spotsRemainingFoundations: record.spots_remaining_foundations as number | undefined,
     spotsRemainingEngineering: record.spots_remaining_engineering as number | undefined,
     blueprintVideoUrl: record.blueprint_video_url as string | undefined,
+    callBookedVideoUrl: record.call_booked_video_url as string | undefined,
     senjaWidgetUrl: record.senja_widget_url as string | undefined,
     createdAt: new Date(record.created_at as string),
     updatedAt: new Date(record.updated_at as string),
@@ -603,6 +604,7 @@ export async function updateBlueprintSettings(
     spotsRemainingFoundations: number;
     spotsRemainingEngineering: number;
     blueprintVideoUrl: string;
+    callBookedVideoUrl: string;
     senjaWidgetUrl: string;
   }>
 ): Promise<BlueprintSettings> {
@@ -682,6 +684,9 @@ export async function updateBlueprintSettings(
   }
   if (settings.blueprintVideoUrl !== undefined) {
     updateData.blueprint_video_url = settings.blueprintVideoUrl;
+  }
+  if (settings.callBookedVideoUrl !== undefined) {
+    updateData.call_booked_video_url = settings.callBookedVideoUrl;
   }
   if (settings.senjaWidgetUrl !== undefined) {
     updateData.senja_widget_url = settings.senjaWidgetUrl;

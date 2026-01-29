@@ -28,6 +28,7 @@ interface FormData {
   spotsRemainingFoundations: string;
   spotsRemainingEngineering: string;
   blueprintVideoUrl: string;
+  callBookedVideoUrl: string;
   senjaWidgetUrl: string;
 }
 
@@ -43,6 +44,7 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
     spotsRemainingFoundations: '',
     spotsRemainingEngineering: '',
     blueprintVideoUrl: '',
+    callBookedVideoUrl: '',
     senjaWidgetUrl: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
@@ -67,6 +69,7 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
         spotsRemainingFoundations: settings.spotsRemainingFoundations?.toString() || '',
         spotsRemainingEngineering: settings.spotsRemainingEngineering?.toString() || '',
         blueprintVideoUrl: settings.blueprintVideoUrl || '',
+        callBookedVideoUrl: settings.callBookedVideoUrl || '',
         senjaWidgetUrl: settings.senjaWidgetUrl || '',
       });
     }
@@ -103,6 +106,7 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
         ? parseInt(formData.spotsRemainingEngineering, 10)
         : undefined,
       blueprintVideoUrl: formData.blueprintVideoUrl || undefined,
+      callBookedVideoUrl: formData.callBookedVideoUrl || undefined,
       senjaWidgetUrl: formData.senjaWidgetUrl || undefined,
     });
   };
@@ -285,6 +289,21 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
                   />
                   <p className="text-xs text-zinc-500 mt-1">
                     Loom/YouTube embed URL shown after the scorecard
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-200 mb-1.5">
+                    Call Booked Video URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.callBookedVideoUrl}
+                    onChange={(e) => handleChange('callBookedVideoUrl', e.target.value)}
+                    placeholder="https://www.loom.com/embed/..."
+                    className="w-full px-4 py-2.5 rounded-lg border bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Video shown on the call-booked thank-you page
                   </p>
                 </div>
                 <div>

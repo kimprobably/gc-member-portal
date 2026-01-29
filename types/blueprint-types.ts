@@ -317,6 +317,7 @@ export interface BlueprintSettings {
   spotsRemainingEngineering?: number;
   // Embed settings
   blueprintVideoUrl?: string;
+  callBookedVideoUrl?: string;
   senjaWidgetUrl?: string;
   // Timestamps
   createdAt: Date;
@@ -352,6 +353,7 @@ export interface BlueprintSettingsFormData {
   spotsRemainingFoundations?: number;
   spotsRemainingEngineering?: number;
   blueprintVideoUrl?: string;
+  callBookedVideoUrl?: string;
   senjaWidgetUrl?: string;
 }
 
