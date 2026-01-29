@@ -27,6 +27,45 @@ import OfferCard from './OfferCard';
 import ThemeToggle from './ThemeToggle';
 
 // ============================================
+// Senja Embed Component
+// ============================================
+
+const SENJA_WIDGET_ID = 'ec06dbf2-1417-4d3e-ba0a-0ade12fa83e1';
+
+const SenjaEmbed: React.FC = () => {
+  useEffect(() => {
+    const scriptId = `senja-script-${SENJA_WIDGET_ID}`;
+    if (document.getElementById(scriptId)) return;
+
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = `https://widget.senja.io/widget/${SENJA_WIDGET_ID}/platform.js`;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      const el = document.getElementById(scriptId);
+      if (el) el.remove();
+    };
+  }, []);
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+        What People Are Saying
+      </h2>
+      <div
+        className="senja-embed"
+        data-id={SENJA_WIDGET_ID}
+        data-mode="shadow"
+        data-lazyload="false"
+        style={{ display: 'block', width: '100%' }}
+      />
+    </section>
+  );
+};
+
+// ============================================
 // Types
 // ============================================
 
@@ -129,17 +168,10 @@ const OfferLocked: React.FC<OfferLockedProps> = ({ prospectName }) => (
         unlocked after your strategy call.
       </p>
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
-        <p className="text-zinc-700 dark:text-zinc-300 mb-4">
-          Haven&rsquo;t scheduled your call yet? Book a time to discuss your blueprint and unlock
-          your exclusive offers.
+        <p className="text-zinc-700 dark:text-zinc-300">
+          If you&rsquo;ve already booked your call, hang tight &mdash; this page will be unlocked
+          shortly after your session.
         </p>
-        <a
-          href="#book-call"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-violet-500 hover:bg-violet-600 text-white font-medium rounded-lg transition-colors"
-        >
-          <Calendar className="w-5 h-5" />
-          Book Your Strategy Call
-        </a>
       </div>
     </div>
   </div>
@@ -276,17 +308,11 @@ const TestimonialInline: React.FC<TestimonialInlineProps> = ({ testimonial }) =>
 
 interface CTASectionProps {
   paymentUrl?: string;
-  calBookingLink?: string;
   offer: OfferData;
   variant?: 'primary' | 'secondary';
 }
 
-const CTASection: React.FC<CTASectionProps> = ({
-  paymentUrl,
-  calBookingLink,
-  offer,
-  variant = 'primary',
-}) => {
+const CTASection: React.FC<CTASectionProps> = ({ paymentUrl, offer, variant = 'primary' }) => {
   const isPrimary = variant === 'primary';
 
   return (
@@ -311,16 +337,6 @@ const CTASection: React.FC<CTASectionProps> = ({
         >
           Coming Soon
         </button>
-      )}
-      {calBookingLink && (
-        <a
-          href={`https://cal.com/${calBookingLink}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full sm:w-auto px-8 py-4 rounded-lg font-semibold text-center transition-colors bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-zinc-700"
-        >
-          {offer.ctaSecondary}
-        </a>
       )}
     </div>
   );
@@ -398,13 +414,10 @@ const OfferPage: React.FC = () => {
   const otherOffer = OFFERS[otherType];
 
   // Payment URLs
-  const foundationsPaymentUrl =
-    settings?.bootcampOfferUrl || settings?.foundationsPaymentUrl || undefined;
-  const engineeringPaymentUrl =
-    settings?.gcOfferUrl || settings?.engineeringPaymentUrl || undefined;
+  const foundationsPaymentUrl = settings?.foundationsPaymentUrl || undefined;
+  const engineeringPaymentUrl = settings?.engineeringPaymentUrl || undefined;
   const getPaymentUrl = (type: 'foundations' | 'engineering') =>
     type === 'foundations' ? foundationsPaymentUrl : engineeringPaymentUrl;
-  const calBookingLink = settings?.calBookingLink || 'timkeen/30min';
 
   // Cohort info
   const cohortDate = getNextCohortDate(recommendedType, settings, offer);
@@ -466,12 +479,7 @@ const OfferPage: React.FC = () => {
             {offer.subheadline}
           </p>
 
-          <CTASection
-            paymentUrl={getPaymentUrl(recommendedType)}
-            calBookingLink={calBookingLink}
-            offer={offer}
-            variant="primary"
-          />
+          <CTASection paymentUrl={getPaymentUrl(recommendedType)} offer={offer} variant="primary" />
         </section>
 
         <div className="space-y-16 sm:space-y-20">
@@ -558,7 +566,6 @@ const OfferPage: React.FC = () => {
           <section className="text-center">
             <CTASection
               paymentUrl={getPaymentUrl(recommendedType)}
-              calBookingLink={calBookingLink}
               offer={offer}
               variant="secondary"
             />
@@ -696,7 +703,6 @@ const OfferPage: React.FC = () => {
 
               <CTASection
                 paymentUrl={getPaymentUrl(recommendedType)}
-                calBookingLink={calBookingLink}
                 offer={offer}
                 variant="primary"
               />
@@ -771,7 +777,6 @@ const OfferPage: React.FC = () => {
             </p>
             <CTASection
               paymentUrl={getPaymentUrl(recommendedType)}
-              calBookingLink={calBookingLink}
               offer={offer}
               variant="primary"
             />
@@ -791,6 +796,9 @@ const OfferPage: React.FC = () => {
             </section>
           )}
 
+          {/* ===== SENJA TESTIMONIAL EMBED ===== */}
+          <SenjaEmbed />
+
           {/* ===== OTHER OFFER — COMPACT CARD ===== */}
           <section>
             <div className="text-center mb-6">
@@ -798,30 +806,7 @@ const OfferPage: React.FC = () => {
                 Looking for something different?
               </p>
             </div>
-            <OfferCard
-              offer={otherOffer}
-              paymentUrl={getPaymentUrl(otherType)}
-              calBookingLink={calBookingLink}
-            />
-          </section>
-
-          {/* ===== BOOK A CALL FALLBACK ===== */}
-          <section className="text-center py-8 border-t border-zinc-200 dark:border-zinc-800">
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
-              Still Have Questions?
-            </h3>
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6 max-w-md mx-auto">
-              Not sure which program is right for you? Book a call and we&rsquo;ll help you decide.
-            </p>
-            <a
-              href={`https://cal.com/${calBookingLink}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-700 font-medium rounded-lg transition-colors"
-            >
-              <Calendar className="w-5 h-5" />
-              Book a Call
-            </a>
+            <OfferCard offer={otherOffer} paymentUrl={getPaymentUrl(otherType)} />
           </section>
         </div>
       </div>

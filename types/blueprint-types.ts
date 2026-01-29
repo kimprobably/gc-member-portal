@@ -11,12 +11,11 @@
 /**
  * Recommended offer types for prospects
  */
-export type RecommendedOffer = 'bootcamp' | 'gc' | 'dfy' | 'none';
+export type RecommendedOffer = 'bootcamp' | 'gc' | 'none';
 
 export const RECOMMENDED_OFFER_LABELS: Record<RecommendedOffer, string> = {
-  bootcamp: 'Bootcamp',
-  gc: 'Growth Collective',
-  dfy: 'Done For You',
+  bootcamp: 'LinkedIn Client System',
+  gc: 'GTM Engineering',
   none: 'None',
 };
 
@@ -299,11 +298,9 @@ export interface BlueprintSettings {
   bootcampOfferTitle: string;
   bootcampOfferDescription: string;
   bootcampOfferCta: string;
-  bootcampOfferUrl: string;
   gcOfferTitle: string;
   gcOfferDescription: string;
   gcOfferCta: string;
-  gcOfferUrl: string;
   dfyOfferTitle: string;
   dfyOfferDescription: string;
   dfyOfferCta: string;
@@ -338,11 +335,9 @@ export interface BlueprintSettingsFormData {
   bootcampOfferTitle: string;
   bootcampOfferDescription: string;
   bootcampOfferCta: string;
-  bootcampOfferUrl: string;
   gcOfferTitle: string;
   gcOfferDescription: string;
   gcOfferCta: string;
-  gcOfferUrl: string;
   dfyOfferTitle: string;
   dfyOfferDescription: string;
   dfyOfferCta: string;

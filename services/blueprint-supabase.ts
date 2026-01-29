@@ -239,11 +239,9 @@ function mapBlueprintSettings(record: Record<string, unknown>): BlueprintSetting
     bootcampOfferTitle: (record.bootcamp_offer_title as string) || '',
     bootcampOfferDescription: (record.bootcamp_offer_description as string) || '',
     bootcampOfferCta: (record.bootcamp_offer_cta as string) || '',
-    bootcampOfferUrl: (record.bootcamp_offer_url as string) || '',
     gcOfferTitle: (record.gc_offer_title as string) || '',
     gcOfferDescription: (record.gc_offer_description as string) || '',
     gcOfferCta: (record.gc_offer_cta as string) || '',
-    gcOfferUrl: (record.gc_offer_url as string) || '',
     dfyOfferTitle: (record.dfy_offer_title as string) || '',
     dfyOfferDescription: (record.dfy_offer_description as string) || '',
     dfyOfferCta: (record.dfy_offer_cta as string) || '',
@@ -589,11 +587,9 @@ export async function updateBlueprintSettings(
     bootcampOfferTitle: string;
     bootcampOfferDescription: string;
     bootcampOfferCta: string;
-    bootcampOfferUrl: string;
     gcOfferTitle: string;
     gcOfferDescription: string;
     gcOfferCta: string;
-    gcOfferUrl: string;
     dfyOfferTitle: string;
     dfyOfferDescription: string;
     dfyOfferCta: string;
@@ -640,9 +636,6 @@ export async function updateBlueprintSettings(
   if (settings.bootcampOfferCta !== undefined) {
     updateData.bootcamp_offer_cta = settings.bootcampOfferCta;
   }
-  if (settings.bootcampOfferUrl !== undefined) {
-    updateData.bootcamp_offer_url = settings.bootcampOfferUrl;
-  }
   if (settings.gcOfferTitle !== undefined) {
     updateData.gc_offer_title = settings.gcOfferTitle;
   }
@@ -651,9 +644,6 @@ export async function updateBlueprintSettings(
   }
   if (settings.gcOfferCta !== undefined) {
     updateData.gc_offer_cta = settings.gcOfferCta;
-  }
-  if (settings.gcOfferUrl !== undefined) {
-    updateData.gc_offer_url = settings.gcOfferUrl;
   }
   if (settings.dfyOfferTitle !== undefined) {
     updateData.dfy_offer_title = settings.dfyOfferTitle;

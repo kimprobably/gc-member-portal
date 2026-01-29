@@ -9,14 +9,13 @@ import { OfferData } from './offer-data';
 export interface OfferCardProps {
   offer: OfferData;
   paymentUrl?: string;
-  calBookingLink?: string;
 }
 
 // ============================================
 // OfferCard Component — Compact expandable card for non-recommended offer
 // ============================================
 
-const OfferCard: React.FC<OfferCardProps> = ({ offer, paymentUrl, calBookingLink }) => {
+const OfferCard: React.FC<OfferCardProps> = ({ offer, paymentUrl }) => {
   const [expanded, setExpanded] = useState(false);
 
   // Show first 5-6 key bullets from weeks
@@ -130,15 +129,6 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, paymentUrl, calBookingLink
             className="block w-full py-4 px-6 rounded-lg font-semibold text-center transition-colors bg-zinc-100 hover:bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-100"
           >
             {offer.ctaPrimary}
-          </a>
-        ) : calBookingLink ? (
-          <a
-            href={`https://cal.com/${calBookingLink}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-4 px-6 rounded-lg font-semibold text-center transition-colors bg-zinc-100 hover:bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-100"
-          >
-            {offer.ctaSecondary}
           </a>
         ) : (
           <button

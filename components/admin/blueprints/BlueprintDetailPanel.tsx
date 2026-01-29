@@ -200,7 +200,7 @@ const BlueprintDetailPanel: React.FC<BlueprintDetailPanelProps> = ({
                 }`}
               >
                 <span
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                  className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full transition-transform ${
                     offerUnlocked ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
