@@ -407,16 +407,11 @@ const BlueprintPage: React.FC = () => {
         {/* 19. CalEmbed */}
         <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
 
-        {/* 20. Facilitator credibility card */}
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6 sm:p-8 text-center">
-            <p className="text-zinc-700 dark:text-zinc-300 text-base leading-relaxed max-w-2xl mx-auto">
-              Your call is with a senior strategist from the Modern Agency Sales team — the same
-              team that&apos;s delivered 200+ LinkedIn blueprints generating $4.7M+ in client
-              pipeline. No juniors, no scripts.
-            </p>
-          </div>
-        </div>
+        {/* 20. Facilitator credibility note */}
+        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Your call is with a senior strategist from the Modern Agency Sales team — 200+ blueprints
+          delivered, $4.7M+ in client pipeline. No juniors, no scripts.
+        </p>
       </div>
 
       {/* 22. StickyCTA (fixed position) */}
