@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { CheckCircle, BarChart3, AlertTriangle, User, Lightbulb, Calendar } from 'lucide-react';
-import { getBlueprintSettings } from '../../services/blueprint-supabase';
-import { BlueprintSettings } from '../../types/blueprint-types';
 import ThemeToggle from './ThemeToggle';
 import CalEmbed from './CalEmbed';
 
@@ -11,7 +9,8 @@ import CalEmbed from './CalEmbed';
 // ============================================
 
 interface LocationState {
-  slug?: string;
+  prospectId?: string;
+  reportUrl?: string;
 }
 
 // ============================================
@@ -30,21 +29,12 @@ const BLUEPRINT_CONTENTS = [
 // BlueprintThankYou Component
 // ============================================
 
+const CAL_BOOKING_LINK = 'vlad-timinski-pqqica/30min';
+
 const BlueprintThankYou: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
-  const slug = state?.slug;
-
-  const [settings, setSettings] = useState<BlueprintSettings | null>(null);
-
-  useEffect(() => {
-    getBlueprintSettings()
-      .then(setSettings)
-      .catch(() => {});
-  }, []);
-
-  const calBookingLink = settings?.calBookingLink || 'timkeen/30min';
-  const videoUrl = settings?.blueprintVideoUrl;
+  const reportUrl = state?.reportUrl;
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
@@ -65,23 +55,7 @@ const BlueprintThankYou: React.FC = () => {
           </p>
         </div>
 
-        {/* Video Embed */}
-        {videoUrl && (
-          <section className="mb-12">
-            <div
-              className="relative w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
-              style={{ paddingBottom: '56.25%' }}
-            >
-              <iframe
-                src={videoUrl}
-                title="What your blueprint contains"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </section>
-        )}
+        {/* Video Embed — add a videoUrl here when ready */}
 
         {/* Book a Call CTA */}
         <section className="mb-12">
@@ -94,7 +68,7 @@ const BlueprintThankYou: React.FC = () => {
               your questions, and map out your next steps.
             </p>
             <a
-              href={`https://cal.com/${calBookingLink}`}
+              href={`https://cal.com/${CAL_BOOKING_LINK}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-lg font-semibold bg-violet-500 hover:bg-violet-600 text-white transition-colors shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40"
@@ -126,11 +100,11 @@ const BlueprintThankYou: React.FC = () => {
           </div>
         </section>
 
-        {/* View Blueprint Link (if slug available) */}
-        {slug && (
+        {/* View Blueprint Link (if reportUrl available) */}
+        {reportUrl && (
           <div className="text-center mb-12">
             <a
-              href={`/blueprint/${slug}`}
+              href={reportUrl}
               className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
             >
               View your blueprint once it&apos;s ready &rarr;
@@ -139,7 +113,7 @@ const BlueprintThankYou: React.FC = () => {
         )}
 
         {/* CalEmbed */}
-        <CalEmbed calLink={calBookingLink} />
+        <CalEmbed calLink={CAL_BOOKING_LINK} />
       </div>
 
       {/* Footer */}

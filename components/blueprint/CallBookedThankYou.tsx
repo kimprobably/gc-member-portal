@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CheckCircle, Mail, FileText, Target, Monitor, ClipboardList, Zap } from 'lucide-react';
-import { getBlueprintSettings } from '../../services/blueprint-supabase';
-import { BlueprintSettings } from '../../types/blueprint-types';
 import ThemeToggle from './ThemeToggle';
 
 // ============================================
@@ -10,7 +8,7 @@ import ThemeToggle from './ThemeToggle';
 // ============================================
 
 interface LocationState {
-  slug?: string;
+  reportUrl?: string;
 }
 
 // ============================================
@@ -84,17 +82,7 @@ const SenjaEmbed: React.FC = () => {
 const CallBookedThankYou: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
-  const slug = state?.slug;
-
-  const [settings, setSettings] = useState<BlueprintSettings | null>(null);
-
-  useEffect(() => {
-    getBlueprintSettings()
-      .then(setSettings)
-      .catch(() => {});
-  }, []);
-
-  const videoUrl = settings?.callBookedVideoUrl;
+  const reportUrl = state?.reportUrl;
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
@@ -114,23 +102,7 @@ const CallBookedThankYou: React.FC = () => {
           </p>
         </div>
 
-        {/* Video Embed */}
-        {videoUrl && (
-          <section className="mb-12">
-            <div
-              className="relative w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
-              style={{ paddingBottom: '56.25%' }}
-            >
-              <iframe
-                src={videoUrl}
-                title="What to expect on your call"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </section>
-        )}
+        {/* Video Embed — add a videoUrl here when ready */}
 
         {/* Before Your Call Checklist */}
         <section className="mb-12">
@@ -141,7 +113,7 @@ const CallBookedThankYou: React.FC = () => {
             <div className="space-y-4">
               {CHECKLIST_ITEMS.map((item) => {
                 const Icon = item.icon;
-                const showLink = item.hasLink && slug;
+                const showLink = item.hasLink && reportUrl;
                 return (
                   <div key={item.text} className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -152,7 +124,7 @@ const CallBookedThankYou: React.FC = () => {
                         <>
                           Review your{' '}
                           <a
-                            href={`/blueprint/${slug}`}
+                            href={reportUrl}
                             className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 underline underline-offset-2 transition-colors"
                           >
                             LinkedIn Authority Blueprint

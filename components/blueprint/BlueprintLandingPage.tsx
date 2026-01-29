@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText } from 'lucide-react';
-import {
-  createProspectFromLanding,
-  getClientLogos,
-  ClientLogo,
-} from '../../services/blueprint-supabase';
+import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText, User } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+
+const INTAKE_API_URL = 'https://linkedin-leadmagnet-backend-production.up.railway.app/api/intake';
 
 // ============================================
 // Types
@@ -14,6 +11,7 @@ import ThemeToggle from './ThemeToggle';
 
 interface FormData {
   linkedinUrl: string;
+  fullName: string;
   email: string;
   businessType: string;
 }
@@ -92,6 +90,7 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ onSubmit, isSubmitting, error }) => {
   const [formData, setFormData] = useState<FormData>({
     linkedinUrl: '',
+    fullName: '',
     email: '',
     businessType: '',
   });
@@ -147,6 +146,28 @@ const Hero: React.FC<HeroProps> = ({ onSubmit, isSubmitting, error }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, linkedinUrl: e.target.value }))
                     }
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Full Name */}
+              <div>
+                <label
+                  htmlFor="fullName"
+                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5"
+                >
+                  Your Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <input
+                    id="fullName"
+                    type="text"
+                    required
+                    placeholder="John Doe"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, fullName: e.target.value }))}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
                   />
                 </div>
@@ -260,11 +281,7 @@ const StatsRow: React.FC = () => (
 // Social Proof
 // ============================================
 
-interface SocialProofProps {
-  logos: ClientLogo[];
-}
-
-const SocialProof: React.FC<SocialProofProps> = ({ logos }) => (
+const SocialProof: React.FC = () => (
   <section className="bg-white dark:bg-zinc-950 py-16 sm:py-20">
     <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
       <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
@@ -275,33 +292,16 @@ const SocialProof: React.FC<SocialProofProps> = ({ logos }) => (
         LinkedIn presence.
       </p>
 
-      {logos.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center justify-items-center">
-          {logos.map((logo) => (
-            <div
-              key={logo.id}
-              className="flex items-center justify-center h-12 px-4 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"
-            >
-              <img
-                src={logo.imageUrl}
-                alt={logo.name}
-                className="max-h-10 max-w-[140px] object-contain"
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {PROOF_NAMES.map((name) => (
-            <div
-              key={name}
-              className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg py-4 px-3"
-            >
-              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{name}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {PROOF_NAMES.map((name) => (
+          <div
+            key={name}
+            className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg py-4 px-3"
+          >
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{name}</span>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 );
@@ -370,13 +370,6 @@ const BlueprintLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [logos, setLogos] = useState<ClientLogo[]>([]);
-
-  React.useEffect(() => {
-    getClientLogos()
-      .then(setLogos)
-      .catch(() => {});
-  }, []);
 
   const handleSubmit = async (formData: FormData) => {
     const linkedinPattern = /linkedin\.com\/in\//i;
@@ -391,16 +384,40 @@ const BlueprintLandingPage: React.FC = () => {
     setError(null);
 
     try {
-      const { slug } = await createProspectFromLanding({
-        linkedinUrl: formData.linkedinUrl,
-        email: formData.email,
-        businessType: formData.businessType,
+      const response = await fetch(INTAKE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          linkedin_url: formData.linkedinUrl,
+          full_name: formData.fullName,
+          email: formData.email,
+          business_type: formData.businessType,
+          send_email: true,
+          source_url: window.location.href,
+          lead_magnet_source: 'blueprint-landing',
+        }),
       });
 
-      navigate('/blueprint/thank-you', { state: { slug } });
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate('/blueprint/thank-you', {
+          state: { prospectId: data.prospect_id, reportUrl: data.report_url },
+        });
+      } else if (response.status === 409) {
+        // Duplicate — still send them to thank-you
+        navigate('/blueprint/thank-you', {
+          state: {
+            prospectId: data.existing_prospect_id,
+            reportUrl: data.report_url,
+          },
+        });
+      } else {
+        setError(data.error || data.message || 'Something went wrong. Please try again.');
+      }
     } catch (err) {
-      console.error('Failed to create prospect:', err);
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      console.error('Failed to submit prospect:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -412,7 +429,7 @@ const BlueprintLandingPage: React.FC = () => {
       <NavBar />
       <Hero onSubmit={handleSubmit} isSubmitting={isSubmitting} error={error} />
       <StatsRow />
-      <SocialProof logos={logos} />
+      <SocialProof />
       <HowItWorks />
       <Footer />
     </div>
