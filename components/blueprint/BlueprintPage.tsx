@@ -416,14 +416,14 @@ const BlueprintPage: React.FC = () => {
         </ScrollReveal>
 
         {/* 15.5. Senja testimonials wall */}
-        <ScrollReveal delay={100}>
-          <SenjaEmbed />
-        </ScrollReveal>
+        <SenjaEmbed />
 
         {/* 16. FAQ — objections cleared before final CTA */}
-        <ScrollReveal delay={100}>
-          <MarketingBlock block={faqBlock} />
-        </ScrollReveal>
+        {faqBlock && faqBlock.isVisible && (
+          <ScrollReveal delay={100}>
+            <MarketingBlock block={faqBlock} />
+          </ScrollReveal>
+        )}
 
         {/* 17. What Happens Next — rewritten SimpleSteps */}
         <ScrollReveal>
