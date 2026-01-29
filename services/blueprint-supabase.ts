@@ -253,6 +253,8 @@ function mapBlueprintSettings(record: Record<string, unknown>): BlueprintSetting
     nextCohortDateEngineering: record.next_cohort_date_engineering as string | undefined,
     spotsRemainingFoundations: record.spots_remaining_foundations as number | undefined,
     spotsRemainingEngineering: record.spots_remaining_engineering as number | undefined,
+    blueprintVideoUrl: record.blueprint_video_url as string | undefined,
+    senjaWidgetUrl: record.senja_widget_url as string | undefined,
     createdAt: new Date(record.created_at as string),
     updatedAt: new Date(record.updated_at as string),
   };
@@ -440,6 +442,56 @@ export async function updateProspectSlug(id: string, slug: string): Promise<Pros
 }
 
 // ============================================
+// Landing Page Prospect Creation
+// ============================================
+
+/**
+ * Create a new prospect from the landing page opt-in form
+ * Returns the generated slug for redirect to thank-you page
+ */
+export async function createProspectFromLanding(data: {
+  linkedinUrl: string;
+  email: string;
+  businessType: string;
+}): Promise<{ slug: string }> {
+  // Normalize LinkedIn URL
+  let normalizedUrl = data.linkedinUrl.trim().toLowerCase();
+  if (!normalizedUrl.startsWith('http')) {
+    normalizedUrl = `https://${normalizedUrl}`;
+  }
+  // Remove trailing slashes
+  normalizedUrl = normalizedUrl.replace(/\/+$/, '');
+
+  // Extract name from LinkedIn URL for slug (e.g., "john-doe" from ".../in/john-doe")
+  const urlMatch = normalizedUrl.match(/\/in\/([^/?]+)/);
+  const nameFromUrl = urlMatch ? urlMatch[1].replace(/-/g, ' ') : 'prospect';
+
+  const slug = generateSlug(nameFromUrl);
+
+  const insertData: Record<string, unknown> = {
+    linkedin_url: data.linkedinUrl.trim(),
+    normalized_linkedin_url: normalizedUrl,
+    email: data.email.trim(),
+    business_type: data.businessType,
+    slug,
+    status: 'pending_scrape',
+    full_name: nameFromUrl
+      .split(' ')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' '),
+  };
+
+  const { error } = await supabase.from('prospects').insert(insertData);
+
+  if (error) {
+    console.error('Error creating prospect from landing:', error);
+    throw new Error(error.message);
+  }
+
+  return { slug };
+}
+
+// ============================================
 // Prospect Posts Functions
 // ============================================
 
@@ -525,6 +577,8 @@ export async function updateBlueprintSettings(
     nextCohortDateEngineering: string;
     spotsRemainingFoundations: number;
     spotsRemainingEngineering: number;
+    blueprintVideoUrl: string;
+    senjaWidgetUrl: string;
   }>
 ): Promise<BlueprintSettings> {
   const updateData: Record<string, unknown> = {};
@@ -600,6 +654,12 @@ export async function updateBlueprintSettings(
   }
   if (settings.spotsRemainingEngineering !== undefined) {
     updateData.spots_remaining_engineering = settings.spotsRemainingEngineering;
+  }
+  if (settings.blueprintVideoUrl !== undefined) {
+    updateData.blueprint_video_url = settings.blueprintVideoUrl;
+  }
+  if (settings.senjaWidgetUrl !== undefined) {
+    updateData.senja_widget_url = settings.senjaWidgetUrl;
   }
 
   // Update the first settings row (upsert pattern)

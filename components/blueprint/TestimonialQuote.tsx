@@ -22,18 +22,18 @@ const TestimonialQuote: React.FC<TestimonialQuoteProps> = ({
 }) => {
   return (
     <div className={`max-w-3xl mx-auto ${className}`}>
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 sm:p-8 border-l-4 border-l-violet-500">
-        <blockquote className="text-lg sm:text-xl text-zinc-200 leading-relaxed mb-6 italic">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6 sm:p-8 border-l-4 border-l-violet-500">
+        <blockquote className="text-lg sm:text-xl text-zinc-800 dark:text-zinc-200 leading-relaxed mb-6 italic">
           &ldquo;{quote}&rdquo;
         </blockquote>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p className="font-semibold text-zinc-100">{author}</p>
-            <p className="text-sm text-zinc-400">{role}</p>
+            <p className="font-semibold text-zinc-900 dark:text-zinc-100">{author}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{role}</p>
           </div>
           {result && (
-            <div className="bg-violet-500/10 border border-violet-500/20 rounded-lg px-4 py-2">
-              <p className="text-sm font-semibold text-violet-400">{result}</p>
+            <div className="bg-violet-50 border border-violet-200 dark:bg-violet-500/10 dark:border-violet-500/20 rounded-lg px-4 py-2">
+              <p className="text-sm font-semibold text-violet-600 dark:text-violet-400">{result}</p>
             </div>
           )}
         </div>

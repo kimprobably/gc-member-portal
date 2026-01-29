@@ -30,6 +30,7 @@ import SectionBridge from './SectionBridge';
 import ValueStack from './ValueStack';
 import SimpleSteps from './SimpleSteps';
 import TestimonialQuote from './TestimonialQuote';
+import ThemeToggle from './ThemeToggle';
 
 // ============================================
 // Types
@@ -47,7 +48,7 @@ interface BlueprintData {
 // ============================================
 
 const BlueprintLoadingState: React.FC = () => (
-  <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center">
+  <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col items-center justify-center">
     <div className="w-12 h-12 border-2 border-zinc-700 border-t-blue-500 rounded-full animate-spin" />
     <p className="mt-4 text-zinc-400 text-sm font-medium">Loading your blueprint...</p>
   </div>
@@ -58,11 +59,13 @@ const BlueprintLoadingState: React.FC = () => (
 // ============================================
 
 const BlueprintNotFound: React.FC = () => (
-  <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4">
+  <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col items-center justify-center px-4">
     <div className="text-center max-w-md">
-      <h1 className="text-6xl font-bold text-zinc-100 mb-4">404</h1>
-      <h2 className="text-2xl font-semibold text-zinc-100 mb-2">Blueprint Not Found</h2>
-      <p className="text-zinc-400 mb-8">
+      <h1 className="text-6xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">404</h1>
+      <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+        Blueprint Not Found
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 mb-8">
         We couldn't find the blueprint you're looking for. Please check the URL or contact support
         if you believe this is an error.
       </p>
@@ -89,13 +92,15 @@ const BlueprintError: React.FC<BlueprintErrorProps> = ({
   message = 'Something went wrong while loading your blueprint.',
   onRetry,
 }) => (
-  <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4">
+  <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col items-center justify-center px-4">
     <div className="text-center max-w-md">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
         <AlertCircle className="w-8 h-8 text-red-500" />
       </div>
-      <h2 className="text-2xl font-semibold text-zinc-100 mb-2">Error Loading Blueprint</h2>
-      <p className="text-zinc-400 mb-8">{message}</p>
+      <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+        Error Loading Blueprint
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 mb-8">{message}</p>
       {onRetry && (
         <button
           onClick={onRetry}
@@ -215,7 +220,8 @@ const BlueprintPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
+      <ThemeToggle />
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-12 sm:space-y-16">
         {/* 1. Hero — BlueprintHeader with bold hook + authority score + CTA */}
@@ -233,6 +239,30 @@ const BlueprintPage: React.FC = () => {
 
         {/* 3. ScoreRadar — problem identification */}
         <ScoreRadar prospect={prospect} />
+
+        {/* 3.5. Video walkthrough */}
+        {settings?.blueprintVideoUrl && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Watch: Your Scorecard Explained
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              A quick walkthrough of what your scores mean and what to do next.
+            </p>
+            <div
+              className="relative w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
+              style={{ paddingBottom: '56.25%' }}
+            >
+              <iframe
+                src={settings.blueprintVideoUrl}
+                title="Blueprint scorecard walkthrough"
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
 
         {/* 4. AnalysisSection — what's working vs revenue leaks */}
         <AnalysisSection
@@ -291,8 +321,25 @@ const BlueprintPage: React.FC = () => {
         {/* 14. ValueStack — "Everything in Your Blueprint" */}
         <ValueStack />
 
-        {/* 15. TestimonialQuote — social proof */}
-        <TestimonialQuote />
+        {/* 15. Testimonials — Senja embed or fallback quote */}
+        {settings?.senjaWidgetUrl ? (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              What People Are Saying
+            </h2>
+            <div className="rounded-xl overflow-hidden">
+              <iframe
+                src={settings.senjaWidgetUrl}
+                title="Client testimonials"
+                className="w-full border-0"
+                style={{ minHeight: '500px' }}
+                loading="lazy"
+              />
+            </div>
+          </section>
+        ) : (
+          <TestimonialQuote />
+        )}
 
         {/* 16. SimpleSteps — "3 Steps to Get Started" */}
         <SimpleSteps />

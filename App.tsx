@@ -39,6 +39,8 @@ import AdminBlueprintsPage from './components/admin/blueprints/AdminBlueprintsPa
 // Blueprint Public Pages
 import BlueprintPage from './components/blueprint/BlueprintPage';
 import OfferPage from './components/blueprint/OfferPage';
+import BlueprintLandingPage from './components/blueprint/BlueprintLandingPage';
+import BlueprintThankYou from './components/blueprint/BlueprintThankYou';
 
 import { useAuth } from './context/AuthContext';
 
@@ -101,6 +103,8 @@ const App: React.FC = () => {
       <Route path="/bootcamp/*" element={<BootcampApp />} />
 
       {/* Blueprint Public Pages (no auth required) */}
+      <Route path="/blueprint" element={<BlueprintLandingPage />} />
+      <Route path="/blueprint/thank-you" element={<BlueprintThankYou />} />
       <Route path="/blueprint/:slug" element={<BlueprintPage />} />
       <Route path="/blueprint/:slug/offer" element={<OfferPage />} />
 

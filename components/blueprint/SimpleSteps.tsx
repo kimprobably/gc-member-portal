@@ -29,12 +29,12 @@ const STEPS: Step[] = [
 
 const SimpleSteps: React.FC = () => {
   return (
-    <div className="py-12 sm:py-16 px-4 bg-gradient-to-b from-violet-950/10 to-transparent">
+    <div className="py-12 sm:py-16 px-4 bg-gradient-to-b from-violet-50 to-transparent dark:from-violet-950/10 dark:to-transparent">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-100 text-center mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 text-center mb-3">
           3 Steps to Get Started
         </h2>
-        <p className="text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
+        <p className="text-zinc-600 dark:text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
           Turning this blueprint into real pipeline growth is simpler than you think.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -43,8 +43,12 @@ const SimpleSteps: React.FC = () => {
               <div className="text-5xl sm:text-6xl font-bold text-violet-500/30 mb-3">
                 {step.number}
               </div>
-              <h3 className="text-lg font-semibold text-zinc-100 mb-2">{step.title}</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">{step.description}</p>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                {step.title}
+              </h3>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>

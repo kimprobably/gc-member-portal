@@ -27,8 +27,8 @@ const Avatar: React.FC<AvatarProps> = ({ src, name }) => {
   // Show fallback if no src or image failed to load
   if (!src || imgError) {
     return (
-      <div className="w-20 h-20 rounded-full bg-violet-500/20 flex items-center justify-center">
-        <span className="text-2xl font-bold text-violet-400">{initial}</span>
+      <div className="w-20 h-20 rounded-full bg-violet-50 dark:bg-violet-500/20 flex items-center justify-center">
+        <span className="text-2xl font-bold text-violet-600 dark:text-violet-400">{initial}</span>
       </div>
     );
   }
@@ -54,7 +54,7 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, onCTAClick,
   const companyAndTitle = [prospect.company, prospect.jobTitle].filter(Boolean).join(' | ');
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
         {/* Profile Photo */}
         <div className="flex-shrink-0">
@@ -63,17 +63,22 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, onCTAClick,
 
         {/* Text Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-violet-400 uppercase tracking-wider mb-2">
+          <p className="text-sm font-medium text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-2">
             Your Custom LinkedIn Authority Blueprint Is Ready
           </p>
           {/* Title */}
-          <h1 className="text-xl sm:text-2xl font-bold text-zinc-100 tracking-tight">
-            GTM BLUEPRINT FOR <span className="text-violet-400">{displayName.toUpperCase()}</span>
+          <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
+            GTM BLUEPRINT FOR{' '}
+            <span className="text-violet-600 dark:text-violet-400">
+              {displayName.toUpperCase()}
+            </span>
           </h1>
 
           {/* Company + Job Title */}
           {companyAndTitle && (
-            <p className="mt-1 text-zinc-400 text-sm sm:text-base truncate">{companyAndTitle}</p>
+            <p className="mt-1 text-zinc-600 dark:text-zinc-400 text-sm sm:text-base truncate">
+              {companyAndTitle}
+            </p>
           )}
         </div>
 
@@ -82,7 +87,7 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, onCTAClick,
           <div className="text-6xl sm:text-7xl font-bold text-violet-500 leading-none">
             {authorityScore}
           </div>
-          <div className="mt-1 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+          <div className="mt-1 text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
             Authority Score
           </div>
         </div>
@@ -90,14 +95,14 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, onCTAClick,
 
       {/* Score Summary */}
       {scoreSummary && (
-        <div className="mt-6 pt-6 border-t border-zinc-800">
-          <p className="text-zinc-400 text-sm leading-relaxed">{scoreSummary}</p>
+        <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{scoreSummary}</p>
         </div>
       )}
 
       {/* CTA Button */}
       {onCTAClick && (
-        <div className="mt-6 pt-6 border-t border-zinc-800 flex justify-center">
+        <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex justify-center">
           <button
             type="button"
             onClick={onCTAClick}

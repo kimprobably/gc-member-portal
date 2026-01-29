@@ -42,12 +42,12 @@ const VALUE_ITEMS: ValueItem[] = [
 
 const ValueStack: React.FC = () => {
   return (
-    <div className="py-12 sm:py-16 px-4 bg-gradient-to-b from-violet-950/10 to-transparent">
+    <div className="py-12 sm:py-16 px-4 bg-gradient-to-b from-violet-50 to-transparent dark:from-violet-950/10 dark:to-transparent">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-100 text-center mb-3">
+        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 text-center mb-3">
           Everything in Your Blueprint
         </h2>
-        <p className="text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
+        <p className="text-zinc-600 dark:text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
           Here&apos;s what you&apos;re getting — a complete LinkedIn authority system, personalized
           to your business.
         </p>
@@ -55,14 +55,18 @@ const ValueStack: React.FC = () => {
           {VALUE_ITEMS.map((item) => (
             <div
               key={item.label}
-              className="bg-violet-500/5 border border-violet-500/10 rounded-lg p-5 flex items-start gap-4"
+              className="bg-violet-50 border border-violet-100 dark:bg-violet-500/5 dark:border-violet-500/10 rounded-lg p-5 flex items-start gap-4"
             >
               <div className="flex-shrink-0 mt-0.5">
-                <CheckCircle className="w-5 h-5 text-violet-400" />
+                <CheckCircle className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-zinc-100 mb-1">{item.label}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{item.detail}</p>
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                  {item.label}
+                </h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {item.detail}
+                </p>
               </div>
             </div>
           ))}

@@ -48,7 +48,7 @@ const CopyInlineButton: React.FC<{ text: string }> = ({ text }) => {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800/80 hover:bg-zinc-700 rounded transition-colors"
+      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-zinc-500 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 rounded transition-colors"
       aria-label={copied ? 'Copied!' : 'Copy'}
     >
       {copied ? (
@@ -106,12 +106,14 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-100">YOUR NEW LINKEDIN PROFILE</h2>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          YOUR NEW LINKEDIN PROFILE
+        </h2>
         <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Preview</span>
       </div>
 
       {/* LinkedIn Card */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none rounded-xl overflow-hidden">
         {/* Banner */}
         <div className="relative h-36 sm:h-44">
           {prospect.bannerImage ? (
@@ -143,7 +145,7 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
         <div className="relative px-6 pb-6">
           {/* Profile Photo */}
           <div className="-mt-14 mb-3 flex items-end justify-between">
-            <div className="w-28 h-28 rounded-full border-4 border-zinc-900 overflow-hidden bg-zinc-800 shrink-0">
+            <div className="w-28 h-28 rounded-full border-4 border-white dark:border-zinc-900 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0">
               {prospect.profilePhoto ? (
                 <img
                   src={prospect.profilePhoto}
@@ -169,11 +171,13 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
           </div>
 
           {/* Name */}
-          <h3 className="text-xl font-bold text-zinc-100">{displayName}</h3>
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{displayName}</h3>
 
           {/* Headline (below name, like real LinkedIn) */}
           {headline && (
-            <p className="text-sm text-zinc-300 mt-1 leading-relaxed max-w-lg">{headline}</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1 leading-relaxed max-w-lg">
+              {headline}
+            </p>
           )}
 
           {/* Location & connections row */}
@@ -200,7 +204,7 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
 
           {/* Headline Switcher */}
           {availableTabs.length > 1 && (
-            <div className="mt-4 pt-4 border-t border-zinc-800">
+            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                   Headline style
@@ -214,8 +218,8 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
                     onClick={() => setActiveHeadline(tab.key)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                       activeHeadline === tab.key
-                        ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800'
+                        ? 'bg-violet-50 text-violet-600 border border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30'
+                        : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 border border-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 dark:border-zinc-800'
                     }`}
                   >
                     {tab.label}
@@ -227,12 +231,14 @@ const LinkedInProfileMock: React.FC<LinkedInProfileMockProps> = ({ prospect }) =
 
           {/* About Section */}
           {bio && (
-            <div className="mt-5 pt-5 border-t border-zinc-800">
+            <div className="mt-5 pt-5 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-base font-bold text-zinc-100">About</h4>
+                <h4 className="text-base font-bold text-zinc-900 dark:text-zinc-100">About</h4>
                 <CopyInlineButton text={bio} />
               </div>
-              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{bio}</p>
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                {bio}
+              </p>
             </div>
           )}
         </div>

@@ -315,6 +315,9 @@ export interface BlueprintSettings {
   nextCohortDateEngineering?: string;
   spotsRemainingFoundations?: number;
   spotsRemainingEngineering?: number;
+  // Embed settings
+  blueprintVideoUrl?: string;
+  senjaWidgetUrl?: string;
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
@@ -348,6 +351,8 @@ export interface BlueprintSettingsFormData {
   nextCohortDateEngineering?: string;
   spotsRemainingFoundations?: number;
   spotsRemainingEngineering?: number;
+  blueprintVideoUrl?: string;
+  senjaWidgetUrl?: string;
 }
 
 // ============================================

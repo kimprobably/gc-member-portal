@@ -79,10 +79,12 @@ const ScoreRadar: React.FC<ScoreRadarProps> = ({ prospect }) => {
   ];
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6">
       {/* Section Title */}
-      <h2 className="text-2xl font-bold text-zinc-100 mb-2">Where You Stand Right Now</h2>
-      <p className="text-zinc-400 leading-relaxed mb-6">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+        Where You Stand Right Now
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
         Your authority score measures how effectively your LinkedIn presence converts visitors into
         leads. Here&apos;s where you rank across 5 key dimensions.
       </p>
@@ -130,24 +132,26 @@ const ScoreRadar: React.FC<ScoreRadarProps> = ({ prospect }) => {
       </div>
 
       {/* Score List */}
-      <div className="mt-6 pt-6 border-t border-zinc-800">
-        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">
+      <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-4">
           Individual Scores
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {scoreList.map((item) => (
             <div
               key={item.key}
-              className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-4 py-3"
+              className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 rounded-lg px-4 py-3"
             >
-              <span className="text-sm text-zinc-300">{SCORE_LABELS[item.key]}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {SCORE_LABELS[item.key]}
+              </span>
               <span
                 className={`text-lg font-bold ${
                   item.score >= 7
-                    ? 'text-green-400'
+                    ? 'text-green-600 dark:text-green-400'
                     : item.score >= 4
-                      ? 'text-yellow-400'
-                      : 'text-red-400'
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
                 }`}
               >
                 {item.score}

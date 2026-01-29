@@ -83,8 +83,8 @@ const StickyCTA: React.FC<StickyCTAProps> = ({
     <div
       className={`
         fixed bottom-0 left-0 right-0 z-50
-        bg-zinc-900/95 backdrop-blur-sm
-        border-t border-zinc-800
+        bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm
+        border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-none
         transform transition-all duration-300 ease-in-out
         ${shouldHide ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}
       `}

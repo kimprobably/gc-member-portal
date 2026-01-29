@@ -21,18 +21,22 @@ interface CalEmbedProps {
 const CalEmbed = forwardRef<HTMLDivElement, CalEmbedProps>(({ calLink, className = '' }, ref) => {
   // Construct the Cal.com embed URL
   // Format: https://cal.com/{calLink}?embed=true&theme=dark
-  const calUrl = `https://cal.com/${calLink}?embed=true&theme=dark&layout=month_view`;
+  const isDark =
+    typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+  const calUrl = `https://cal.com/${calLink}?embed=true&theme=${isDark ? 'dark' : 'light'}&layout=month_view`;
 
   return (
     <div
       ref={ref}
-      className={`bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden ${className}`}
+      className={`bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none overflow-hidden ${className}`}
       data-section="CalEmbed"
     >
       {/* Section Header */}
       <div className="px-6 pt-6 pb-4">
-        <h2 className="text-xl font-bold text-zinc-100">Book Your Strategy Call</h2>
-        <p className="mt-2 text-zinc-400 text-sm">
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          Book Your Strategy Call
+        </h2>
+        <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-sm">
           Select a time that works best for you to discuss your LinkedIn growth strategy.
         </p>
       </div>

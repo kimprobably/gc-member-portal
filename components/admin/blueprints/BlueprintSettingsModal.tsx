@@ -22,6 +22,8 @@ interface FormData {
   nextCohortDateEngineering: string;
   spotsRemainingFoundations: string;
   spotsRemainingEngineering: string;
+  blueprintVideoUrl: string;
+  senjaWidgetUrl: string;
 }
 
 const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen, onClose }) => {
@@ -35,6 +37,8 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
     nextCohortDateEngineering: '',
     spotsRemainingFoundations: '',
     spotsRemainingEngineering: '',
+    blueprintVideoUrl: '',
+    senjaWidgetUrl: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -57,6 +61,8 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
         nextCohortDateEngineering: settings.nextCohortDateEngineering || '',
         spotsRemainingFoundations: settings.spotsRemainingFoundations?.toString() || '',
         spotsRemainingEngineering: settings.spotsRemainingEngineering?.toString() || '',
+        blueprintVideoUrl: settings.blueprintVideoUrl || '',
+        senjaWidgetUrl: settings.senjaWidgetUrl || '',
       });
     }
   }, [settings]);
@@ -91,6 +97,8 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
       spotsRemainingEngineering: formData.spotsRemainingEngineering
         ? parseInt(formData.spotsRemainingEngineering, 10)
         : undefined,
+      blueprintVideoUrl: formData.blueprintVideoUrl || undefined,
+      senjaWidgetUrl: formData.senjaWidgetUrl || undefined,
     });
   };
 
@@ -195,6 +203,41 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
               <p className="text-xs text-zinc-500 mt-1">
                 Your Cal.com booking path (e.g., timkeen/30min)
               </p>
+            </div>
+
+            {/* Embed Settings */}
+            <div className="pt-4 border-t border-zinc-800">
+              <h4 className="text-sm font-semibold text-zinc-300 mb-3">Embed Settings</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-200 mb-1.5">
+                    Blueprint Video URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.blueprintVideoUrl}
+                    onChange={(e) => handleChange('blueprintVideoUrl', e.target.value)}
+                    placeholder="https://www.loom.com/embed/..."
+                    className="w-full px-4 py-2.5 rounded-lg border bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Loom/YouTube embed URL shown after the scorecard
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-200 mb-1.5">
+                    Senja Widget URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.senjaWidgetUrl}
+                    onChange={(e) => handleChange('senjaWidgetUrl', e.target.value)}
+                    placeholder="https://widget.senja.io/widget/..."
+                    className="w-full px-4 py-2.5 rounded-lg border bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">Senja testimonial wall embed URL</p>
+                </div>
+              </div>
             </div>
 
             {/* Cohort Settings */}

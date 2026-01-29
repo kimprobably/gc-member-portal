@@ -76,7 +76,10 @@ function renderSimpleMarkdown(text: string): React.ReactNode[] {
         .map((line) => line.trim().replace(/^[-*]\s+/, ''));
 
       return (
-        <ul key={pIndex} className="list-disc list-inside space-y-2 mb-4 text-zinc-400">
+        <ul
+          key={pIndex}
+          className="list-disc list-inside space-y-2 mb-4 text-zinc-600 dark:text-zinc-400"
+        >
           {listItems.map((item, lIndex) => (
             <li key={lIndex}>{renderInlineFormatting(item)}</li>
           ))}
@@ -135,7 +138,7 @@ function renderInlineFormatting(text: string): React.ReactNode {
       // Add the formatted text
       if (isBold) {
         parts.push(
-          <strong key={keyIndex++} className="font-semibold text-zinc-200">
+          <strong key={keyIndex++} className="font-semibold text-zinc-800 dark:text-zinc-200">
             {matchToUse[1]}
           </strong>
         );
@@ -176,14 +179,17 @@ const FAQAccordion: React.FC<FAQAccordionProps> = ({ items }) => {
   return (
     <div className="space-y-3">
       {items.map((item, index) => (
-        <div key={index} className="border border-zinc-700 rounded-lg overflow-hidden">
+        <div
+          key={index}
+          className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden"
+        >
           <button
             type="button"
             onClick={() => toggleItem(index)}
-            className="w-full flex items-center justify-between p-4 text-left bg-zinc-800/50 hover:bg-zinc-800 transition-colors"
+            className="w-full flex items-center justify-between p-4 text-left bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 transition-colors"
             aria-expanded={openIndex === index}
           >
-            <span className="font-medium text-zinc-200">{item.question}</span>
+            <span className="font-medium text-zinc-800 dark:text-zinc-200">{item.question}</span>
             {openIndex === index ? (
               <ChevronUp className="w-5 h-5 text-zinc-400 flex-shrink-0" />
             ) : (
@@ -191,8 +197,8 @@ const FAQAccordion: React.FC<FAQAccordionProps> = ({ items }) => {
             )}
           </button>
           {openIndex === index && (
-            <div className="p-4 bg-zinc-900 border-t border-zinc-700">
-              <div className="text-zinc-400 leading-relaxed">
+            <div className="p-4 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 {renderSimpleMarkdown(item.answer)}
               </div>
             </div>
@@ -268,15 +274,21 @@ const MarketingBlock: React.FC<MarketingBlockProps> = ({ block, className = '' }
   }
 
   return (
-    <div className={`bg-zinc-900 border border-zinc-800 rounded-lg p-6 ${className}`.trim()}>
+    <div
+      className={`bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6 ${className}`.trim()}
+    >
       {/* Title */}
       {hasTitle && (
-        <h3 className="text-xl font-semibold text-zinc-100 mb-4">{block.title || contentTitle}</h3>
+        <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+          {block.title || contentTitle}
+        </h3>
       )}
 
       {/* Body Content */}
       {hasBody && !isFAQ && (
-        <div className="text-zinc-400 leading-relaxed">{renderSimpleMarkdown(contentBody)}</div>
+        <div className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          {renderSimpleMarkdown(contentBody)}
+        </div>
       )}
 
       {/* FAQ Accordion */}

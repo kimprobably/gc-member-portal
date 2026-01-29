@@ -41,7 +41,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded transition-colors"
       aria-label={copied ? 'Copied!' : 'Copy sample post'}
     >
       {copied ? (
@@ -84,21 +84,25 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
   const hasExpandableContent = description || samplePost;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none overflow-hidden">
       {/* Card Header - Always Visible */}
       <div className="p-4">
         {/* Content Type Badge */}
         {card.contentType && (
-          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-violet-500/20 text-violet-400 rounded mb-3">
+          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-violet-50 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 rounded mb-3">
             {card.contentType}
           </span>
         )}
 
         {/* Headline */}
-        {card.headline && <h4 className="font-bold text-zinc-100 mb-1">{card.headline}</h4>}
+        {card.headline && (
+          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 mb-1">{card.headline}</h4>
+        )}
 
         {/* Subheadline */}
-        {card.subheadline && <p className="text-sm text-zinc-400 mb-3">{card.subheadline}</p>}
+        {card.subheadline && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">{card.subheadline}</p>
+        )}
 
         {/* Why This Fits */}
         {card.match && (
@@ -106,7 +110,7 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
             <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Why this fits:
             </span>
-            <p className="text-sm text-zinc-300 mt-1">{card.match}</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1">{card.match}</p>
           </div>
         )}
 
@@ -114,7 +118,7 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
         {card.estHours && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-zinc-500">Estimated time:</span>
-            <span className="text-zinc-300">{card.estHours}</span>
+            <span className="text-zinc-700 dark:text-zinc-300">{card.estHours}</span>
           </div>
         )}
 
@@ -122,7 +126,7 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
         {hasExpandableContent && (
           <button
             onClick={onToggle}
-            className="flex items-center gap-1.5 mt-4 text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors"
+            className="flex items-center gap-1.5 mt-4 text-sm font-medium text-violet-600 hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
             aria-expanded={isExpanded}
           >
             {isExpanded ? (
@@ -142,14 +146,14 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
 
       {/* Expanded Content */}
       {isExpanded && hasExpandableContent && (
-        <div className="border-t border-zinc-800 p-4 space-y-4">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 space-y-4">
           {/* Full Description */}
           {description && (
             <div>
               <h5 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
                 Full Description
               </h5>
-              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
                 {description}
               </p>
             </div>
@@ -164,8 +168,8 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({
                 </h5>
                 <CopyButton text={samplePost} />
               </div>
-              <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-                <pre className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap font-sans">
+              <div className="bg-zinc-50 border border-zinc-200 dark:bg-zinc-800/50 dark:border-zinc-700 rounded-lg p-4">
+                <pre className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap font-sans">
                   {samplePost}
                 </pre>
               </div>
@@ -229,10 +233,10 @@ const LeadMagnets: React.FC<LeadMagnetsProps> = ({ prospect }) => {
   return (
     <div className="space-y-4">
       {/* Section Title */}
-      <h2 className="text-2xl font-bold text-zinc-100 mb-2">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
         3 Lead Magnets That Will Fill Your Pipeline
       </h2>
-      <p className="text-zinc-400 leading-relaxed">
+      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
         These aren&apos;t generic templates. Each lead magnet is designed for your specific buyer
         persona and expertise.
       </p>

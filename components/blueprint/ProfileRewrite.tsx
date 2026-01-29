@@ -69,7 +69,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text, label = 'Copy' }) => {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded transition-colors"
       aria-label={copied ? 'Copied!' : label}
     >
       {copied ? (
@@ -112,10 +112,10 @@ const Tooltip: React.FC<TooltipProps> = ({ text }) => {
         <Info className="w-4 h-4" />
       </button>
       {isVisible && (
-        <div className="absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-zinc-200 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg max-w-xs whitespace-normal">
+        <div className="absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-zinc-800 bg-white border border-zinc-200 dark:text-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 rounded-lg shadow-lg max-w-xs whitespace-normal">
           {text}
           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-            <div className="border-4 border-transparent border-t-zinc-800" />
+            <div className="border-4 border-transparent border-t-white dark:border-t-zinc-800" />
           </div>
         </div>
       )}
@@ -145,12 +145,14 @@ const ComparisonColumn: React.FC<ComparisonColumnProps> = ({
   const isBefore = variant === 'before';
 
   const containerClasses = isBefore
-    ? 'bg-zinc-800/50 border-zinc-700'
-    : 'bg-zinc-900 border-violet-500/50';
+    ? 'bg-zinc-50 border-zinc-200 dark:bg-zinc-800/50 dark:border-zinc-700'
+    : 'bg-violet-50 border-violet-200 dark:bg-zinc-900 dark:border-violet-500/50';
 
-  const textClasses = isBefore ? 'text-zinc-400' : 'text-zinc-100';
+  const textClasses = isBefore
+    ? 'text-zinc-600 dark:text-zinc-400'
+    : 'text-zinc-900 dark:text-zinc-100';
 
-  const labelClasses = isBefore ? 'text-zinc-500' : 'text-violet-400';
+  const labelClasses = isBefore ? 'text-zinc-500' : 'text-violet-600 dark:text-violet-400';
 
   const contentClasses = maxHeight
     ? 'max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800'
@@ -193,8 +195,8 @@ const TabButton: React.FC<TabButtonProps> = ({ isActive, onClick, children }) =>
     onClick={onClick}
     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
       isActive
-        ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
-        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+        ? 'bg-violet-50 text-violet-600 border border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30'
+        : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800'
     }`}
   >
     {children}
@@ -231,10 +233,12 @@ const ProfileRewrite: React.FC<ProfileRewriteProps> = ({ prospect }) => {
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none p-6">
       {/* Section Title */}
-      <h2 className="text-2xl font-bold text-zinc-100 mb-2">Your New Magnetic Profile</h2>
-      <p className="text-zinc-400 leading-relaxed mb-6">
+      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+        Your New Magnetic Profile
+      </h2>
+      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
         Every element below is ready to copy and paste directly into your LinkedIn profile. No
         guesswork — just swap in the new copy.
       </p>
@@ -244,7 +248,9 @@ const ProfileRewrite: React.FC<ProfileRewriteProps> = ({ prospect }) => {
         <div className="mb-8">
           {/* Headline Title with Tooltip */}
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Headline</h3>
+            <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+              Headline
+            </h3>
             {prospect.headlineRecommendationReason && (
               <Tooltip text={prospect.headlineRecommendationReason} />
             )}
@@ -279,7 +285,9 @@ const ProfileRewrite: React.FC<ProfileRewriteProps> = ({ prospect }) => {
       {/* Bio Section */}
       {hasBioContent && (
         <div>
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">Bio</h3>
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-4">
+            Bio
+          </h3>
 
           {/* Before/After Comparison */}
           <div className="flex flex-col md:flex-row gap-4">

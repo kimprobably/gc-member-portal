@@ -41,7 +41,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ text }) => {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded transition-colors"
       aria-label={copied ? 'Copied!' : 'Copy post content'}
     >
       {copied ? (
@@ -71,7 +71,7 @@ interface StatusBadgeProps {
 const StatusBadge: React.FC<StatusBadgeProps> = ({ postReady, toFix }) => {
   if (postReady) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-500/20 text-green-400 rounded">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-50 text-green-600 dark:bg-green-500/20 dark:text-green-400 rounded">
         Ready
       </span>
     );
@@ -79,7 +79,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ postReady, toFix }) => {
 
   if (toFix) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 rounded">
         Needs Review
       </span>
     );
@@ -102,7 +102,7 @@ const ActionItemsList: React.FC<{ actionItems: string }> = ({ actionItems }) => 
   return (
     <ul className="space-y-2">
       {lines.map((line, i) => (
-        <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
+        <li key={i} className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
           <span className="text-amber-500 mt-0.5 shrink-0">☐</span>
           <span>{line.replace(/^(☐|□|- \[[ x]\]|-|\d+[.)]\s*)/, '').trim()}</span>
         </li>
@@ -146,11 +146,11 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
 
       {/* Modal */}
       <div
-        className="relative bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col"
+        className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-6 border-b border-zinc-800 shrink-0">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <StatusBadge postReady={post.postReady} toFix={post.toFix} />
@@ -158,13 +158,17 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
                 <span className="text-xs text-zinc-500 font-medium">#{post.number}</span>
               )}
             </div>
-            {post.name && <h3 className="text-lg font-semibold text-zinc-100">{post.name}</h3>}
+            {post.name && (
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {post.name}
+              </h3>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {post.postContent && <CopyButton text={post.postContent} />}
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-colors"
+              className="p-1.5 text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -181,8 +185,8 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
             <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
               Post Content
             </h4>
-            <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-              <pre className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap font-sans">
+            <div className="bg-zinc-50 border border-zinc-200 dark:bg-zinc-800/50 dark:border-zinc-700 rounded-lg p-4">
+              <pre className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap font-sans">
                 {post.postContent}
               </pre>
             </div>
@@ -191,10 +195,10 @@ const PostModal: React.FC<PostModalProps> = ({ post, onClose }) => {
           {/* Action Items - Right (1/3) */}
           {hasActionItems && (
             <div>
-              <h4 className="text-xs font-medium text-amber-500 uppercase tracking-wider mb-3">
+              <h4 className="text-xs font-medium text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-3">
                 Action Items
               </h4>
-              <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
+              <div className="bg-amber-50 border border-amber-200 dark:bg-amber-500/5 dark:border-amber-500/20 rounded-lg p-4">
                 <ActionItemsList actionItems={post.actionItems!} />
               </div>
             </div>
@@ -223,8 +227,8 @@ const CalendarCell: React.FC<CalendarCellProps> = ({ post, onOpen }) => {
       onClick={hasContent ? onOpen : undefined}
       className={`relative w-full text-left rounded-md border p-1.5 sm:p-2 min-h-[56px] sm:min-h-[72px] transition-colors ${
         hasContent
-          ? 'bg-violet-500/10 border-violet-500/30 hover:border-violet-400/50 cursor-pointer'
-          : 'bg-zinc-900 border-zinc-800 cursor-default'
+          ? 'bg-violet-50 border-violet-200 hover:border-violet-300 dark:bg-violet-500/10 dark:border-violet-500/30 dark:hover:border-violet-400/50 cursor-pointer'
+          : 'bg-zinc-50 border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 cursor-default'
       }`}
     >
       {/* Status dot */}
@@ -239,7 +243,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({ post, onOpen }) => {
         #{post.number ?? ''}
       </span>
       {post.name && (
-        <span className="block text-[11px] sm:text-xs text-zinc-300 line-clamp-1 sm:line-clamp-2 leading-tight mt-0.5">
+        <span className="block text-[11px] sm:text-xs text-zinc-700 dark:text-zinc-300 line-clamp-1 sm:line-clamp-2 leading-tight mt-0.5">
           {post.name}
         </span>
       )}
@@ -252,9 +256,9 @@ const CalendarCell: React.FC<CalendarCellProps> = ({ post, onOpen }) => {
 // ============================================
 
 const EmptyState: React.FC = () => (
-  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center">
+  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-8 text-center">
     <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-    <h3 className="text-lg font-medium text-zinc-300 mb-2">No Posts Yet</h3>
+    <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">No Posts Yet</h3>
     <p className="text-sm text-zinc-500">
       Your personalized content roadmap will appear here once generated.
     </p>
@@ -296,7 +300,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({ label, posts, onSelectPost }) => 
 
   return (
     <div className="flex-1 min-w-0">
-      <h3 className="text-sm font-semibold text-zinc-300 mb-3">{label}</h3>
+      <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">{label}</h3>
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-1 mb-1">
         {DAY_LABELS.map((d) => (
@@ -315,7 +319,7 @@ const MonthGrid: React.FC<MonthGridProps> = ({ label, posts, onSelectPost }) => 
               ) : (
                 <div
                   key={`empty-${wi}-${di}`}
-                  className="min-h-[56px] sm:min-h-[72px] rounded-md bg-zinc-900/40 border border-zinc-800/50"
+                  className="min-h-[56px] sm:min-h-[72px] rounded-md bg-zinc-50/50 border border-zinc-200/50 dark:bg-zinc-900/40 dark:border-zinc-800/50"
                 />
               )
             )}
@@ -353,7 +357,9 @@ const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
   if (posts.length === 0) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-zinc-100">60 Days of Content, Ready to Post</h2>
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          60 Days of Content, Ready to Post
+        </h2>
         <EmptyState />
       </div>
     );
@@ -363,12 +369,14 @@ const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
     <div className="space-y-4">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h2 className="text-2xl font-bold text-zinc-100">60 Days of Content, Ready to Post</h2>
-        <span className="text-sm text-zinc-400">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          60 Days of Content, Ready to Post
+        </h2>
+        <span className="text-sm text-zinc-600 dark:text-zinc-400">
           {readyCount > 0 ? (
             <>
-              <span className="text-green-400 font-medium">{readyCount}</span> of {posts.length}{' '}
-              posts ready for you
+              <span className="text-green-600 dark:text-green-400 font-medium">{readyCount}</span>{' '}
+              of {posts.length} posts ready for you
             </>
           ) : (
             <>{posts.length} posts ready for you</>
@@ -376,7 +384,7 @@ const ContentRoadmap: React.FC<ContentRoadmapProps> = ({ posts }) => {
         </span>
       </div>
 
-      <p className="text-zinc-400 leading-relaxed">
+      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
         Every post is written in your voice and designed to build authority with your target buyer.
         Copy, customize, and post.
       </p>
