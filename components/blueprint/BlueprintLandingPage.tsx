@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText } from 'lucide-react';
-import { createProspectFromLanding } from '../../services/blueprint-supabase';
+import {
+  createProspectFromLanding,
+  getClientLogos,
+  ClientLogo,
+} from '../../services/blueprint-supabase';
 import ThemeToggle from './ThemeToggle';
 
 // ============================================
@@ -261,7 +265,11 @@ const StatsRow: React.FC = () => (
 // Social Proof
 // ============================================
 
-const SocialProof: React.FC = () => (
+interface SocialProofProps {
+  logos: ClientLogo[];
+}
+
+const SocialProof: React.FC<SocialProofProps> = ({ logos }) => (
   <section className="bg-white dark:bg-zinc-950 py-16 sm:py-20">
     <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
       <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
@@ -272,17 +280,33 @@ const SocialProof: React.FC = () => (
         LinkedIn presence.
       </p>
 
-      {/* Placeholder logo grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {PROOF_NAMES.map((name) => (
-          <div
-            key={name}
-            className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg py-4 px-3"
-          >
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{name}</span>
-          </div>
-        ))}
-      </div>
+      {logos.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 items-center justify-items-center">
+          {logos.map((logo) => (
+            <div
+              key={logo.id}
+              className="flex items-center justify-center h-12 px-4 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"
+            >
+              <img
+                src={logo.imageUrl}
+                alt={logo.name}
+                className="max-h-10 max-w-[140px] object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {PROOF_NAMES.map((name) => (
+            <div
+              key={name}
+              className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg py-4 px-3"
+            >
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   </section>
 );
@@ -351,6 +375,13 @@ const BlueprintLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logos, setLogos] = useState<ClientLogo[]>([]);
+
+  React.useEffect(() => {
+    getClientLogos()
+      .then(setLogos)
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (formData: FormData) => {
     const linkedinPattern = /linkedin\.com\/in\//i;
@@ -386,7 +417,7 @@ const BlueprintLandingPage: React.FC = () => {
       <NavBar />
       <Hero onSubmit={handleSubmit} isSubmitting={isSubmitting} error={error} />
       <StatsRow />
-      <SocialProof />
+      <SocialProof logos={logos} />
       <HowItWorks />
       <Footer />
     </div>
