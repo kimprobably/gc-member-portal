@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Copy, Check, X } from 'lucide-react';
 import { Prospect, LeadMagnetCard } from '../../types/blueprint-types';
 
@@ -314,10 +315,12 @@ const LeadMagnets: React.FC<LeadMagnetsProps> = ({ prospect }) => {
         ))}
       </div>
 
-      {/* Modal */}
-      {selectedCard && (
-        <LeadMagnetModal data={selectedCard} onClose={() => setSelectedCard(null)} />
-      )}
+      {/* Modal — portal to body so CSS transforms on ancestors don't break fixed positioning */}
+      {selectedCard &&
+        createPortal(
+          <LeadMagnetModal data={selectedCard} onClose={() => setSelectedCard(null)} />,
+          document.body
+        )}
     </div>
   );
 };
