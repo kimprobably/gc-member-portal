@@ -384,9 +384,15 @@ const BlueprintLandingPage: React.FC = () => {
     setError(null);
 
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const webhookSecret = import.meta.env.VITE_BLUEPRINT_WEBHOOK_SECRET;
+      if (webhookSecret) {
+        headers['x-webhook-secret'] = webhookSecret;
+      }
+
       const response = await fetch(INTAKE_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           linkedin_url: formData.linkedinUrl,
           full_name: formData.fullName,
