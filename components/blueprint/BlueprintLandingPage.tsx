@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Linkedin, Mail, Briefcase, CheckCircle, Sparkles, FileText, User } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-const INTAKE_API_URL = 'https://linkedin-leadmagnet-backend-production.up.railway.app/api/intake';
+const INTAKE_API_URL = 'https://gtm-system-production.up.railway.app/api/webhooks/blueprint-form';
 
 // ============================================
 // Types
