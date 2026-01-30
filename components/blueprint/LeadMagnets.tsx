@@ -88,7 +88,7 @@ const LeadMagnetModal: React.FC<LeadMagnetModalProps> = ({ data, onClose }) => {
   }, [handleKeyDown]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
@@ -129,7 +129,7 @@ const LeadMagnetModal: React.FC<LeadMagnetModalProps> = ({ data, onClose }) => {
           {card?.match && (
             <div>
               <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
-                Why This Fits
+                Fit Score
               </h4>
               <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                 {card.match}
@@ -151,9 +151,20 @@ const LeadMagnetModal: React.FC<LeadMagnetModalProps> = ({ data, onClose }) => {
               <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
                 Full Description
               </h4>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                {description}
-              </p>
+              <div className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed space-y-3">
+                {description
+                  .split(/(?<=\.)\s+(?=[A-Z])/)
+                  .reduce<string[][]>((groups, sentence, i) => {
+                    // Group every 2 sentences into a paragraph
+                    const groupIndex = Math.floor(i / 2);
+                    if (!groups[groupIndex]) groups[groupIndex] = [];
+                    groups[groupIndex].push(sentence);
+                    return groups;
+                  }, [])
+                  .map((group, i) => (
+                    <p key={i}>{group.join(' ')}</p>
+                  ))}
+              </div>
             </div>
           )}
 
@@ -223,7 +234,7 @@ const LeadMagnetCardComponent: React.FC<LeadMagnetCardComponentProps> = ({ data,
         {card.match && (
           <div className="mb-2">
             <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-              Why this fits:
+              Fit score:
             </span>
             <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-1 line-clamp-2">
               {card.match}
