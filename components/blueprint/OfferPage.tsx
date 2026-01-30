@@ -23,7 +23,6 @@ import {
   getSpotsRemaining,
 } from './offer-utils';
 import TestimonialQuote from './TestimonialQuote';
-import OfferCard from './OfferCard';
 import ThemeToggle from './ThemeToggle';
 
 // ============================================
@@ -407,11 +406,7 @@ const OfferPage: React.FC = () => {
   // Determine recommended offer
   const recommendedType: 'foundations' | 'engineering' =
     prospect.recommendedOffer === 'bootcamp' ? 'foundations' : 'engineering';
-  const otherType: 'foundations' | 'engineering' =
-    recommendedType === 'foundations' ? 'engineering' : 'foundations';
-
   const offer = OFFERS[recommendedType];
-  const otherOffer = OFFERS[otherType];
 
   // Payment URLs
   const foundationsPaymentUrl = settings?.foundationsPaymentUrl || undefined;
@@ -782,31 +777,22 @@ const OfferPage: React.FC = () => {
             />
           </section>
 
-          {/* ===== MORE TESTIMONIALS ===== */}
-          {t.length > 3 && (
-            <section>
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 text-center mb-8">
-                What People Are Saying
-              </h2>
-              <div className="space-y-6">
-                {t.slice(3).map((testimonial, i) => (
-                  <TestimonialInline key={i} testimonial={testimonial} />
-                ))}
-              </div>
-            </section>
-          )}
-
           {/* ===== SENJA TESTIMONIAL EMBED ===== */}
           <SenjaEmbed />
 
-          {/* ===== OTHER OFFER — COMPACT CARD ===== */}
-          <section>
-            <div className="text-center mb-6">
-              <p className="text-zinc-600 dark:text-zinc-400 text-lg">
-                Looking for something different?
-              </p>
-            </div>
-            <OfferCard offer={otherOffer} paymentUrl={getPaymentUrl(otherType)} />
+          {/* ===== FINAL ENROLL CTA ===== */}
+          <section className="text-center py-8">
+            <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto">
+              Join the next cohort and build your client acquisition system.
+            </p>
+            <CTASection
+              paymentUrl={getPaymentUrl(recommendedType)}
+              offer={offer}
+              variant="primary"
+            />
           </section>
         </div>
       </div>
