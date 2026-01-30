@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import {
   getProspectBySlug,
@@ -29,13 +29,14 @@ import ContentRoadmap from './ContentRoadmap';
 import MarketingBlock from './MarketingBlock';
 import CTAButton from './CTAButton';
 import StickyCTA from './StickyCTA';
-import CalEmbed from './CalEmbed';
+import CalEmbed, { buildCalBookingUrl, CalProspectInfo } from './CalEmbed';
 import SectionBridge from './SectionBridge';
 import ValueStack from './ValueStack';
 import SimpleSteps from './SimpleSteps';
 import TestimonialQuote from './TestimonialQuote';
 import ThemeToggle from './ThemeToggle';
 import ScrollReveal from './ScrollReveal';
+import { useTenantBranding, getTenantColors } from '../../services/tenant-branding';
 
 // ============================================
 // Types
@@ -181,6 +182,11 @@ function getScoreBasedIntro(authorityScore: number): string {
 
 const BlueprintPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+
+  // Tenant branding from query param ?tenant_id=xxx
+  const tenantId = searchParams.get('tenant_id');
+  const { branding: tenantBranding } = useTenantBranding(tenantId);
 
   // State
   const [loading, setLoading] = useState(true);
@@ -271,9 +277,40 @@ const BlueprintPage: React.FC = () => {
   // Get calBookingLink from settings with fallback
   const calBookingLink = settings?.calBookingLink || 'timkeen/30min';
 
+  // Build prospect info for Cal.com pre-filling
+  const prospectInfo: CalProspectInfo = {
+    name: prospect.fullName,
+    email: prospect.email,
+    company: prospect.company,
+    authorityScore: prospect.authorityScore,
+  };
+
+  // Build a standalone (new-tab) Cal.com booking URL with pre-filled prospect data
+  const calNewTabUrl = buildCalBookingUrl(calBookingLink, { prospectInfo });
+
   // Score-based intro paragraph
   const authorityScore = prospect.authorityScore ?? 0;
   const introParagraph = getScoreBasedIntro(authorityScore);
+
+  // Dynamic CTA: offer unlock → "View Your Offer", otherwise default
+  const offerUrl =
+    prospect.offerUnlocked && prospect.slug ? `/blueprint/${prospect.slug}/offer` : undefined;
+
+  // Tenant branding takes priority, then offer unlock, then default
+  const hasTenantBranding = !!tenantBranding;
+  const ctaText =
+    tenantBranding?.offer_cta_text ||
+    (offerUrl ? 'View Your Offer' : 'Book Your 30-Min Strategy Call');
+  const ctaSubtext =
+    tenantBranding?.offer_description ||
+    (offerUrl
+      ? 'See your personalized program recommendation'
+      : "We'll map your quickest wins and build your 90-day plan");
+  const ctaHref = tenantBranding?.offer_cta_url || offerUrl || undefined;
+  const stickyCtaText =
+    tenantBranding?.offer_cta_text || (offerUrl ? 'View Your Offer' : 'Book Your Strategy Call');
+  const stickyCtaHref = tenantBranding?.offer_cta_url || offerUrl || calNewTabUrl;
+  const tenantColorStyles = getTenantColors(tenantBranding);
 
   // Scroll to CalEmbed handler
   const scrollToCalEmbed = () => {
@@ -283,17 +320,24 @@ const BlueprintPage: React.FC = () => {
     // Re-scroll after a brief delay in case layout shifts from lazy-loaded content
     setTimeout(() => {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
+    }, 800);
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
+    <div
+      className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans"
+      style={tenantColorStyles}
+    >
       <ThemeToggle />
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 space-y-20 sm:space-y-28">
         {/* 1. Hero — BlueprintHeader (no CTA button, hook subtitle, score context) */}
         <ScrollReveal>
-          <BlueprintHeader prospect={prospect} scorecardCount={scorecardCount} />
+          <BlueprintHeader
+            prospect={prospect}
+            scorecardCount={scorecardCount}
+            tenantBranding={tenantBranding}
+          />
         </ScrollReveal>
 
         {/* 2. ValueStack — what's in your blueprint */}
@@ -394,14 +438,25 @@ const BlueprintPage: React.FC = () => {
 
         {/* 14. CTA #1 — "Book Your 30-Min Strategy Call" */}
         <ScrollReveal delay={100}>
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-4">
             <CTAButton
-              text="Book Your 30-Min Strategy Call"
-              subtext="We'll map your quickest wins and build your 90-day plan"
-              onClick={scrollToCalEmbed}
+              text={ctaText}
+              subtext={ctaSubtext}
+              onClick={ctaHref ? undefined : scrollToCalEmbed}
+              href={ctaHref}
               size="large"
-              icon="calendar"
+              icon={offerUrl ? 'arrow' : 'calendar'}
+              useBrandColors={hasTenantBranding}
             />
+            {authorityScore > 0 && (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Your Authority Score:{' '}
+                <span className="font-semibold text-violet-600 dark:text-violet-400">
+                  {authorityScore}/100
+                </span>{' '}
+                — let&apos;s unlock the rest.
+              </p>
+            )}
           </div>
         </ScrollReveal>
 
@@ -435,12 +490,12 @@ const BlueprintPage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 pb-12 sm:pb-16 space-y-6">
         <ScrollReveal>
           <h2 className="text-3xl sm:text-4xl font-bold text-center text-zinc-900 dark:text-zinc-100">
-            Book Your Free Strategy Call Now
+            {tenantBranding?.offer_title || 'Book Your Free Strategy Call Now'}
           </h2>
         </ScrollReveal>
 
         <ScrollReveal>
-          <CalEmbed ref={calEmbedRef} calLink={calBookingLink} />
+          <CalEmbed ref={calEmbedRef} calLink={calBookingLink} prospectInfo={prospectInfo} />
         </ScrollReveal>
 
         <ScrollReveal delay={100}>
@@ -453,9 +508,11 @@ const BlueprintPage: React.FC = () => {
 
       {/* 22. StickyCTA (fixed position) */}
       <StickyCTA
-        text="Book Your Strategy Call"
+        text={stickyCtaText}
         calEmbedRef={calEmbedRef}
         isVisible={settings?.stickyCTAEnabled ?? true}
+        href={stickyCtaHref}
+        useBrandColors={hasTenantBranding}
       />
     </div>
   );

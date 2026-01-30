@@ -173,7 +173,147 @@ serve(async (req) => {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', actualConversationId);
 
-    // 5. Call Claude API with streaming
+    // 5. Build final system prompt (with optional Blueprint context)
+    let finalSystemPrompt = tool.system_prompt;
+
+    try {
+      // Look up the student's email from bootcamp_students
+      const { data: student, error: studentError } = await supabase
+        .from('bootcamp_students')
+        .select('email')
+        .eq('id', studentId)
+        .maybeSingle();
+
+      if (studentError) {
+        console.error('Failed to fetch student for Blueprint context:', studentError);
+      }
+
+      if (student?.email) {
+        // Query prospects table for a matching email (case-insensitive) with status='complete'
+        const { data: prospect, error: prospectError } = await supabase
+          .from('prospects')
+          .select(
+            'full_name, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, whats_working_1, whats_working_2, whats_working_3, revenue_leaks_1, revenue_leaks_2, revenue_leaks_3, buyer_persona, strategic_gap, strategic_opportunity, bottom_line, current_headline, recommended_headline, voice_style_guide, next_steps_30_day, next_steps_90_day'
+          )
+          .ilike('email', student.email)
+          .eq('status', 'complete')
+          .maybeSingle();
+
+        if (prospectError) {
+          console.error('Failed to fetch prospect for Blueprint context:', prospectError);
+        }
+
+        if (prospect) {
+          const lines: string[] = [];
+
+          lines.push('=== STUDENT BLUEPRINT CONTEXT ===');
+          lines.push(
+            'This student has completed a LinkedIn Authority Blueprint analysis. Use this context to personalize your responses.'
+          );
+
+          if (prospect.full_name) {
+            lines.push(`\nName: ${prospect.full_name}`);
+          }
+
+          if (prospect.authority_score != null) {
+            lines.push(`Authority Score: ${prospect.authority_score}/100`);
+          }
+
+          // Sub-scores
+          const subScores: string[] = [];
+          if (prospect.score_profile_optimization != null) {
+            subScores.push(`- Profile Optimization: ${prospect.score_profile_optimization}/10`);
+          }
+          if (prospect.score_content_presence != null) {
+            subScores.push(`- Content Presence: ${prospect.score_content_presence}/10`);
+          }
+          if (prospect.score_outbound_systems != null) {
+            subScores.push(`- Outbound Systems: ${prospect.score_outbound_systems}/10`);
+          }
+          if (prospect.score_inbound_infrastructure != null) {
+            subScores.push(`- Inbound Infrastructure: ${prospect.score_inbound_infrastructure}/10`);
+          }
+          if (prospect.score_social_proof != null) {
+            subScores.push(`- Social Proof: ${prospect.score_social_proof}/10`);
+          }
+          if (subScores.length > 0) {
+            lines.push(...subScores);
+          }
+
+          // Strengths
+          const strengths: string[] = [];
+          if (prospect.whats_working_1) strengths.push(`- ${prospect.whats_working_1}`);
+          if (prospect.whats_working_2) strengths.push(`- ${prospect.whats_working_2}`);
+          if (prospect.whats_working_3) strengths.push(`- ${prospect.whats_working_3}`);
+          if (strengths.length > 0) {
+            lines.push('', 'STRENGTHS:');
+            lines.push(...strengths);
+          }
+
+          // Revenue Leaks
+          const leaks: string[] = [];
+          if (prospect.revenue_leaks_1) leaks.push(`- ${prospect.revenue_leaks_1}`);
+          if (prospect.revenue_leaks_2) leaks.push(`- ${prospect.revenue_leaks_2}`);
+          if (prospect.revenue_leaks_3) leaks.push(`- ${prospect.revenue_leaks_3}`);
+          if (leaks.length > 0) {
+            lines.push('', 'REVENUE LEAKS:');
+            lines.push(...leaks);
+          }
+
+          // Strategic Analysis
+          const strategic: string[] = [];
+          if (prospect.buyer_persona) strategic.push(`Buyer Persona: ${prospect.buyer_persona}`);
+          if (prospect.strategic_gap) strategic.push(`Strategic Gap: ${prospect.strategic_gap}`);
+          if (prospect.strategic_opportunity)
+            strategic.push(`Strategic Opportunity: ${prospect.strategic_opportunity}`);
+          if (prospect.bottom_line) strategic.push(`Bottom Line: ${prospect.bottom_line}`);
+          if (strategic.length > 0) {
+            lines.push('', 'STRATEGIC ANALYSIS:');
+            lines.push(...strategic);
+          }
+
+          // Profile
+          const profile: string[] = [];
+          if (prospect.current_headline)
+            profile.push(`Current Headline: ${prospect.current_headline}`);
+          if (prospect.recommended_headline)
+            profile.push(`Recommended Headline: ${prospect.recommended_headline}`);
+          if (prospect.voice_style_guide)
+            profile.push(`Voice Style: ${prospect.voice_style_guide}`);
+          if (profile.length > 0) {
+            lines.push('', 'PROFILE:');
+            lines.push(...profile);
+          }
+
+          // Action Plans
+          const actions: string[] = [];
+          if (prospect.next_steps_30_day) actions.push(`30-Day: ${prospect.next_steps_30_day}`);
+          if (prospect.next_steps_90_day) actions.push(`90-Day: ${prospect.next_steps_90_day}`);
+          if (actions.length > 0) {
+            lines.push('', 'ACTION PLANS:');
+            lines.push(...actions);
+          }
+
+          lines.push('=== END BLUEPRINT CONTEXT ===');
+
+          const blueprintContext = lines.join('\n');
+          finalSystemPrompt = blueprintContext + '\n\n' + tool.system_prompt;
+          console.log('Blueprint context injected for student:', studentId);
+        } else {
+          console.log('No Blueprint context found for student:', studentId);
+        }
+      } else {
+        console.log('No email found for student:', studentId, '- skipping Blueprint lookup');
+      }
+    } catch (blueprintError) {
+      console.error(
+        'Blueprint context lookup failed (proceeding without context):',
+        blueprintError
+      );
+      // finalSystemPrompt remains tool.system_prompt — chat continues without Blueprint context
+    }
+
+    // 6. Call Claude API with streaming
     const messages = [...history, { role: 'user' as const, content: message }];
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -186,7 +326,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: tool.model || 'claude-sonnet-4-20250514',
         max_tokens: tool.max_tokens || 1024,
-        system: tool.system_prompt,
+        system: finalSystemPrompt,
         messages,
         stream: true,
       }),

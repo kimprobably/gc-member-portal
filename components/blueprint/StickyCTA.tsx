@@ -10,6 +10,10 @@ interface StickyCTAProps {
   calEmbedRef: React.RefObject<HTMLDivElement>;
   isVisible?: boolean;
   onCTAClick?: () => void;
+  /** When provided, the CTA renders as a link that opens in a new tab. */
+  href?: string;
+  /** When true, passes useBrandColors to the inner CTAButton */
+  useBrandColors?: boolean;
 }
 
 // ============================================
@@ -21,6 +25,8 @@ const StickyCTA: React.FC<StickyCTAProps> = ({
   calEmbedRef,
   isVisible = true,
   onCTAClick,
+  href,
+  useBrandColors = false,
 }) => {
   const [isCalEmbedVisible, setIsCalEmbedVisible] = useState(false);
 
@@ -88,7 +94,14 @@ const StickyCTA: React.FC<StickyCTAProps> = ({
             </span>
           </div>
 
-          <CTAButton text={text} onClick={handleCTAClick} icon="calendar" variant="primary" />
+          <CTAButton
+            text={text}
+            onClick={href ? undefined : handleCTAClick}
+            href={href}
+            icon="calendar"
+            variant="primary"
+            useBrandColors={useBrandColors}
+          />
         </div>
       </div>
     </div>

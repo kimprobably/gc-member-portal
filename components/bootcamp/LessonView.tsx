@@ -13,8 +13,11 @@ import {
   Copy,
   CheckCheck,
   Key,
+  Sparkles,
 } from 'lucide-react';
 import { ChatInterface } from '../chat';
+import MyBlueprint from './MyBlueprint';
+import { BootcampStudent } from '../../types/bootcamp-types';
 
 interface LessonViewProps {
   lesson: Lesson;
@@ -29,6 +32,7 @@ interface LessonViewProps {
   onWeekSubmit: (weekId: string) => void;
   onSelectLesson: (lesson: Lesson) => void;
   studentId?: string;
+  bootcampStudent?: BootcampStudent | null;
 }
 
 const LessonView: React.FC<LessonViewProps> = ({
@@ -42,10 +46,12 @@ const LessonView: React.FC<LessonViewProps> = ({
   onUpdateNote,
   onSelectLesson: _onSelectLesson,
   studentId,
+  bootcampStudent,
 }) => {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  const isMyBlueprint = lesson.embedUrl === 'virtual:my-blueprint';
   const isChecklistHub =
     lesson.id.endsWith(':checklist') || lesson.embedUrl === 'virtual:checklist';
   const isAistudio = lesson.embedUrl.includes('aistudio.google.com');
@@ -197,6 +203,23 @@ const LessonView: React.FC<LessonViewProps> = ({
 
   const weekTasks = currentWeek?.actionItems || [];
   const cleanTitle = (title: string) => title.replace(/^(TOOL:|TASK:|TABLE:?)\s*/gi, '').trim();
+
+  // My Blueprint full-page view
+  if (isMyBlueprint && bootcampStudent) {
+    return (
+      <div className="max-w-5xl mx-auto w-full pb-12">
+        <header className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-violet-500/10 text-violet-400">
+              <Sparkles size={12} /> Blueprint
+            </span>
+          </div>
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-white">My Blueprint</h2>
+        </header>
+        <MyBlueprint student={bootcampStudent} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto w-full pb-12">

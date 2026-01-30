@@ -11,6 +11,7 @@ import {
 } from '../../services/bootcamp-supabase';
 import Sidebar from '../../components/bootcamp/Sidebar';
 import LessonView from '../../components/bootcamp/LessonView';
+import MyPosts from '../../components/bootcamp/MyPosts';
 import Login from '../../components/bootcamp/Login';
 import Register from '../../components/bootcamp/Register';
 import {
@@ -71,7 +72,7 @@ const BootcampApp: React.FC = () => {
   const [dismissedBanner, setDismissedBanner] = useState(false);
 
   // Subscription access state - pass null for cohort until we fetch it (gives unlimited access)
-  const { accessState, daysRemaining, isReadOnly } = useSubscription(bootcampStudent, null);
+  const { accessState, daysRemaining } = useSubscription(bootcampStudent, null);
 
   // Fetch AI tools for Resources section (global, all cohorts)
   const { data: aiTools } = useActiveAITools();
@@ -398,6 +399,7 @@ const BootcampApp: React.FC = () => {
             onSave={handleSurveySave}
             onComplete={handleSurveyComplete}
             isLoading={surveyMutation.isPending}
+            studentEmail={bootcampStudent?.email}
           />
         )}
 
@@ -470,6 +472,7 @@ const BootcampApp: React.FC = () => {
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}
           aiTools={aiTools}
           onOpenSettings={bootcampStudent ? () => setShowSettingsModal(true) : undefined}
+          hasBlueprint={!!bootcampStudent?.prospectId}
         />
 
         <main className="flex-1 h-full overflow-y-auto pt-14 md:pt-0 bg-white dark:bg-zinc-950 transition-colors duration-300">
@@ -481,20 +484,25 @@ const BootcampApp: React.FC = () => {
                 onDismiss={() => setDismissedBanner(true)}
               />
             )}
-            <LessonView
-              lesson={currentLesson}
-              currentWeek={currentWeek}
-              completedItems={completedItems}
-              proofOfWork={proofOfWork}
-              taskNotes={taskNotes}
-              onToggleItem={toggleActionItem}
-              onUpdateProof={updateProofOfWork}
-              onUpdateNote={updateTaskNote}
-              isWeekSubmitted={currentWeek ? submittedWeeks[currentWeek.id] : false}
-              onWeekSubmit={handleWeekSubmit}
-              onSelectLesson={setCurrentLesson}
-              studentId={bootcampStudent?.id}
-            />
+            {currentLesson.id === 'virtual:my-posts' ? (
+              <MyPosts prospectId={bootcampStudent?.prospectId} />
+            ) : (
+              <LessonView
+                lesson={currentLesson}
+                currentWeek={currentWeek}
+                completedItems={completedItems}
+                proofOfWork={proofOfWork}
+                taskNotes={taskNotes}
+                onToggleItem={toggleActionItem}
+                onUpdateProof={updateProofOfWork}
+                onUpdateNote={updateTaskNote}
+                isWeekSubmitted={currentWeek ? submittedWeeks[currentWeek.id] : false}
+                onWeekSubmit={handleWeekSubmit}
+                onSelectLesson={setCurrentLesson}
+                studentId={bootcampStudent?.id}
+                bootcampStudent={bootcampStudent}
+              />
+            )}
           </div>
         </main>
       </div>

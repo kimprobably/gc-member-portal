@@ -13,6 +13,7 @@ import { BootcampStudent, BootcampStudentSurvey } from '../../../../types/bootca
 import StudentTable from './StudentTable';
 import StudentModal from './StudentModal';
 import StudentSurveyModal from './StudentSurveyModal';
+import GenerateBlueprintModal from './GenerateBlueprintModal';
 import { Plus, Search, Filter, RefreshCw } from 'lucide-react';
 
 interface StudentWithProgress extends BootcampStudent {
@@ -32,6 +33,7 @@ const AdminStudentsPage: React.FC = () => {
   const [surveyStudent, setSurveyStudent] = useState<StudentWithProgress | null>(null);
   const [slackLoadingId, setSlackLoadingId] = useState<string | undefined>();
   const [calendarLoadingId, setCalendarLoadingId] = useState<string | undefined>();
+  const [blueprintStudent, setBlueprintStudent] = useState<BootcampStudent | null>(null);
 
   // Queries
   const {
@@ -130,6 +132,10 @@ const AdminStudentsPage: React.FC = () => {
 
   const handleViewSurvey = (student: StudentWithProgress) => {
     setSurveyStudent(student);
+  };
+
+  const handleGenerateBlueprint = (student: BootcampStudent) => {
+    setBlueprintStudent(student);
   };
 
   const handleToggleSelect = (id: string) => {
@@ -280,6 +286,7 @@ const AdminStudentsPage: React.FC = () => {
           onViewProgress={handleViewProgress}
           onViewSurvey={handleViewSurvey}
           onEdit={handleEditStudent}
+          onGenerateBlueprint={handleGenerateBlueprint}
           isSlackLoading={slackLoadingId}
           isCalendarLoading={calendarLoadingId}
         />
@@ -302,6 +309,13 @@ const AdminStudentsPage: React.FC = () => {
         onClose={() => setSurveyStudent(null)}
         survey={surveyStudent?.survey || null}
         studentName={surveyStudent?.name}
+      />
+
+      <GenerateBlueprintModal
+        isOpen={!!blueprintStudent}
+        onClose={() => setBlueprintStudent(null)}
+        studentName={blueprintStudent?.name}
+        studentEmail={blueprintStudent?.email || ''}
       />
     </div>
   );

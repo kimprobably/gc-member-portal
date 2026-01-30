@@ -1,5 +1,15 @@
 import React from 'react';
-import { Check, X, MessageSquare, Calendar, Eye, Pencil, ClipboardList } from 'lucide-react';
+import {
+  Check,
+  X,
+  MessageSquare,
+  Calendar,
+  Eye,
+  Pencil,
+  ClipboardList,
+  Sparkles,
+  ExternalLink,
+} from 'lucide-react';
 import { BootcampStudent, BootcampStudentSurvey } from '../../../../types/bootcamp-types';
 import { useTheme } from '../../../../context/ThemeContext';
 import { getStatusColor, STATUS_COLORS } from '../../../../types/gc-types';
@@ -19,6 +29,7 @@ interface StudentTableProps {
   onViewProgress: (student: BootcampStudent) => void;
   onViewSurvey: (student: StudentWithProgress) => void;
   onEdit: (student: BootcampStudent) => void;
+  onGenerateBlueprint: (student: BootcampStudent) => void;
   isSlackLoading?: string;
   isCalendarLoading?: string;
 }
@@ -33,6 +44,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onViewProgress,
   onViewSurvey,
   onEdit,
+  onGenerateBlueprint,
   isSlackLoading,
   isCalendarLoading,
 }) => {
@@ -81,6 +93,9 @@ const StudentTable: React.FC<StudentTableProps> = ({
               </th>
               <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Calendar
+              </th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                Blueprint
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Actions
@@ -214,6 +229,29 @@ const StudentTable: React.FC<StudentTableProps> = ({
                         ) : (
                           <Calendar className="w-4 h-4" />
                         )}
+                      </button>
+                    )}
+                  </td>
+
+                  {/* Blueprint */}
+                  <td className="px-4 py-3 text-center">
+                    {student.prospectId ? (
+                      <a
+                        href={`/blueprint/${student.prospectId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+                        title="View Blueprint"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => onGenerateBlueprint(student)}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+                        title="Generate Blueprint"
+                      >
+                        <Sparkles className="w-4 h-4" />
                       </button>
                     )}
                   </td>

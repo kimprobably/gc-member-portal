@@ -4,7 +4,7 @@ import { Settings, Search, Filter, RefreshCw, FileText } from 'lucide-react';
 import { listProspects } from '../../../services/blueprint-supabase';
 import { queryKeys } from '../../../lib/queryClient';
 import { useTheme } from '../../../context/ThemeContext';
-import { Prospect, ProspectStatus } from '../../../types/blueprint-types';
+import { Prospect } from '../../../types/blueprint-types';
 import BlueprintTable from './BlueprintTable';
 import BlueprintDetailPanel from './BlueprintDetailPanel';
 import BlueprintSettingsModal from './BlueprintSettingsModal';
@@ -102,8 +102,9 @@ const AdminBlueprintsPage: React.FC = () => {
     setSelectedProspect(null);
   };
 
-  const handleDetailPanelUpdate = () => {
+  const handleDetailPanelUpdate = (updated?: Prospect) => {
     refetch();
+    if (updated) setSelectedProspect(updated);
   };
 
   const handleCopyUrl = async (prospect: Prospect) => {

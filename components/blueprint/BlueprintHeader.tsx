@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Prospect, getProspectDisplayName } from '../../types/blueprint-types';
+import type { TenantBranding } from '../../services/tenant-branding';
 
 // ============================================
 // Types
@@ -8,6 +9,8 @@ import { Prospect, getProspectDisplayName } from '../../types/blueprint-types';
 interface BlueprintHeaderProps {
   prospect: Prospect;
   scorecardCount?: number;
+  /** When provided, tenant branding overrides default logo/tagline/colors */
+  tenantBranding?: TenantBranding | null;
 }
 
 // ============================================
@@ -60,15 +63,41 @@ function getScoreContext(score: number): { label: string; colorClass: string } {
 // BlueprintHeader Component
 // ============================================
 
-const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, scorecardCount }) => {
+const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({
+  prospect,
+  scorecardCount,
+  tenantBranding,
+}) => {
   const displayName = getProspectDisplayName(prospect);
   const authorityScore = prospect.authorityScore ?? 0;
   const scoreSummary = prospect.scoreSummary;
   const companyAndTitle = [prospect.company, prospect.jobTitle].filter(Boolean).join(' | ');
   const scoreContext = getScoreContext(authorityScore);
 
+  // Tenant branding values
+  const hasTenantBranding = !!tenantBranding;
+  const brandName = tenantBranding?.brand_name;
+  const brandLogoUrl = tenantBranding?.brand_logo_url;
+  const brandTagline = tenantBranding?.brand_tagline;
+
   return (
     <div>
+      {/* Tenant Logo + Tagline */}
+      {hasTenantBranding && (brandLogoUrl || brandTagline) && (
+        <div className="mb-6 flex flex-col items-center gap-2">
+          {brandLogoUrl && (
+            <img
+              src={brandLogoUrl}
+              alt={`${brandName || 'Tenant'} logo`}
+              className="h-10 w-auto object-contain"
+            />
+          )}
+          {brandTagline && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">{brandTagline}</p>
+          )}
+        </div>
+      )}
+
       {/* Green eyebrow */}
       {scorecardCount != null && scorecardCount > 0 && (
         <div className="mb-3 flex justify-center">
@@ -88,15 +117,34 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, scorecardCo
 
           {/* Text Content */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-2">
-              We found 3 gaps costing you pipeline. Here&apos;s how to fix them.
+            <p
+              className="text-sm font-medium uppercase tracking-wider mb-2"
+              style={hasTenantBranding ? { color: 'var(--brand-primary)' } : undefined}
+            >
+              {!hasTenantBranding && (
+                <span className="text-violet-600 dark:text-violet-400">
+                  We found 3 gaps costing you pipeline. Here&apos;s how to fix them.
+                </span>
+              )}
+              {hasTenantBranding && (
+                <span>We found 3 gaps costing you pipeline. Here&apos;s how to fix them.</span>
+              )}
             </p>
             {/* Title */}
             <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
-              GTM BLUEPRINT FOR{' '}
-              <span className="text-violet-600 dark:text-violet-400">
-                {displayName.toUpperCase()}
-              </span>
+              {hasTenantBranding && brandName ? (
+                <>
+                  {brandName.toUpperCase()} BLUEPRINT FOR{' '}
+                  <span style={{ color: 'var(--brand-primary)' }}>{displayName.toUpperCase()}</span>
+                </>
+              ) : (
+                <>
+                  GTM BLUEPRINT FOR{' '}
+                  <span className="text-violet-600 dark:text-violet-400">
+                    {displayName.toUpperCase()}
+                  </span>
+                </>
+              )}
             </h1>
 
             {/* Company + Job Title */}
@@ -109,7 +157,10 @@ const BlueprintHeader: React.FC<BlueprintHeaderProps> = ({ prospect, scorecardCo
 
           {/* Authority Score with context label */}
           <div className="flex-shrink-0 text-center sm:text-right">
-            <div className="text-6xl sm:text-7xl font-bold text-violet-500 leading-none">
+            <div
+              className={`text-6xl sm:text-7xl font-bold leading-none ${!hasTenantBranding ? 'text-violet-500' : ''}`}
+              style={hasTenantBranding ? { color: 'var(--brand-primary)' } : undefined}
+            >
               {authorityScore}
             </div>
             <div className="mt-1 text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">

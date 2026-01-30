@@ -17,7 +17,7 @@ interface BlueprintDetailPanelProps {
   prospect: Prospect | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: () => void;
+  onUpdate: (updated?: Prospect) => void;
 }
 
 const BlueprintDetailPanel: React.FC<BlueprintDetailPanelProps> = ({
@@ -97,13 +97,13 @@ const BlueprintDetailPanel: React.FC<BlueprintDetailPanelProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateProspectOffer(prospect.id, {
+      const updated = await updateProspectOffer(prospect.id, {
         unlocked: offerUnlocked,
         recommended: recommendedOffer,
         note: personalNote,
       });
       setHasChanges(false);
-      onUpdate();
+      onUpdate(updated);
     } catch (error) {
       console.error('Failed to save changes:', error);
     } finally {

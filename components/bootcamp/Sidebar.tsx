@@ -20,6 +20,7 @@ import {
   Globe,
   LogOut,
   Settings,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -35,6 +36,7 @@ interface SidebarProps {
   onToggleTheme: () => void;
   aiTools?: AITool[];
   onOpenSettings?: () => void;
+  hasBlueprint?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -49,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onToggleTheme,
   aiTools = [],
   onOpenSettings,
+  hasBlueprint = false,
 }) => {
   const { logout } = useAuth();
 
@@ -256,6 +259,33 @@ const Sidebar: React.FC<SidebarProps> = ({
 
               {showResourcesSection && (
                 <div className="space-y-1 animate-slide-in">
+                  {/* My Blueprint */}
+                  <button
+                    onClick={() => {
+                      onSelectLesson({
+                        id: 'my-blueprint',
+                        title: 'My Blueprint',
+                        embedUrl: 'virtual:my-blueprint',
+                      });
+                      onCloseMobile();
+                    }}
+                    className={`flex items-center w-full p-2 rounded-lg text-xs font-medium transition-all ${
+                      currentLessonId === 'my-blueprint'
+                        ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                        : 'text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sparkles
+                        size={12}
+                        className={
+                          currentLessonId === 'my-blueprint' ? 'text-violet-500' : 'text-violet-500'
+                        }
+                      />
+                      <span>My Blueprint</span>
+                    </div>
+                  </button>
+
                   {/* AI Tools - from database (global) + curriculum-embedded */}
                   {(aiTools.length > 0 || toolGroups.gpts.length > 0) && (
                     <div className="space-y-0.5">
@@ -331,6 +361,40 @@ const Sidebar: React.FC<SidebarProps> = ({
                       )}
                     </div>
                   )}
+
+                  {/* My Posts - Blueprint posts */}
+                  <div className="space-y-0.5">
+                    <button
+                      onClick={() => {
+                        onSelectLesson({
+                          id: 'virtual:my-posts',
+                          title: 'My Posts',
+                          embedUrl: 'virtual:my-posts',
+                        });
+                        onCloseMobile();
+                      }}
+                      className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-xs font-medium transition-colors ${
+                        currentLessonId === 'virtual:my-posts'
+                          ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                          : 'text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      <FileText
+                        size={12}
+                        className={
+                          currentLessonId === 'virtual:my-posts'
+                            ? 'text-violet-500'
+                            : 'text-emerald-500'
+                        }
+                      />
+                      <span>My Posts</span>
+                      {hasBlueprint && (
+                        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          60
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

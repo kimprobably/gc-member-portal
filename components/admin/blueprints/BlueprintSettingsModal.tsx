@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Check, Plus, Trash2, GripVertical } from 'lucide-react';
+import { X, Check, Plus, Trash2, GripVertical, Upload } from 'lucide-react';
 import { BlueprintSettings } from '../../../types/blueprint-types';
 import {
   getBlueprintSettings,
@@ -9,6 +9,7 @@ import {
   createClientLogo,
   updateClientLogo,
   deleteClientLogo,
+  uploadClientLogoFile,
   ClientLogo,
 } from '../../../services/blueprint-supabase';
 import { queryKeys } from '../../../lib/queryClient';
@@ -120,6 +121,9 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
   const [newLogoName, setNewLogoName] = useState('');
   const [newLogoUrl, setNewLogoUrl] = useState('');
   const [logoSaving, setLogoSaving] = useState(false);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkUploadProgress, setBulkUploadProgress] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: logosData } = useQuery({
     queryKey: ['clientLogos'],
@@ -170,6 +174,41 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
       queryClient.invalidateQueries({ queryKey: ['clientLogos'] });
     } catch (err) {
       console.error('Failed to toggle logo:', err);
+    }
+  };
+
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setBulkUploading(true);
+    const startCount = logos.length;
+    let uploaded = 0;
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+
+        const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+        setBulkUploadProgress(`Uploading ${i + 1} of ${files.length}...`);
+
+        const publicUrl = await uploadClientLogoFile(file);
+        const created = await createClientLogo({
+          name,
+          imageUrl: publicUrl,
+          sortOrder: startCount + uploaded,
+        });
+        setLogos((prev) => [...prev, created]);
+        uploaded++;
+      }
+      queryClient.invalidateQueries({ queryKey: ['clientLogos'] });
+    } catch (err) {
+      console.error('Bulk upload failed:', err);
+    } finally {
+      setBulkUploading(false);
+      setBulkUploadProgress('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -452,15 +491,34 @@ const BlueprintSettingsModal: React.FC<BlueprintSettingsModalProps> = ({ isOpen,
                     className="px-3 py-2 rounded-lg border bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddLogo}
-                  disabled={logoSaving || !newLogoName.trim() || !newLogoUrl.trim()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  {logoSaving ? 'Adding...' : 'Add Logo'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddLogo}
+                    disabled={logoSaving || !newLogoName.trim() || !newLogoUrl.trim()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {logoSaving ? 'Adding...' : 'Add Logo'}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleBulkUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={bulkUploading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-700 text-white hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    {bulkUploading ? bulkUploadProgress : 'Bulk Upload PNGs'}
+                  </button>
+                </div>
               </div>
             </div>
 

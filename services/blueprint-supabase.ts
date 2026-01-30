@@ -982,6 +982,28 @@ export async function getAllClientLogos(): Promise<ClientLogo[]> {
 }
 
 /**
+ * Upload a logo image to Supabase Storage and return the public URL
+ */
+export async function uploadClientLogoFile(file: globalThis.File): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+  const fileName = `${globalThis.crypto.randomUUID()}.${ext}`;
+  const filePath = `logos/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('client-logos')
+    .upload(filePath, file, { contentType: file.type, upsert: false });
+
+  if (uploadError) {
+    console.error('Error uploading logo file:', uploadError);
+    throw new Error(uploadError.message);
+  }
+
+  const { data: urlData } = supabase.storage.from('client-logos').getPublicUrl(filePath);
+
+  return urlData.publicUrl;
+}
+
+/**
  * Create a new client logo
  */
 export async function createClientLogo(logo: {
@@ -1075,4 +1097,140 @@ export async function getBlueprintPageData(slug: string): Promise<{
     settings,
     contentBlocks,
   };
+}
+
+// ============================================
+// Blueprint Data Lookup by Email
+// ============================================
+
+/**
+ * Fetch a prospect by their email address (case-insensitive)
+ * Returns the full Prospect object or null if not found
+ */
+export async function getProspectByEmail(email: string): Promise<Prospect | null> {
+  try {
+    const { data, error } = await supabase
+      .from('prospects')
+      .select('*')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching prospect by email:', error);
+      return null;
+    }
+
+    if (!data) {
+      console.log('Prospect not found for email:', email);
+      return null;
+    }
+
+    return mapProspect(data);
+  } catch (error) {
+    console.error('Failed to fetch prospect by email:', error);
+    return null;
+  }
+}
+
+/**
+ * Get a formatted text summary of a student's Blueprint data, suitable for AI system prompt injection.
+ * Returns null if no prospect is found for the given email.
+ */
+export async function getProspectSummaryForAI(email: string): Promise<string | null> {
+  const prospect = await getProspectByEmail(email);
+  if (!prospect) return null;
+
+  const lines: string[] = [];
+
+  lines.push('=== STUDENT BLUEPRINT CONTEXT ===');
+
+  if (prospect.fullName) {
+    lines.push(`Name: ${prospect.fullName}`);
+  }
+
+  if (prospect.authorityScore != null) {
+    lines.push(`Authority Score: ${prospect.authorityScore}/100`);
+  }
+
+  // Sub-scores
+  const subScores: string[] = [];
+  if (prospect.scoreProfileOptimization != null) {
+    subScores.push(`- Profile Optimization: ${prospect.scoreProfileOptimization}/10`);
+  }
+  if (prospect.scoreContentPresence != null) {
+    subScores.push(`- Content Presence: ${prospect.scoreContentPresence}/10`);
+  }
+  if (prospect.scoreOutboundSystems != null) {
+    subScores.push(`- Outbound Systems: ${prospect.scoreOutboundSystems}/10`);
+  }
+  if (prospect.scoreInboundInfrastructure != null) {
+    subScores.push(`- Inbound Infrastructure: ${prospect.scoreInboundInfrastructure}/10`);
+  }
+  if (prospect.scoreSocialProof != null) {
+    subScores.push(`- Social Proof: ${prospect.scoreSocialProof}/10`);
+  }
+  if (subScores.length > 0) {
+    lines.push(...subScores);
+  }
+
+  // Strengths
+  const strengths: string[] = [];
+  if (prospect.whatsWorking1) strengths.push(`- ${prospect.whatsWorking1}`);
+  if (prospect.whatsWorking2) strengths.push(`- ${prospect.whatsWorking2}`);
+  if (prospect.whatsWorking3) strengths.push(`- ${prospect.whatsWorking3}`);
+  if (strengths.length > 0) {
+    lines.push('');
+    lines.push('STRENGTHS:');
+    lines.push(...strengths);
+  }
+
+  // Revenue Leaks
+  const leaks: string[] = [];
+  if (prospect.revenueLeaks1) leaks.push(`- ${prospect.revenueLeaks1}`);
+  if (prospect.revenueLeaks2) leaks.push(`- ${prospect.revenueLeaks2}`);
+  if (prospect.revenueLeaks3) leaks.push(`- ${prospect.revenueLeaks3}`);
+  if (leaks.length > 0) {
+    lines.push('');
+    lines.push('REVENUE LEAKS:');
+    lines.push(...leaks);
+  }
+
+  // Strategic Analysis
+  const strategic: string[] = [];
+  if (prospect.buyerPersona) strategic.push(`Buyer Persona: ${prospect.buyerPersona}`);
+  if (prospect.strategicGap) strategic.push(`Strategic Gap: ${prospect.strategicGap}`);
+  if (prospect.strategicOpportunity)
+    strategic.push(`Strategic Opportunity: ${prospect.strategicOpportunity}`);
+  if (prospect.bottomLine) strategic.push(`Bottom Line: ${prospect.bottomLine}`);
+  if (strategic.length > 0) {
+    lines.push('');
+    lines.push('STRATEGIC ANALYSIS:');
+    lines.push(...strategic);
+  }
+
+  // Profile
+  const profile: string[] = [];
+  if (prospect.currentHeadline) profile.push(`Current Headline: ${prospect.currentHeadline}`);
+  if (prospect.recommendedHeadline)
+    profile.push(`Recommended Headline: ${prospect.recommendedHeadline}`);
+  if (prospect.voiceStyleGuide) profile.push(`Voice Style: ${prospect.voiceStyleGuide}`);
+  if (profile.length > 0) {
+    lines.push('');
+    lines.push('PROFILE:');
+    lines.push(...profile);
+  }
+
+  // Action Plans
+  const actions: string[] = [];
+  if (prospect.nextSteps30Day) actions.push(`30-Day: ${prospect.nextSteps30Day}`);
+  if (prospect.nextSteps90Day) actions.push(`90-Day: ${prospect.nextSteps90Day}`);
+  if (actions.length > 0) {
+    lines.push('');
+    lines.push('ACTION PLANS:');
+    lines.push(...actions);
+  }
+
+  lines.push('=== END BLUEPRINT CONTEXT ===');
+
+  return lines.join('\n');
 }
