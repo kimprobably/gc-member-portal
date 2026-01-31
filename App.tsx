@@ -43,6 +43,7 @@ import BlueprintLandingPage from './components/blueprint/BlueprintLandingPage';
 import BlueprintThankYou from './components/blueprint/BlueprintThankYou';
 import CallBookedThankYou from './components/blueprint/CallBookedThankYou';
 import GenericOfferPage from './components/blueprint/GenericOfferPage';
+import CaseStudiesPage from './components/blueprint/CaseStudiesPage';
 
 import { useAuth } from './context/AuthContext';
 
@@ -110,6 +111,9 @@ const App: React.FC = () => {
       <Route path="/blueprint/call-booked" element={<CallBookedThankYou />} />
       <Route path="/blueprint/:slug" element={<BlueprintPage />} />
       <Route path="/blueprint/:slug/offer" element={<OfferPage />} />
+
+      {/* Case Studies */}
+      <Route path="/case-studies" element={<CaseStudiesPage />} />
 
       {/* Generic (non-personalized) offer pages for partners/affiliates */}
       <Route path="/offer/:offerType" element={<GenericOfferPage />} />
