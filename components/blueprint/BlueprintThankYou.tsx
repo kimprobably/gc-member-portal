@@ -1,17 +1,7 @@
 import React, { useRef } from 'react';
-import { useLocation } from 'react-router-dom';
 import { CheckCircle, BarChart3, AlertTriangle, User, Lightbulb, Calendar } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CalEmbed from './CalEmbed';
-
-// ============================================
-// Types
-// ============================================
-
-interface LocationState {
-  prospectId?: string;
-  reportUrl?: string;
-}
 
 // ============================================
 // Constants
@@ -32,9 +22,6 @@ const BLUEPRINT_CONTENTS = [
 const CAL_BOOKING_LINK = 'vlad-timinski-pqqica/30min';
 
 const BlueprintThankYou: React.FC = () => {
-  const location = useLocation();
-  const state = location.state as LocationState | null;
-  const reportUrl = state?.reportUrl;
   const calEmbedRef = useRef<HTMLDivElement>(null);
 
   const scrollToCalEmbed = () => {
@@ -66,11 +53,11 @@ const BlueprintThankYou: React.FC = () => {
         <section className="mb-12">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg dark:shadow-none p-6 sm:p-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
-              Want Me to Walk You Through It Live?
+              Want Us to Walk You Through It Live?
             </h2>
             <p className="text-zinc-600 dark:text-zinc-400 mb-6 max-w-lg mx-auto">
-              Book a free 30-minute strategy call. I&apos;ll walk you through your blueprint, answer
-              your questions, and map out your next steps.
+              Book a free 30-minute strategy call. We&apos;ll walk you through your blueprint,
+              answer your questions, and map out your next steps.
             </p>
             <button
               onClick={scrollToCalEmbed}
@@ -103,17 +90,9 @@ const BlueprintThankYou: React.FC = () => {
           </div>
         </section>
 
-        {/* View Blueprint Link (if reportUrl available) */}
-        {reportUrl && (
-          <div className="text-center mb-12">
-            <a
-              href={reportUrl}
-              className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-            >
-              View your blueprint once it&apos;s ready &rarr;
-            </a>
-          </div>
-        )}
+        {/* Blueprint is generated async (~15 min) — link removed to avoid
+            users clicking through to an incomplete page. They'll receive the
+            link via email once it's ready. */}
       </div>
 
       {/* CalEmbed — wider container so month view doesn't collapse to mobile */}
