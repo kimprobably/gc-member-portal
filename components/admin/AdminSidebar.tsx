@@ -19,7 +19,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const handleBackToPortal = () => {
-    navigate('/');
+    navigate('/portal');
   };
 
   return (

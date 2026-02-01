@@ -81,12 +81,20 @@ const NavBar: React.FC = () => (
       <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
         Modern Agency Sales
       </span>
-      <Link
-        to="/case-studies"
-        className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-      >
-        Case Studies
-      </Link>
+      <div className="flex items-center gap-4 sm:gap-6">
+        <Link
+          to="/case-studies"
+          className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        >
+          Case Studies
+        </Link>
+        <Link
+          to="/login"
+          className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+        >
+          Login
+        </Link>
+      </div>
     </div>
   </nav>
 );

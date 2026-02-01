@@ -64,12 +64,19 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      {/* GC Member Portal - Root path */}
+      {/* Public root — opt-in form */}
+      <Route path="/" element={<BlueprintLandingPage />} />
+
+      {/* Login page */}
       <Route
-        path="/"
-        element={
-          isAuthenticated && mode === 'gc' ? <GCLayout /> : <Navigate to="/blueprint" replace />
-        }
+        path="/login"
+        element={isAuthenticated && mode === 'gc' ? <Navigate to="/portal" replace /> : <GCLogin />}
+      />
+
+      {/* GC Member Portal */}
+      <Route
+        path="/portal"
+        element={isAuthenticated && mode === 'gc' ? <GCLayout /> : <Navigate to="/login" replace />}
       >
         <Route index element={<DashboardHome />} />
         <Route path="onboarding" element={<OnboardingPage />} />

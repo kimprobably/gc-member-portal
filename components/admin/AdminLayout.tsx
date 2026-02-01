@@ -20,11 +20,11 @@ const AdminLayout: React.FC = () => {
 
   // Check if user is authenticated and is an admin
   if (!isAuthenticated || !gcMember) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!isAdminEmail(gcMember.email)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const pageTitle = routeTitles[location.pathname] || 'Admin';
