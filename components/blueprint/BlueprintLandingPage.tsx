@@ -741,7 +741,7 @@ const BlueprintLandingPage: React.FC = () => {
     monthlyIncome: '',
   });
 
-  // Restore partial data from sessionStorage on mount
+  // Restore email from sessionStorage on mount (only on actual page refresh, not fresh navigation)
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem(SESSION_KEY);
@@ -752,7 +752,11 @@ const BlueprintLandingPage: React.FC = () => {
             ...prev,
             email: parsed.email || prev.email,
           }));
-          if (parsed.phase === 'questionnaire') {
+          // Only restore questionnaire phase on actual page reload (not fresh navigation)
+          const navEntries = window.performance.getEntriesByType('navigation');
+          const isReload =
+            navEntries.length > 0 && (navEntries[0] as { type?: string }).type === 'reload';
+          if (parsed.phase === 'questionnaire' && isReload) {
             setPhase('questionnaire');
           }
         } else {
