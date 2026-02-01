@@ -118,4 +118,13 @@ export const queryKeys = {
   blueprintSettings: () => ['blueprint', 'settings'] as const,
   blueprintContentBlocks: () => ['blueprint', 'contentBlocks'] as const,
   blueprintAdminProspects: () => ['blueprint', 'admin', 'prospects'] as const,
+
+  // TAM Builder
+  tamProjects: (userId: string) => ['tam', 'projects', userId] as const,
+  tamProject: (projectId: string) => ['tam', 'project', projectId] as const,
+  tamCompanies: (projectId: string) => ['tam', 'companies', projectId] as const,
+  tamContacts: (projectId: string) => ['tam', 'contacts', projectId] as const,
+  tamContactsByCompany: (companyId: string) => ['tam', 'contacts', 'company', companyId] as const,
+  tamJobs: (projectId: string) => ['tam', 'jobs', projectId] as const,
+  tamStats: (projectId: string) => ['tam', 'stats', projectId] as const,
 };

@@ -2,10 +2,20 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://modernagencysales.com',
+  'https://www.modernagencysales.com',
+  'http://localhost:3000',
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+}
 
 interface ChatRequest {
   toolId?: string;
@@ -28,6 +38,8 @@ interface ChatMessage {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -311,6 +323,94 @@ serve(async (req) => {
         blueprintError
       );
       // finalSystemPrompt remains tool.system_prompt — chat continues without Blueprint context
+    }
+
+    // TAM Builder context injection
+    if (toolSlug === 'tam-builder' || tool?.id) {
+      // First check if this is the TAM Builder tool
+      let isTamBuilder = false;
+      if (toolSlug === 'tam-builder') {
+        isTamBuilder = true;
+      } else {
+        // Check if the tool slug is 'tam-builder' by querying
+        const { data: toolData, error: toolCheckError } = await supabase
+          .from('ai_tools')
+          .select('slug')
+          .eq('id', tool.id)
+          .maybeSingle();
+
+        if (!toolCheckError && toolData?.slug === 'tam-builder') {
+          isTamBuilder = true;
+        }
+      }
+
+      if (isTamBuilder) {
+        try {
+          const { data: tamProject } = await supabase
+            .from('tam_projects')
+            .select('*')
+            .eq('user_id', studentId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (tamProject) {
+            const { data: jobs } = await supabase
+              .from('tam_job_queue')
+              .select('*')
+              .eq('project_id', tamProject.id)
+              .order('created_at', { ascending: true });
+
+            const { count: totalCompanies } = await supabase
+              .from('tam_companies')
+              .select('*', { count: 'exact', head: true })
+              .eq('project_id', tamProject.id);
+
+            const { count: qualifiedCompanies } = await supabase
+              .from('tam_companies')
+              .select('*', { count: 'exact', head: true })
+              .eq('project_id', tamProject.id)
+              .eq('qualification_status', 'qualified');
+
+            const { count: totalContacts } = await supabase
+              .from('tam_contacts')
+              .select('*', { count: 'exact', head: true })
+              .eq('project_id', tamProject.id);
+
+            const tamContext = JSON.stringify(
+              {
+                project: {
+                  id: tamProject.id,
+                  name: tamProject.name,
+                  status: tamProject.status,
+                  icpProfile: tamProject.icp_profile,
+                  sourcingStrategy: tamProject.sourcing_strategy,
+                },
+                jobs: jobs || [],
+                stats: { totalCompanies, qualifiedCompanies, totalContacts },
+              },
+              null,
+              2
+            );
+
+            finalSystemPrompt = finalSystemPrompt.replace('{icp_context}', tamContext);
+            console.log('TAM Builder context injected for student:', studentId);
+          } else {
+            finalSystemPrompt = finalSystemPrompt.replace(
+              '{icp_context}',
+              'No TAM project found for this user.'
+            );
+            console.log('No TAM project found for student:', studentId);
+          }
+        } catch (tamError) {
+          console.error('TAM context lookup failed (proceeding without context):', tamError);
+          // Replace placeholder with error message
+          finalSystemPrompt = finalSystemPrompt.replace(
+            '{icp_context}',
+            'TAM context unavailable due to error.'
+          );
+        }
+      }
     }
 
     // 6. Call Claude API with streaming
