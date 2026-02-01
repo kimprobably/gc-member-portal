@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Linkedin,
   Mail,
@@ -81,6 +81,12 @@ const NavBar: React.FC = () => (
       <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
         Modern Agency Sales
       </span>
+      <Link
+        to="/case-studies"
+        className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+      >
+        Case Studies
+      </Link>
     </div>
   </nav>
 );

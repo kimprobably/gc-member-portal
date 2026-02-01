@@ -65,7 +65,12 @@ const App: React.FC = () => {
   return (
     <Routes>
       {/* GC Member Portal - Root path */}
-      <Route path="/" element={isAuthenticated && mode === 'gc' ? <GCLayout /> : <GCLogin />}>
+      <Route
+        path="/"
+        element={
+          isAuthenticated && mode === 'gc' ? <GCLayout /> : <Navigate to="/blueprint" replace />
+        }
+      >
         <Route index element={<DashboardHome />} />
         <Route path="onboarding" element={<OnboardingPage />} />
         <Route path="tools" element={<ToolsPage />} />
