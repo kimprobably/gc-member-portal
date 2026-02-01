@@ -615,15 +615,17 @@ const BlueprintQuestionnaire: React.FC<QuestionnaireProps> = ({
 // ============================================
 
 const StatsRow: React.FC = () => (
-  <section className="bg-zinc-50 dark:bg-zinc-900/50 py-16">
+  <section className="bg-zinc-50 dark:bg-zinc-900/50 py-10 sm:py-16">
     <div className="max-w-4xl mx-auto px-4 sm:px-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+      <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
         {STATS.map((stat) => (
           <div key={stat.label}>
-            <div className="text-4xl sm:text-5xl font-bold text-violet-600 dark:text-violet-400 mb-2">
+            <div className="text-2xl sm:text-5xl font-bold text-violet-600 dark:text-violet-400 mb-1 sm:mb-2">
               {stat.value}
             </div>
-            <div className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">{stat.label}</div>
+            <div className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+              {stat.label}
+            </div>
           </div>
         ))}
       </div>
