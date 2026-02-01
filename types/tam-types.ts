@@ -2,7 +2,13 @@
 
 export type TamProjectStatus = 'draft' | 'sourcing' | 'enriching' | 'complete';
 
-export type TamCompanySource = 'serper' | 'storeleads' | 'apollo' | 'blitzapi' | 'smartscout';
+export type TamCompanySource =
+  | 'serper'
+  | 'storeleads'
+  | 'apollo'
+  | 'blitzapi'
+  | 'smartscout'
+  | 'discolike';
 
 export type TamQualificationStatus = 'pending' | 'qualified' | 'disqualified';
 
@@ -42,6 +48,7 @@ export interface IcpProfile {
   seniorityPreference: string[];
   contactsPerCompany: number;
   specialCriteria?: string;
+  seedCompanyDomains?: string[];
 }
 
 export interface SourcingStrategy {

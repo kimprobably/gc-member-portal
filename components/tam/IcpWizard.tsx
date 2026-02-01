@@ -45,11 +45,13 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
     seniorityPreference: [],
     contactsPerCompany: 1,
     specialCriteria: '',
+    seedCompanyDomains: [],
   });
 
   const [industryInput, setIndustryInput] = useState('');
   const [customTitleInput, setCustomTitleInput] = useState('');
   const [countriesInput, setCountriesInput] = useState('');
+  const [seedDomainInput, setSeedDomainInput] = useState('');
 
   // Step 1 validation
   const isStep1Valid =
@@ -145,6 +147,29 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
     }
   };
 
+  const addSeedDomain = () => {
+    const raw = seedDomainInput.trim().toLowerCase();
+    if (!raw) return;
+    const domain = raw.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    const current = formData.seedCompanyDomains || [];
+    if (current.length >= 10) return;
+    if (!current.includes(domain)) {
+      setFormData({
+        ...formData,
+        seedCompanyDomains: [...current, domain],
+      });
+    }
+    setSeedDomainInput('');
+  };
+
+  const removeSeedDomain = (domain: string) => {
+    const current = formData.seedCompanyDomains || [];
+    setFormData({
+      ...formData,
+      seedCompanyDomains: current.filter((d) => d !== domain),
+    });
+  };
+
   const handleSubmit = () => {
     // Parse industry keywords from comma-separated string
     const industryKeywords = industryInput
@@ -174,6 +199,10 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
       seniorityPreference: formData.seniorityPreference || [],
       contactsPerCompany: formData.contactsPerCompany || 1,
       specialCriteria: formData.specialCriteria,
+      seedCompanyDomains:
+        formData.seedCompanyDomains && formData.seedCompanyDomains.length > 0
+          ? formData.seedCompanyDomains
+          : undefined,
     };
 
     onComplete(icpProfile);
@@ -285,6 +314,62 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
                   className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                   placeholder="e.g., Marketing automation software"
                 />
+              </div>
+
+              {/* Seed Company Domains */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  Enter your best current clients or ideal companies
+                </label>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+                  Optional — add up to 10 domains and we'll find lookalike companies using AI
+                  similarity matching
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={seedDomainInput}
+                    onChange={(e) => setSeedDomainInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addSeedDomain();
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    placeholder="e.g., stripe.com"
+                    disabled={(formData.seedCompanyDomains || []).length >= 10}
+                  />
+                  <button
+                    type="button"
+                    onClick={addSeedDomain}
+                    disabled={(formData.seedCompanyDomains || []).length >= 10}
+                    className="px-4 py-2 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.seedCompanyDomains && formData.seedCompanyDomains.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.seedCompanyDomains.map((domain) => (
+                      <div
+                        key={domain}
+                        className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-500"
+                      >
+                        <span>{domain}</span>
+                        <button
+                          onClick={() => removeSeedDomain(domain)}
+                          className="hover:text-violet-900 dark:hover:text-violet-100"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <span className="text-xs text-zinc-400 self-center">
+                      {formData.seedCompanyDomains.length}/10
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -608,6 +693,12 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
                   <p>
                     <span className="font-medium">Product/Service:</span> {formData.whatYouSell}
                   </p>
+                  {formData.seedCompanyDomains && formData.seedCompanyDomains.length > 0 && (
+                    <p>
+                      <span className="font-medium">Seed Companies:</span>{' '}
+                      {formData.seedCompanyDomains.join(', ')}
+                    </p>
+                  )}
                 </div>
               </div>
 
