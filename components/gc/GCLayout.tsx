@@ -7,12 +7,12 @@ import { useAuth } from '../../context/AuthContext';
 import { fetchOnboardingWithProgress } from '../../services/supabase';
 
 const routeTitles: Record<string, string> = {
-  '/': 'Dashboard',
-  '/onboarding': 'Onboarding',
-  '/tools': 'My Tools',
-  '/campaigns': 'Campaigns',
-  '/icp': 'ICP & Positioning',
-  '/resources': 'Resources',
+  '/portal': 'Dashboard',
+  '/portal/onboarding': 'Onboarding',
+  '/portal/tools': 'My Tools',
+  '/portal/campaigns': 'Campaigns',
+  '/portal/icp': 'ICP & Positioning',
+  '/portal/resources': 'Resources',
 };
 
 const GCLayout: React.FC = () => {

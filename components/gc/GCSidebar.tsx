@@ -26,12 +26,12 @@ interface GCSidebarProps {
 }
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { path: '/onboarding', icon: CheckSquare, label: 'Onboarding' },
-  { path: '/tools', icon: Wrench, label: 'My Tools' },
-  { path: '/campaigns', icon: Target, label: 'Campaigns' },
-  { path: '/icp', icon: Users, label: 'ICP & Positioning' },
-  { path: '/resources', icon: BookOpen, label: 'Resources' },
+  { path: '/portal', icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { path: '/portal/onboarding', icon: CheckSquare, label: 'Onboarding' },
+  { path: '/portal/tools', icon: Wrench, label: 'My Tools' },
+  { path: '/portal/campaigns', icon: Target, label: 'Campaigns' },
+  { path: '/portal/icp', icon: Users, label: 'ICP & Positioning' },
+  { path: '/portal/resources', icon: BookOpen, label: 'Resources' },
 ];
 
 const GCSidebar: React.FC<GCSidebarProps> = ({ isOpen, onClose, onboardingProgress = 0 }) => {

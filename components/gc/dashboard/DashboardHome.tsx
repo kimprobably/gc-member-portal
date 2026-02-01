@@ -122,7 +122,7 @@ const DashboardHome: React.FC = () => {
         <DashboardCard
           title="Onboarding Progress"
           icon={CheckSquare}
-          linkTo="/onboarding"
+          linkTo="/portal/onboarding"
           isDarkMode={isDarkMode}
         >
           <div className="space-y-4">
@@ -145,7 +145,7 @@ const DashboardHome: React.FC = () => {
         <DashboardCard
           title="My Tools"
           icon={Wrench}
-          linkTo="/tools"
+          linkTo="/portal/tools"
           isDarkMode={isDarkMode}
           alert={
             toolsWithIssues.length > 0 ? `${toolsWithIssues.length} need attention` : undefined
@@ -172,7 +172,7 @@ const DashboardHome: React.FC = () => {
         <DashboardCard
           title="Active Campaigns"
           icon={Target}
-          linkTo="/campaigns"
+          linkTo="/portal/campaigns"
           isDarkMode={isDarkMode}
         >
           <div className="space-y-3">
@@ -204,7 +204,7 @@ const DashboardHome: React.FC = () => {
         <DashboardCard
           title="Featured Resources"
           icon={BookOpen}
-          linkTo="/resources"
+          linkTo="/portal/resources"
           isDarkMode={isDarkMode}
         >
           <div className="space-y-3">

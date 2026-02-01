@@ -119,7 +119,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             title: 'Tool Issue Detected',
             message: `${tool.tool} has an issue that needs attention.`,
             category: 'tool',
-            link: '/tools',
+            link: '/portal/tools',
           });
         } else if (tool.status === 'Not Set Up') {
           addNotification({
@@ -127,7 +127,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             title: 'Tool Setup Required',
             message: `${tool.tool} hasn't been set up yet.`,
             category: 'tool',
-            link: '/tools',
+            link: '/portal/tools',
           });
         }
       });
@@ -150,7 +150,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               title: 'Campaign Metrics Outdated',
               message: `"${campaign.campaignName}" hasn't been updated in over a week.`,
               category: 'campaign',
-              link: '/campaigns',
+              link: '/portal/campaigns',
             });
           }
         }
@@ -171,7 +171,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             title: 'Blocked Onboarding Items',
             message: `${blocked.length} onboarding item${blocked.length > 1 ? 's are' : ' is'} blocked and needs attention.`,
             category: 'onboarding',
-            link: '/onboarding',
+            link: '/portal/onboarding',
           });
         }
 
@@ -181,7 +181,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             title: 'Continue Your Onboarding',
             message: `You're ${totalProgress}% complete. Keep going!`,
             category: 'onboarding',
-            link: '/onboarding',
+            link: '/portal/onboarding',
           });
         }
       }
