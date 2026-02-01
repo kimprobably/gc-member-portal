@@ -282,9 +282,8 @@ const Hero: React.FC<HeroProps> = ({ formData, setFormData, onContinue }) => {
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-zinc-900 dark:text-zinc-100 text-center leading-[1.1] tracking-tight mb-4 max-w-4xl mx-auto">
-          Your LinkedIn Is Leaving
-          <span className="text-violet-600 dark:text-violet-400"> Revenue </span>
-          on the Table
+          We&apos;ll Build Your Next 60 Days on LinkedIn
+          <span className="text-violet-600 dark:text-violet-400"> — For Free</span>
         </h1>
 
         {/* Subtitle */}
