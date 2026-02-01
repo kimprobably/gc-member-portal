@@ -137,7 +137,7 @@ const QUESTIONNAIRE_STEPS: StepConfig[] = [
   },
   {
     id: 'learning-investment',
-    question: 'How much are you willing to invest in leveling up your LinkedIn?',
+    question: 'How much have you invested in your own learning in the last year?',
     type: 'single-select',
     field: 'learningInvestment',
     options: [
@@ -372,7 +372,7 @@ const Hero: React.FC<HeroProps> = ({ formData, setFormData, onContinue }) => {
 interface QuestionnaireProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  onComplete: () => void;
+  onComplete: (finalData: FormData) => void;
   isSubmitting: boolean;
   error: string | null;
 }
@@ -428,9 +428,9 @@ const BlueprintQuestionnaire: React.FC<QuestionnaireProps> = ({
       setDirection('forward');
       setCurrentStep((s) => s + 1);
     } else {
-      onComplete();
+      onComplete(formData);
     }
-  }, [step, value, currentStep, totalSteps, onComplete]);
+  }, [step, value, currentStep, totalSteps, onComplete, formData]);
 
   const goBack = useCallback(() => {
     if (currentStep > 0) {
@@ -457,15 +457,16 @@ const BlueprintQuestionnaire: React.FC<QuestionnaireProps> = ({
   }, [step.type, validateAndAdvance]);
 
   const handleOptionSelect = (optValue: string) => {
-    setFormData((prev) => ({ ...prev, [step.field]: optValue }));
+    const updated = { ...formData, [step.field]: optValue };
+    setFormData(updated);
     setStepError(null);
-    // Auto-advance after brief delay
+    // Auto-advance after brief delay — pass snapshot to avoid stale closure
     const timer = setTimeout(() => {
       if (currentStep < totalSteps - 1) {
         setDirection('forward');
         setCurrentStep((s) => s + 1);
       } else {
-        onComplete();
+        onComplete(updated);
       }
     }, 300);
     setAutoAdvanceTimer(timer);
@@ -609,7 +610,11 @@ const BlueprintQuestionnaire: React.FC<QuestionnaireProps> = ({
         <div className="max-w-xl mx-auto">
           {(step.type === 'text' || step.type === 'textarea') && (
             <button
-              onClick={isLastStep && step.type !== 'textarea' ? onComplete : validateAndAdvance}
+              onClick={
+                isLastStep && step.type !== 'textarea'
+                  ? () => onComplete(formData)
+                  : validateAndAdvance
+              }
               disabled={isSubmitting}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-base font-semibold bg-violet-500 hover:bg-violet-600 disabled:bg-violet-400 text-white transition-colors shadow-lg shadow-violet-500/25"
             >
@@ -822,7 +827,7 @@ const BlueprintLandingPage: React.FC = () => {
     setPhase('questionnaire');
   };
 
-  const handleQuestionnaireComplete = async () => {
+  const handleQuestionnaireComplete = async (finalData: FormData) => {
     setIsSubmitting(true);
     setError(null);
 
@@ -837,16 +842,16 @@ const BlueprintLandingPage: React.FC = () => {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          linkedin_url: formData.linkedinUrl,
-          full_name: formData.fullName,
-          email: formData.email,
-          business_type: formData.businessType,
-          monthly_income: formData.monthlyIncome,
-          linkedin_challenge: formData.linkedinChallenge,
-          posting_frequency: formData.postingFrequency,
-          linkedin_help_area: formData.linkedinHelpArea,
-          has_funnel: formData.hasFunnel,
-          learning_investment: formData.learningInvestment,
+          linkedin_url: finalData.linkedinUrl,
+          full_name: finalData.fullName,
+          email: finalData.email,
+          business_type: finalData.businessType,
+          monthly_income: finalData.monthlyIncome,
+          linkedin_challenge: finalData.linkedinChallenge,
+          posting_frequency: finalData.postingFrequency,
+          linkedin_help_area: finalData.linkedinHelpArea,
+          has_funnel: finalData.hasFunnel,
+          learning_investment: finalData.learningInvestment,
           send_email: true,
           source_url: window.location.href,
           lead_magnet_source: 'blueprint-landing',
