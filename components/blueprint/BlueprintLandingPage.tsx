@@ -156,6 +156,7 @@ const QUESTIONNAIRE_STEPS: StepConfig[] = [
     type: 'single-select',
     field: 'monthlyIncome',
     options: [
+      { label: 'Not generating revenue yet', value: 'Not generating revenue yet' },
       { label: 'Under $5k', value: 'Under $5k' },
       { label: '$5k - $10k', value: '$5k-$10k' },
       { label: '$10k - $30k', value: '$10k-$30k' },
@@ -880,7 +881,11 @@ const BlueprintLandingPage: React.FC = () => {
       if (response.ok) {
         sessionStorage.removeItem(SESSION_KEY);
         navigate('/blueprint/thank-you', {
-          state: { prospectId: data.prospect_id, reportUrl: data.report_url },
+          state: {
+            prospectId: data.prospect_id,
+            reportUrl: data.report_url,
+            monthlyIncome: finalData.monthlyIncome,
+          },
         });
       } else if (response.status === 409) {
         sessionStorage.removeItem(SESSION_KEY);
@@ -888,6 +893,7 @@ const BlueprintLandingPage: React.FC = () => {
           state: {
             prospectId: data.existing_prospect_id,
             reportUrl: data.report_url,
+            monthlyIncome: finalData.monthlyIncome,
           },
         });
       } else {

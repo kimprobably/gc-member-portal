@@ -4,10 +4,9 @@
  */
 
 // Add authorized admin emails here
-export const ADMIN_EMAILS: string[] = import.meta.env.VITE_ADMIN_EMAILS?.split(',') ?? [
-  'kristaps@peak9.co',
-  'tim@keen.digital',
-];
+export const ADMIN_EMAILS: string[] = import.meta.env.VITE_ADMIN_EMAILS?.split(',').map(
+  (e: string) => e.trim()
+) ?? ['kristaps@peak9.co', 'tim@keen.digital', 'vlad@modernagencysales.com'];
 
 /**
  * Check if an email has admin access
