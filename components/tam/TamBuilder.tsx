@@ -107,8 +107,16 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
   }, [pipeline.isComplete, activeProjectId, queryClient]);
 
   // Handle ICP Wizard completion: create project and start pipeline
+  const [wizardError, setWizardError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
   const handleWizardComplete = async (icpProfile: IcpProfile) => {
-    if (!userId) return;
+    if (!userId) {
+      setWizardError('Unable to create project — user ID not found. Please refresh and try again.');
+      return;
+    }
+    setWizardError(null);
+    setIsCreating(true);
     try {
       const project = await createProject.mutateAsync({
         userId,
@@ -122,7 +130,11 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
       // Auto-start the pipeline
       pipeline.startPipeline(project.id);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setWizardError(`Failed to create project: ${message}`);
       console.error('Failed to create TAM project:', err);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -236,7 +248,12 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
                 Define your ideal customer profile and we will build a qualified prospect list
               </p>
             </div>
-            <IcpWizard onComplete={handleWizardComplete} userId={userId} />
+            <IcpWizard
+              onComplete={handleWizardComplete}
+              userId={userId}
+              isSubmitting={isCreating}
+              error={wizardError}
+            />
           </div>
         )}
 

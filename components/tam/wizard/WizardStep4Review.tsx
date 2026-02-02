@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, Loader2 } from 'lucide-react';
 import { IcpProfile, BusinessModelType } from '../../../types/tam-types';
 
 const BUSINESS_MODEL_LABELS: Record<BusinessModelType, string> = {
@@ -18,6 +18,8 @@ interface WizardStep4Props {
   countriesInput: string;
   onSubmit: () => void;
   onBack: () => void;
+  isSubmitting?: boolean;
+  error?: string | null;
 }
 
 const WizardStep4Review: React.FC<WizardStep4Props> = ({
@@ -27,6 +29,8 @@ const WizardStep4Review: React.FC<WizardStep4Props> = ({
   countriesInput,
   onSubmit,
   onBack,
+  isSubmitting,
+  error,
 }) => {
   return (
     <div className="space-y-6">
@@ -126,20 +130,37 @@ const WizardStep4Review: React.FC<WizardStep4Props> = ({
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
       <div className="flex justify-between pt-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium transition-colors"
+          disabled={isSubmitting}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium transition-colors disabled:opacity-50"
         >
           <ChevronLeft className="w-5 h-5" />
           Back
         </button>
         <button
           onClick={onSubmit}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-medium transition-colors"
+          disabled={isSubmitting}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-medium transition-colors disabled:opacity-50"
         >
-          Start Building
-          <Check className="w-5 h-5" />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              Start Building
+              <Check className="w-5 h-5" />
+            </>
+          )}
         </button>
       </div>
     </div>

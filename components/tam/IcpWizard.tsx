@@ -9,9 +9,11 @@ import WizardStep4Review from './wizard/WizardStep4Review';
 interface IcpWizardProps {
   onComplete: (icpProfile: IcpProfile) => void;
   userId: string;
+  isSubmitting?: boolean;
+  error?: string | null;
 }
 
-const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
+const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete, isSubmitting, error }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<IcpProfile>>({
     businessModel: 'b2b_saas',
@@ -166,6 +168,8 @@ const IcpWizard: React.FC<IcpWizardProps> = ({ onComplete }) => {
             countriesInput={countriesInput}
             onSubmit={handleSubmit}
             onBack={handleBack}
+            isSubmitting={isSubmitting}
+            error={error}
           />
         )}
       </div>
