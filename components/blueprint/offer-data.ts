@@ -71,121 +71,137 @@ export interface OfferData {
 export const ENGINEERING_OFFER: OfferData = {
   id: 'engineering',
   name: 'GTM Engineering Bootcamp',
-  tagline: 'Build a Lead Generation Machine That Brings You 5 High-Quality Clients Every Month',
-  headline: 'Stop "Posting Content."\nStart Building Assets.',
+  tagline: 'Build a Repeatable System That Books 5+ Qualified Calls Per Month',
+  headline:
+    'Your LinkedIn Posts Reach 2% of Your Followers.\nThis System Reaches 100% of Your Prospects.',
   subheadline:
-    'Build a Lead Generation Machine That Brings You 5 High-Quality Clients Every Month — In Just 4 Weeks. Without spending your life in the LinkedIn feed.',
-  problemHeadline: 'The Reality Check',
+    'In 4 weeks, we build your complete outbound system — lead magnet, verified prospect list, cold email + LinkedIn outreach, and paid ads — so you control your pipeline instead of hoping the algorithm shows your posts.',
+  problemHeadline: 'The Problem With Organic Reach',
   painPoints: [
-    'AI flooded LinkedIn with generic garbage. Cold email deliverability dropped 40%. The "Post and Pray" method is dead.',
-    "LinkedIn's algorithm now shows your posts to less than 2% of your followers. Tim has 50,000 followers and gets ~1,000 impressions per post.",
-    'If you are betting your 2026 revenue on "organic reach," you are betting against the house.',
+    "LinkedIn shows your posts to less than 2% of your followers. With 50,000 followers, Tim gets ~1,000 impressions per post. The math doesn't work for client acquisition.",
+    'Cold email deliverability dropped 40% in the last two years. AI-generated outreach flooded every inbox. The old playbooks stopped working.',
+    "Posting content, commenting, and hoping the right person sees it is not a lead generation strategy. It's a lottery ticket.",
   ],
   agitationText:
-    "In the last 24 months, the rules changed completely. The founders who adapted are thriving. The ones who didn't are wondering where their pipeline went.",
-  solutionHeadline: 'The Pivot',
+    "The founders still growing in 2026 aren't posting more. They built systems that put their offer directly in front of the right people — whether those people are active on LinkedIn or not.",
+  solutionHeadline: 'What You Build in This Bootcamp',
   solutionDescription:
-    'We stop acting like Creators and start acting like Engineers. In this bootcamp, we will build a system that combines Data Scrapers, Asset-Based Outbound, and Paid Distribution to force your offer in front of the exact right humans — whether they are active on LinkedIn or not.',
+    'Over 4 live sessions, we build a complete lead generation system together. Each week, you leave with something working — not just theory. By Week 4, you have a system that runs in under 3 hours per week.',
   solutionBullets: [
-    'A "Hand-Raiser" Asset that identifies buyers before you ever send a DM',
-    'A "Magic List" of 1,000+ verified prospects your competitors can\'t find on Sales Nav (for less than $50)',
-    'An Automated Machine (Email + LinkedIn) that delivers your message without landing in spam',
-    'A Paid Ad Campaign running for ~$20/day that guarantees visibility',
+    'A lead magnet and opt-in funnel that captures interested prospects automatically',
+    'A verified list of 1,000+ prospects matched to your exact ICP — built for under $50 using data enrichment tools',
+    "Cold email and LinkedIn outreach sequences configured and sending — with proper infrastructure so you don't land in spam",
+    'A LinkedIn ad campaign targeting your exact prospect list for ~$20/day',
   ],
   weeks: [
     {
       week: 1,
-      title: 'The Asset & The Offer',
+      title: 'Lead Magnet + Funnel',
       bullets: [
-        'Why generic "value" posts fail (and why you don\'t need to be an influencer)',
-        'The Lead Magnet Sprint: Use custom AI tools to build a high-value asset in 20 minutes',
-        'The "Hand-Raiser" Protocol: Write the single post that identifies buyers before you DM them',
-        'Complete funnel setup: Opt-in page, thank you page, and 5-email nurture sequence',
+        "Why organic content alone can't fill a pipeline (and what to build instead)",
+        'Create a lead magnet using AI tools in under 30 minutes — something your ICP would actually use',
+        'Write a LinkedIn post designed to get your ideal prospects to comment and opt in',
+        'Set up the complete funnel: opt-in page, thank-you page, and 5-email nurture sequence',
       ],
-      deliverable: 'Your core asset created, funnel live, ready to capture leads',
+      deliverable:
+        'A lead magnet live on a landing page, ready to capture leads from your first post',
     },
     {
       week: 2,
-      title: 'Data Engineering & The "Magic List"',
+      title: 'Prospect List Building',
       bullets: [
-        "How to find leads your competitors can't — scraping directories, analyzing tech stacks, finding buying signals",
-        'The "Magic Column" Demo: Use AI to visit 10,000 websites and filter out anyone who isn\'t a perfect fit',
-        'Sniper vs. Bomber: Building the perfect list for 50 leads (Track A) or 5,000 (Track B)',
-        'Tools: Clay for enrichment, Apollo/Sales Nav for initial pulls, custom scrapers for directories',
+        'How to find prospects beyond Sales Navigator — scraping directories, analyzing tech stacks, identifying buying signals',
+        'Use AI to visit thousands of websites and filter for companies that match your exact criteria',
+        'Build a list of 1,000-10,000 verified contacts with enriched data (email, phone, company info) for under $50',
+        'Tools walkthrough: Clay for enrichment, Apollo/Sales Nav for initial pulls, custom scrapers for niche sources',
       ],
       deliverable:
-        'A verified list of 1,000-10,000 exact ICP contacts, enriched with impossible-to-find data points, for under $50',
+        'A verified prospect list of 1,000+ contacts matched to your ICP, enriched with contact details and company data',
     },
     {
       week: 3,
-      title: 'The Machine & The Message',
+      title: 'Outbound Setup + Sequences',
       bullets: [
-        'Infrastructure Setup: Cold email and DM software configured so you never land in spam — domains, DNS, warmup',
-        'The "Human" Outbound Sequence: Use Week 2 data to write emails and DMs that look manually typed',
-        'Inbox Management: Handle responses without spending all day in Gmail',
-        'Tools: Smartlead/Instantly for email, HeyReach/Linked Helper for LinkedIn',
+        'Configure cold email infrastructure properly: domains, DNS records, warmup — so your emails actually arrive',
+        'Write email and LinkedIn sequences using your prospect data so each message reads like it was sent personally',
+        'Set up inbox management so you can handle responses without it taking over your day',
+        'Tools walkthrough: Smartlead/Instantly for email, HeyReach/Linked Helper for LinkedIn automation',
       ],
       deliverable:
-        'Outbound campaigns connected, scripted, and ready to launch — both email and LinkedIn sequences live',
+        'Email and LinkedIn outbound campaigns live, scripted, and sending to your verified prospect list',
     },
     {
       week: 4,
-      title: 'Ads & The "Force Multiplier"',
+      title: 'LinkedIn Ads + System Handoff',
       bullets: [
-        'LinkedIn "Thought Leader Ads" — target your exact ICP list with your lead magnet',
-        'How to spend ~$50/day to guarantee visibility to your exact prospect list',
-        'Turn your best organic posts into ads that generate leads',
-        "Retargeting: Catch the people who didn't reply to your email",
-        'System Handoff: Keep this machine running in less than 3 hours/week',
+        'Set up LinkedIn Thought Leader Ads targeting your exact prospect list with your lead magnet',
+        'How to spend ~$20-50/day to put your offer in front of every person on your list',
+        'Turn your best-performing posts into ads that generate opt-ins',
+        "Retarget prospects who opened your emails but didn't reply",
+        'Document your complete system so you can run it in under 3 hours/week',
       ],
       deliverable:
-        'Your first LinkedIn ad campaign live and the "Forever Roadmap" for maintaining the system',
+        'Your first LinkedIn ad campaign running, and a documented weekly playbook for maintaining the entire system',
     },
   ],
   toolsIncluded: [
-    { name: 'Lead Magnet Ideator', description: 'Finds the "Painkiller" concept for your niche' },
-    { name: 'Lead Magnet Creator', description: 'Writes the actual PDF/Doc for you' },
     {
-      name: 'The "Eric" Email Writer',
-      description: "Trained on the world's best cold email data to write sequences that convert",
+      name: 'Lead Magnet Ideator',
+      description: 'Identifies the right lead magnet topic for your niche and ICP',
+    },
+    {
+      name: 'Lead Magnet Creator',
+      description: 'Generates the full lead magnet document from your outline',
+    },
+    {
+      name: 'Cold Email Writer',
+      description:
+        'Writes personalized cold email sequences using your prospect data and proven frameworks',
     },
     {
       name: 'Clay Templates',
-      description: '"One-Click" tables to scrape tech stacks and directories',
+      description:
+        'Pre-built enrichment tables for scraping tech stacks, directories, and company data',
     },
   ],
   valueItems: [
     { label: '4x 90-minute live implementation sessions', soloValue: '$2,000' },
-    { label: 'Click-by-click screen sharing as we build together', soloValue: '$1,500' },
-    { label: 'Complete lead magnet funnel templates', soloValue: '$500' },
-    { label: 'Outbound campaign templates (sequences, scripts, follow-ups)', soloValue: '$500' },
-    { label: 'LinkedIn ad frameworks', soloValue: '$300' },
-    { label: 'ICP list-building framework', soloValue: '$300' },
-    { label: '8 weeks access to proprietary AI tool stack', soloValue: '$600' },
-    { label: 'Async feedback on your campaigns (Mon-Fri)', soloValue: '$1,000' },
-    { label: 'Private accountability group', soloValue: '$300' },
-    { label: 'Lifetime access to all recordings', soloValue: '$500' },
+    { label: 'Screen-shared walkthroughs as we build your system together', soloValue: '$1,500' },
+    { label: 'Lead magnet funnel templates (landing page, emails, delivery)', soloValue: '$500' },
+    {
+      label: 'Outbound campaign templates (email sequences, LinkedIn scripts, follow-ups)',
+      soloValue: '$500',
+    },
+    { label: 'LinkedIn ad setup frameworks and targeting guides', soloValue: '$300' },
+    { label: 'Prospect list-building playbook and Clay templates', soloValue: '$300' },
+    {
+      label: '8 weeks access to AI tools (lead magnet creator, email writer, enrichment templates)',
+      soloValue: '$600',
+    },
+    { label: 'Async feedback on your campaigns Mon-Fri', soloValue: '$1,000' },
+    { label: 'Private cohort group for accountability and sharing results', soloValue: '$300' },
+    { label: 'Lifetime access to all session recordings', soloValue: '$500' },
   ],
   isForYou: [
     "You're a B2B founder, agency owner, coach, or consultant doing at least $10k/month",
     "You have a validated offer that's already generating revenue",
-    'You want to own your lead generation, not outsource it',
-    "You're willing to invest 3-5 hours/week to build this",
-    "You're willing to use software (we'll teach you, but you must click the buttons)",
+    'You want to control your lead generation instead of relying on referrals or organic reach',
+    "You're willing to invest 3-5 hours/week building the system between sessions",
+    "You're willing to learn and use software tools (we walk through every step, but you do the clicking)",
   ],
   notForYou: [
-    "You're pre-revenue or still validating your offer",
-    'You think lead gen is just "posting good content"',
+    "You're pre-revenue or still figuring out what you sell and to whom",
+    "You're looking for organic-only strategies — this bootcamp includes cold outreach and paid ads",
     "You're not willing to implement between sessions",
   ],
   price: '$3,500',
   priceFull: '$4,000',
   paymentPlan: 'Or $1,000/week for 4 weeks ($4,000 total)',
-  guarantee: 'The "No-Brainer" Guarantee',
+  guarantee: 'Week 1 Guarantee',
   guaranteeDetails:
-    "If after Week 1 you don't have a Lead Magnet asset that you're proud of and a clear path to your first 100 leads, tell me. I'll refund you completely. No questions asked.",
+    "If after Week 1 you haven't built a lead magnet you're satisfied with and don't see a clear path to your first 100 leads, I'll refund you completely. No questions asked.",
   spotsTotal: 15,
-  urgencyText: 'Applications close when spots fill. The last cohort filled in 48 hours.',
+  urgencyText: 'Limited to 15 spots per cohort so everyone gets direct feedback.',
   testimonials: [
     {
       quote:
@@ -226,39 +242,39 @@ export const ENGINEERING_OFFER: OfferData = {
     {
       question: "What's the difference between GTM Engineering and GTM Foundations?",
       answer:
-        'GTM Engineering is for people who already know their niche and are ready to scale with sophisticated tooling. We build the full machine: Clay for enrichment, cold email infrastructure, LinkedIn thought leader ads, and advanced automation. It requires $500+/month in tooling and assumes you already have the foundations in place.\n\nGTM Foundations is for people just getting started with LinkedIn lead generation. We focus on fundamentals: niche clarity, a profile that converts, outreach that gets responses, content that attracts your ICP, and lead magnets. The only tools you need are Linked Helper (~$15-50/month).',
+        'GTM Engineering is for people who already know their niche and want to build a multi-channel outbound system using data enrichment, cold email, LinkedIn automation, and paid ads. It requires $300-500/month in tooling and assumes you already have a working offer.\n\nGTM Foundations is for people getting started with LinkedIn. It covers niche clarity, profile optimization, basic outreach, content, and lead magnets. The only tool you need is Linked Helper (~$15-50/month).\n\nIf you can clearly describe who you help and what you do for them, Engineering is the right fit. If you need to figure that out first, start with Foundations.',
     },
     {
       question: 'What software will I need?',
       answer:
-        "During the bootcamp, we'll use free trials for most software. At the end, I'll show you how to access enterprise-level infrastructure for a fraction of the cost. Key tools include Clay ($149/mo), Smartlead or Instantly (~$30-50/mo), HeyReach or Linked Helper (~$50/mo), and LinkedIn ads (~$20-50/day). Total ongoing cost: ~$300-500/month.",
+        'We use free trials during the bootcamp for most tools. Ongoing costs after: Clay ($149/mo) for data enrichment, Smartlead or Instantly (~$30-50/mo) for cold email, HeyReach or Linked Helper (~$50/mo) for LinkedIn automation, and LinkedIn ads (~$20-50/day). Total: roughly $300-500/month.',
     },
     {
-      question: 'How much time will this take?',
+      question: 'How much time does this take each week?',
       answer:
-        '90 minutes per week for the live session, plus 3-5 hours of implementation between sessions. After the bootcamp, the system runs in about 3 hours/week.',
+        '90 minutes for the live session, plus 3-5 hours of implementation between sessions. After the bootcamp, the system runs in about 3 hours/week.',
     },
     {
       question: 'What if I miss a live session?',
-      answer: "All sessions are recorded. You'll have lifetime access to every recording.",
+      answer: 'All sessions are recorded. You get lifetime access to every recording.',
     },
     {
       question: "What's the refund policy?",
       answer:
-        "If after Week 1 you don't have a Lead Magnet asset that you're proud of and a clear path to your first 100 leads, I'll refund you completely. No questions asked. I haven't had to use this yet.",
+        "If after Week 1 you haven't built a lead magnet you're satisfied with and don't see a clear path to your first 100 leads, I'll refund you completely. No questions asked.",
     },
     {
-      question: 'What happens after the bootcamp?',
+      question: 'What happens after the 4 weeks?',
       answer:
-        "Most graduates stick around. The Collective gives you ongoing access to the AI tools, shared infrastructure that cuts your tool costs by 60%, weekly strategy calls, and a built-in path to done-for-you help when you need it. I'll walk through the full offer in Week 4.",
+        "You'll have a working system you can run independently. Most graduates also join the Collective for ongoing AI tool access, shared infrastructure (which cuts tool costs by ~60%), weekly strategy calls, and campaign feedback. I'll walk through the full details in Week 4.",
     },
   ],
   ctaPrimary: 'Enroll Now',
-  ctaSecondary: "Book a Call to See If It's a Fit",
+  ctaSecondary: 'Book a Call to See If This Is Right For You',
   cohortWeekday: 1, // Monday
   cohortWeekOfMonth: 4, // 4th Monday of the month
   aboutTimBlurb:
-    'Tim built and sold a $4.7M agency using LinkedIn as the primary lead source. He\'s generated 20,000+ opted-in leads, closed $200K+ LTV deals, and taught 300+ B2B business owners the system. He\'s not a "LinkedIn Creator" who sells courses. He is an active operator building real businesses and closing real deals.',
+    "Tim built and sold a $4.7M agency using LinkedIn as the primary lead source. He's generated 20,000+ opted-in leads, closed $200K+ LTV deals, and taught 300+ B2B business owners this system. He runs the same playbook for his own businesses — this isn't theory from someone who only sells courses.",
 };
 
 // ============================================
