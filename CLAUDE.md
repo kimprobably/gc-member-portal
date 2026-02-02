@@ -1,0 +1,173 @@
+# CLAUDE.md
+
+> This repo: `/Users/timlife/Documents/claude code/copy-of-gtm-os`
+
+## Identity
+
+Multi-purpose SaaS frontend (React SPA) hosting public LinkedIn Authority Blueprint pages, Growth Collective member portal, Bootcamp LMS, and admin dashboard -- backed by Supabase, Airtable, and companion backend services.
+
+## Tech Stack
+
+- **Framework**: React 18 + TypeScript + Vite 5.2
+- **Routing**: React Router v6 (lazy-loaded)
+- **Styling**: Tailwind CSS
+- **State**: React Context (Auth, Theme, Notifications) + TanStack Query
+- **Database**: Supabase (primary) + Airtable (legacy)
+- **AI**: Claude (via Supabase edge functions) + Google Gemini
+- **Payments**: Stripe
+- **Testing**: Vitest + Playwright + React Testing Library + MSW
+- **Deploy**: Vercel
+
+## Architecture
+
+### Directory Structure
+
+```
+src/
+├── components/
+│   ├── blueprint/       - Public Blueprint pages
+│   ├── bootcamp/        - Student app
+│   ├── gc/              - Growth Collective portal
+│   ├── admin/           - Admin dashboards
+│   ├── chat/            - AI chat interface
+│   ├── tam/             - TAM builder
+│   └── shared/          - Reusable UI
+├── context/             - AuthContext, NotificationContext, ThemeContext
+├── services/            - API/data layer (Supabase, Airtable, AI)
+├── types/               - TypeScript type definitions per product area
+├── hooks/               - Custom React hooks
+└── lib/                 - queryClient, supabaseClient, sentry, webVitals
+```
+
+### Patterns
+
+- **Service layer**: All DB calls live in `services/`. Components never call the database directly.
+- **Context providers**: Auth, Theme, Notifications wrap at root. Auth gates portal/bootcamp/admin routes.
+- **React Query + code splitting**: TanStack Query for server state; lazy-loaded route components per product area.
+
+## System Context
+
+```
+  copy-of-gtm-os (Vite/React SPA)
+        │ reads/writes
+        ▼
+  Supabase DB (shared prospects table)
+    │              │
+    ▼              ▼
+  leadmagnet-admin ──▶ leadmagnet-backend
+  (Next.js 16)         (Express: scrape → enrich → generate)
+                            │
+  magnetlab ◄── webhooks ── gtm-system
+  (Lead Magnet SaaS)       (GTM Orchestrator, 14+ integrations)
+```
+
+## Routes
+
+| Route | Purpose |
+|-------|---------|
+| `/` | Landing page |
+| `/blueprint` | Blueprint landing |
+| `/blueprint/thank-you` | Post-submission confirmation |
+| `/blueprint/call-booked` | Booking confirmation |
+| `/blueprint/:slug` | Prospect analysis page |
+| `/blueprint/:slug/offer` | Prospect offer page |
+| `/offer/:offerType` | Offer pages by type |
+| `/case-studies` | Case studies |
+| `/login` | Member login |
+| `/portal` | GC member dashboard |
+| `/portal/onboarding` | New member onboarding |
+| `/portal/tools` | Tool access |
+| `/portal/campaigns` | Campaign management |
+| `/portal/icp` | ICP builder (Claude AI) |
+| `/portal/resources` | Member resources |
+| `/bootcamp/login` | Student login |
+| `/bootcamp/onboarding` | Student onboarding |
+| `/bootcamp/curriculum` | Weekly curriculum |
+| `/bootcamp/progress` | Progress tracking |
+| `/bootcamp/ai-tools` | AI tools |
+| `/bootcamp/surveys` | Student surveys |
+| `/bootcamp/settings` | Account settings |
+| `/bootcamp/tam-builder` | TAM builder |
+| `/admin` | Admin home |
+| `/admin/tools` | Tool management |
+| `/admin/onboarding` | Onboarding config |
+| `/admin/blueprints` | Blueprint management |
+| `/admin/bootcamp/*` | Bootcamp admin |
+| `/admin/lms/*` | LMS content editor |
+
+## Database Models
+
+`Prospect` -- prospects, `ProspectPost` -- posts, `BlueprintSettings` -- config, `BlueprintContentBlock` -- content, `BootcampStudent` -- students, `BootcampChecklistItem` -- checklist, `BootcampStudentProgress` -- progress, `BootcampStudentSurvey` -- surveys, `BootcampInviteCode` -- invites, `LmsCohort` -- cohorts, `LmsWeek` -- weeks, `LmsLesson` -- lessons, `LmsContentItem` -- content, `LmsActionItem` -- actions, `LmsLessonProgress` -- progress, `LmsActionItemProgress` -- progress, `GCMember` -- members, `ToolAccess` -- permissions, `Campaign` -- campaigns, `MemberProgress` -- progress, `MemberICP` -- ICPs, `SubscriptionEvent` -- billing
+
+## Feature Decision Guide
+
+| Feature Type | Repo | Rationale |
+|---|---|---|
+| Lead magnet creation/AI content generation | magnetlab | Owns the lead magnet product, AI pipeline, funnel builder |
+| LinkedIn profile scraping/enrichment | leadmagnet-backend | Owns the Blueprint pipeline (scrape → enrich → generate) |
+| Blueprint admin UI/prompt editing | leadmagnet-admin | Admin dashboard for the Blueprint backend |
+| Public Blueprint pages/prospect pages | copy-of-gtm-os | Hosts all public-facing Blueprint pages + student portals |
+| GC member portal features | copy-of-gtm-os | Owns the Growth Collective member experience |
+| Bootcamp LMS/student features | copy-of-gtm-os | Owns the LinkedIn Bootcamp product |
+| Webhook ingestion from 3rd parties | gtm-system | Central webhook hub for 14+ integrations |
+| Lead routing/pipeline orchestration | gtm-system | Owns lead lifecycle from capture to sales handoff |
+| Cold email campaigns | gtm-system | Owns all cold email: UI, campaign management, enrichment, pipeline |
+| Content scheduling/publishing | gtm-system | Owns content pipeline and auto-publishing |
+| Reply classification/delivery | gtm-system | Owns the reply pipeline (AI classify → Blueprint → deliver) |
+| Funnel pages/opt-in pages | magnetlab | Owns funnel builder, opt-in, thank-you, content pages |
+| Stripe billing/subscriptions | magnetlab (SaaS billing) or copy-of-gtm-os (bootcamp subs) | Depends on which product the billing is for |
+| AI prompt management | leadmagnet-admin (Blueprint) or magnetlab (lead magnets) | Depends on which AI pipeline |
+
+## Integration Points
+
+- **Supabase** -- Primary DB. The `prospects` table is shared with `leadmagnet-backend` (scrape/enrich/generate). Edge functions proxy Claude AI calls.
+- **Blueprint Backend** (`VITE_BLUEPRINT_BACKEND_URL`) -- Blueprint-specific backend operations.
+- **GTM System** (`VITE_GTM_SYSTEM_URL`) -- Cross-system GTM operations.
+- **Airtable** -- Legacy data via `services/airtable.ts`.
+
+## Environment Variables
+
+- `VITE_SUPABASE_URL` -- Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` -- Supabase public key
+- `SUPABASE_SERVICE_ROLE_KEY` -- Supabase service role (server-side)
+- `VITE_AIRTABLE_API_KEY` -- Airtable API key
+- `VITE_AIRTABLE_BASE_ID` -- Airtable base ID
+- `ANTHROPIC_API_KEY` -- Claude AI key
+- `VITE_SENTRY_DSN` -- Sentry error tracking
+- `VITE_CALCOM_BOOKING_URL` -- Cal.com booking
+- `VITE_SENJA_WIDGET_ID` -- Senja testimonials
+- `VITE_BLUEPRINT_BACKEND_URL` -- Blueprint backend URL
+- `VITE_GTM_SYSTEM_URL` -- GTM system URL
+- `VITE_ADMIN_EMAILS` -- Admin email addresses (comma-separated)
+
+## Development
+
+**Setup**: `npm install`, `cp .env.example .env`, `npm run dev`
+
+**Commands**:
+```
+npm run dev              # Vite dev server
+npm run build            # Production build
+npm run test             # All tests
+npm run test:unit        # Unit tests (Vitest)
+npm run test:integration # Integration tests
+npm run test:e2e         # E2E tests (Playwright)
+npm run test:coverage    # Tests with coverage
+```
+
+## Testing
+
+- Unit tests: Vitest + React Testing Library, co-located with components or in `__tests__/`.
+- Integration tests: Vitest + MSW mocking Supabase and external APIs.
+- E2E: Playwright for full browser user flows.
+- Single file: `npx vitest run path/to/test.ts` or `npx playwright test --ui`.
+- MSW handlers defined for Supabase endpoints and external APIs.
+
+## Related Repos
+
+| Repo | Path | Purpose |
+|------|------|---------|
+| magnetlab | `/Users/timlife/Documents/claude code/magnetlab` | Lead magnet SaaS, funnels, content |
+| gtm-system | `/Users/timlife/Documents/claude code/gtm-system` | GTM orchestrator, webhooks, lead routing |
+| leadmagnet-admin | `/Users/timlife/linkedin-leadmagnet-admin` | Admin dashboard for Blueprint Generator |
+| leadmagnet-backend | `/Users/timlife/linkedin-leadmagnet-backend` | Blueprint pipeline: scrape → enrich → generate |
