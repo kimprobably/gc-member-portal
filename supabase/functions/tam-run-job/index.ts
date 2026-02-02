@@ -26,7 +26,21 @@ function getCorsHeaders(req: Request) {
 }
 
 // ============================================
+// Prospeo API helpers (https://prospeo.io/api-docs)
+// ============================================
+
+const PROSPEO_BASE = 'https://api.prospeo.io';
+
+function prospeoHeaders(apiKey: string) {
+  return {
+    'Content-Type': 'application/json',
+    'X-KEY': apiKey,
+  };
+}
+
+// ============================================
 // BlitzAPI helpers (direct API — https://docs.blitz-api.ai)
+// Kept for future use when BLITZ_API_KEY is available
 // ============================================
 
 const BLITZAPI_BASE = 'https://api.blitz-api.ai/v2';
@@ -39,123 +53,182 @@ function blitzApiHeaders(apiKey: string) {
 }
 
 // ============================================
-// Serper Company Sourcing
+// Build Prospeo filters from ICP profile
 // ============================================
 
-function buildSerperQuery(icpProfile: any): string {
-  const parts: string[] = [];
+function buildProspeoCompanyFilters(icpProfile: any): Record<string, any> {
+  const filters: Record<string, any> = {};
 
-  // Add industry context
+  // Industry filter
   if (icpProfile.industryKeywords?.length) {
-    parts.push(`(${icpProfile.industryKeywords.join(' OR ')})`);
+    filters.company_industry = {
+      include: icpProfile.industryKeywords,
+    };
   }
 
-  // Add business model context
-  const modelHints: Record<string, string> = {
-    b2b_saas: 'SaaS software company',
-    ecommerce_dtc: 'ecommerce store DTC brand',
-    amazon_sellers: 'Amazon seller FBA brand',
-    local_service: 'local business service provider',
-    agencies: 'agency consulting firm',
-  };
-  if (icpProfile.businessModel && modelHints[icpProfile.businessModel]) {
-    parts.push(modelHints[icpProfile.businessModel]);
-  } else if (icpProfile.businessModel === 'other' && icpProfile.businessModelOther) {
-    parts.push(icpProfile.businessModelOther);
-  }
-
-  // Add employee size hints
+  // Employee size filter — map wizard ranges to Prospeo ranges
   if (icpProfile.employeeSizeRanges?.length) {
-    const sizes = icpProfile.employeeSizeRanges as string[];
-    if (sizes.includes('1-10') || sizes.includes('11-50')) {
-      parts.push('startup OR "small business"');
-    }
-    if (sizes.includes('201-1000')) {
-      parts.push('mid-market OR "mid-size"');
-    }
-    if (sizes.includes('1000+')) {
-      parts.push('enterprise');
+    const sizeMap: Record<string, string> = {
+      '1-10': '1-10',
+      '11-50': '11-50',
+      '51-200': '51-200',
+      '201-1000': '201-1000',
+      '1000+': '1001-5000',
+    };
+    const prospeoSizes = icpProfile.employeeSizeRanges
+      .map((s: string) => sizeMap[s])
+      .filter(Boolean);
+    if (prospeoSizes.length > 0) {
+      filters.company_size = { include: prospeoSizes };
     }
   }
 
-  // Add geography constraints
+  // Location filter
   if (icpProfile.geography === 'us_only') {
-    parts.push('USA');
+    filters.company_location = { include: ['United States'] };
   } else if (
     icpProfile.geography === 'specific_countries' &&
     icpProfile.specificCountries?.length
   ) {
-    parts.push(icpProfile.specificCountries.join(' OR '));
+    filters.company_location = { include: icpProfile.specificCountries };
   }
 
-  return parts.join(' ') || 'companies';
+  // Seed company domains — search by website
+  if (icpProfile.seedCompanyDomains?.length) {
+    filters.company = {
+      websites: { include: icpProfile.seedCompanyDomains },
+    };
+  }
+
+  return filters;
 }
 
-// Handler function for sourcing companies
+function buildProspeoPersonFilters(icpProfile: any, companyDomains: string[]): Record<string, any> {
+  const filters: Record<string, any> = {};
+
+  // Target companies by domain
+  if (companyDomains.length > 0) {
+    filters.company = {
+      websites: { include: companyDomains.slice(0, 500) },
+    };
+  }
+
+  // Seniority filter
+  const seniorityMap: Record<string, string> = {
+    'C-Suite': 'C-Level',
+    VP: 'VP',
+    Director: 'Director',
+    Manager: 'Manager',
+    Founder: 'Founder/Owner',
+  };
+  if (icpProfile.seniorityPreference?.length) {
+    const mapped = icpProfile.seniorityPreference
+      .map((s: string) => seniorityMap[s])
+      .filter(Boolean);
+    if (mapped.length > 0) {
+      filters.person_seniority = { include: mapped };
+    }
+  }
+
+  // Location filter
+  if (icpProfile.geography === 'us_only') {
+    filters.person_location = { include: ['United States'] };
+  } else if (
+    icpProfile.geography === 'specific_countries' &&
+    icpProfile.specificCountries?.length
+  ) {
+    filters.person_location = { include: icpProfile.specificCountries };
+  }
+
+  return filters;
+}
+
+// ============================================
+// Source Companies (Prospeo search-company)
+// ============================================
+
 async function handleSourceCompanies(supabase: any, job: any, project: any) {
-  const config = job.config || {};
-  const source = config.source || 'serper';
+  const prospeoKey = Deno.env.get('PROSPEO_API_KEY');
+  if (!prospeoKey) throw new Error('PROSPEO_API_KEY not configured');
+
   const icpProfile = project?.icp_profile || {};
+  const filters = buildProspeoCompanyFilters(icpProfile);
+
+  // Need at least one include filter for Prospeo
+  if (Object.keys(filters).length === 0) {
+    // Default: search by business model keyword as industry
+    const modelKeywords: Record<string, string[]> = {
+      b2b_saas: ['Software', 'Information Technology'],
+      ecommerce_dtc: ['Retail', 'E-commerce'],
+      amazon_sellers: ['Retail', 'E-commerce'],
+      local_service: ['Professional Services'],
+      agencies: ['Marketing & Advertising', 'Professional Services'],
+    };
+    const keywords = modelKeywords[icpProfile.businessModel] || ['Software'];
+    filters.company_industry = { include: keywords };
+  }
 
   let companies: any[] = [];
+  const maxPages = 4; // Up to 100 companies (25 per page)
 
-  if (source === 'serper') {
-    const serperKey = Deno.env.get('SERPER_API_KEY');
-    if (!serperKey) throw new Error('SERPER_API_KEY not configured');
-
-    const searchQuery = buildSerperQuery(icpProfile);
-
-    // Run multiple pages for better coverage
-    const pages = [0, 100];
-    for (const start of pages) {
-      const response = await fetch('https://google.serper.dev/search', {
+  for (let page = 1; page <= maxPages; page++) {
+    try {
+      const response = await fetch(`${PROSPEO_BASE}/search-company`, {
         method: 'POST',
-        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          q: searchQuery,
-          num: 100,
-          ...(start > 0 ? { page: Math.floor(start / 100) + 1 } : {}),
-        }),
+        headers: prospeoHeaders(prospeoKey),
+        body: JSON.stringify({ filters, page }),
       });
 
       const data = await response.json();
-      const pageCompanies = (data.organic || []).map((result: any) => {
-        let domain: string | null = null;
-        try {
-          domain = new URL(result.link).hostname;
-        } catch {
-          // skip invalid URLs
+
+      if (data.error) {
+        if (data.error_code === 'NO_RESULTS') break;
+        if (data.error_code === 'RATE_LIMITED') {
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
         }
-        return {
-          name: result.title,
-          domain,
-          description: result.snippet,
-          source: 'serper',
-        };
-      });
+        throw new Error(`Prospeo error: ${data.error_code} — ${data.filter_error || ''}`);
+      }
+
+      const pageCompanies = (data.results || []).map((r: any) => ({
+        name: r.company?.name || null,
+        domain: r.company?.domain || r.company?.website || null,
+        linkedin_url: r.company?.linkedin_url || null,
+        industry: r.company?.industry || null,
+        employee_count: r.company?.employee_count || null,
+        location:
+          [r.company?.location?.city, r.company?.location?.state, r.company?.location?.country]
+            .filter(Boolean)
+            .join(', ') || null,
+        description: r.company?.description || r.company?.description_seo || null,
+        raw: r.company,
+      }));
+
       companies.push(...pageCompanies);
+
+      // Stop if we got fewer than a full page
+      const totalPages = data.pagination?.total_page || 1;
+      if (page >= totalPages) break;
+
+      // Rate limit between pages
+      await new Promise((r) => setTimeout(r, 300));
+    } catch (err) {
+      if (page === 1) throw err; // Fail on first page error
+      break; // Stop paginating on subsequent errors
     }
 
-    // Deduplicate by domain
-    const seen = new Set<string>();
-    companies = companies.filter((c: any) => {
-      if (!c.domain || seen.has(c.domain)) return false;
-      seen.add(c.domain);
-      return true;
-    });
-  } else if (source === 'storeleads') {
-    const storeleadsKey = Deno.env.get('STORELEADS_API_KEY');
-    if (!storeleadsKey) throw new Error('STORELEADS_API_KEY not configured');
-
-    // TODO: Implement Storeleads API call
-    companies = [];
-  } else if (source === 'blitzapi') {
-    const blitzApiKey = Deno.env.get('BLITZ_API_KEY');
-    if (!blitzApiKey) throw new Error('BLITZ_API_KEY not configured');
-
-    // TODO: Implement BlitzAPI company search
-    companies = [];
+    const progress = Math.round((page / maxPages) * 50);
+    await supabase.from('tam_job_queue').update({ progress }).eq('id', job.id);
   }
+
+  // Deduplicate by domain
+  const seen = new Set<string>();
+  companies = companies.filter((c: any) => {
+    if (!c.name) return false;
+    if (c.domain && seen.has(c.domain)) return false;
+    if (c.domain) seen.add(c.domain);
+    return true;
+  });
 
   // Insert companies into database
   if (companies.length > 0) {
@@ -164,13 +237,13 @@ async function handleSourceCompanies(supabase: any, job: any, project: any) {
       name: c.name,
       domain: c.domain || null,
       linkedin_url: c.linkedin_url || null,
-      source: c.source,
+      source: 'prospeo',
       industry: c.industry || null,
       employee_count: c.employee_count || null,
       location: c.location || null,
       description: c.description || null,
       qualification_status: 'pending',
-      raw_data: c,
+      raw_data: c.raw || c,
     }));
 
     const batchSize = 100;
@@ -178,19 +251,19 @@ async function handleSourceCompanies(supabase: any, job: any, project: any) {
       const batch = insertData.slice(i, i + batchSize);
       await supabase.from('tam_companies').insert(batch);
 
-      const progress = Math.round(((i + batch.length) / insertData.length) * 100);
+      const progress = 50 + Math.round(((i + batch.length) / insertData.length) * 50);
       await supabase.from('tam_job_queue').update({ progress }).eq('id', job.id);
     }
   }
 
-  // Update project status to sourcing
+  // Update project status
   await supabase.from('tam_projects').update({ status: 'sourcing' }).eq('id', job.project_id);
 
-  return { companiesFound: companies.length, source };
+  return { companiesFound: companies.length, source: 'prospeo' };
 }
 
 // ============================================
-// Qualification
+// Qualification (Claude AI)
 // ============================================
 
 async function handleQualify(supabase: any, job: any, project: any) {
@@ -231,19 +304,22 @@ async function handleQualify(supabase: any, job: any, project: any) {
             messages: [
               {
                 role: 'user',
-                content: `Evaluate if this company matches our ICP. Respond with JSON: {"qualified": true/false, "reason": "brief reason"}
+                content: `Evaluate if this company matches our ICP. Respond with JSON only: {"qualified": true/false, "reason": "brief reason"}
 
 Company: ${company.name}
 Domain: ${company.domain || 'unknown'}
 Description: ${company.description || 'none'}
 Industry: ${company.industry || 'unknown'}
+Employee count: ${company.employee_count || 'unknown'}
+Location: ${company.location || 'unknown'}
 
 ICP Criteria:
-- Business model target: ${icpProfile.businessModel || 'any'}
-- Industries: ${icpProfile.industryKeywords?.join(', ') || 'any'}
+- Business model: ${icpProfile.businessModel || 'any'}
+- What they sell: ${icpProfile.whatYouSell || 'not specified'}
+- Target industries: ${icpProfile.industryKeywords?.join(', ') || 'any'}
 - Employee size: ${icpProfile.employeeSizeRanges?.join(', ') || 'any'}
 - Geography: ${icpProfile.geography || 'any'}
-- Special: ${icpProfile.specialCriteria || 'none'}`,
+- Special criteria: ${icpProfile.specialCriteria || 'none'}`,
               },
             ],
           }),
@@ -252,8 +328,10 @@ ICP Criteria:
         const result = await response.json();
         const content = result.content?.[0]?.text || '';
 
-        try {
-          const parsed = JSON.parse(content);
+        // Extract JSON from response (handle markdown code blocks)
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
           const status = parsed.qualified ? 'qualified' : 'disqualified';
 
           await supabase
@@ -266,12 +344,11 @@ ICP Criteria:
 
           if (parsed.qualified) qualified++;
           else disqualified++;
-        } catch {
-          // Fail-closed: mark for manual review instead of auto-qualifying
+        } else {
+          // Can't parse — leave as pending for review
           await supabase
             .from('tam_companies')
             .update({
-              qualification_status: 'pending',
               qualification_reason: 'Needs review (AI response parse error)',
             })
             .eq('id', company.id);
@@ -285,239 +362,171 @@ ICP Criteria:
     await supabase.from('tam_job_queue').update({ progress }).eq('id', job.id);
   }
 
-  // Update project status to enriching
+  // Update project status
   await supabase.from('tam_projects').update({ status: 'enriching' }).eq('id', job.project_id);
 
   return { qualified, disqualified, total: companies.length };
 }
 
 // ============================================
-// Domain → LinkedIn URL Enrichment
+// Find Contacts (Prospeo search-person + enrich-person)
 // ============================================
-
-async function enrichCompanyLinkedInUrls(supabase: any, job: any) {
-  const blitzApiKey = Deno.env.get('BLITZ_API_KEY');
-  if (!blitzApiKey) return { enriched: 0, failed: 0 };
-
-  const { data: companies } = await supabase
-    .from('tam_companies')
-    .select('id, domain')
-    .eq('project_id', job.project_id)
-    .eq('qualification_status', 'qualified')
-    .is('linkedin_url', null)
-    .not('domain', 'is', null);
-
-  if (!companies || companies.length === 0) return { enriched: 0, failed: 0 };
-
-  let enriched = 0;
-  let failed = 0;
-
-  for (const company of companies) {
-    try {
-      const response = await fetch(`${BLITZAPI_BASE}/enrichment/domain-to-linkedin`, {
-        method: 'POST',
-        headers: blitzApiHeaders(blitzApiKey),
-        body: JSON.stringify({ domain: company.domain }),
-      });
-
-      const data = await response.json();
-      if (data.found && data.company_linkedin_url) {
-        await supabase
-          .from('tam_companies')
-          .update({ linkedin_url: data.company_linkedin_url })
-          .eq('id', company.id);
-        enriched++;
-      } else {
-        failed++;
-      }
-    } catch {
-      failed++;
-    }
-
-    // Rate limit: 200ms between requests
-    await new Promise((r) => setTimeout(r, 200));
-  }
-
-  return { enriched, failed };
-}
-
-// ============================================
-// Contact Finding (Waterfall ICP Search)
-// ============================================
-
-function buildCascade(icpProfile: any): any[] {
-  const targetTitles = icpProfile.targetTitles || ['CEO', 'Founder'];
-  const seniorityPref = icpProfile.seniorityPreference || [];
-
-  let location: string[] = ['WORLD'];
-  if (icpProfile.geography === 'us_only') {
-    location = ['US'];
-  } else if (
-    icpProfile.geography === 'specific_countries' &&
-    icpProfile.specificCountries?.length
-  ) {
-    location = icpProfile.specificCountries;
-  }
-
-  const cascade: any[] = [];
-
-  // Level 1: Exact target titles from wizard
-  cascade.push({
-    include_title: targetTitles,
-    location,
-    include_headline_search: false,
-  });
-
-  // Level 2: Broader seniority titles as fallback
-  const broaderTitles: string[] = [];
-  if (seniorityPref.includes('C-Suite') || seniorityPref.length === 0) {
-    broaderTitles.push('CEO', 'CTO', 'CFO', 'COO', 'CMO');
-  }
-  if (seniorityPref.includes('VP')) {
-    broaderTitles.push('VP', 'Vice President');
-  }
-  if (seniorityPref.includes('Director')) {
-    broaderTitles.push('Director', 'Head of');
-  }
-  if (seniorityPref.includes('Manager')) {
-    broaderTitles.push('Manager', 'Lead');
-  }
-
-  const additionalTitles = broaderTitles.filter(
-    (t) => !targetTitles.some((tt: string) => tt.toLowerCase() === t.toLowerCase())
-  );
-
-  if (additionalTitles.length > 0) {
-    cascade.push({
-      include_title: additionalTitles,
-      location: ['WORLD'],
-      include_headline_search: true,
-    });
-  }
-
-  return cascade;
-}
 
 async function handleFindContacts(supabase: any, job: any, project: any) {
-  const blitzApiKey = Deno.env.get('BLITZ_API_KEY');
-  if (!blitzApiKey) throw new Error('BLITZ_API_KEY not configured');
+  const prospeoKey = Deno.env.get('PROSPEO_API_KEY');
+  if (!prospeoKey) throw new Error('PROSPEO_API_KEY not configured');
 
   const icpProfile = project?.icp_profile || {};
 
-  // Step 1: Enrich company LinkedIn URLs
-  const enrichResult = await enrichCompanyLinkedInUrls(supabase, job);
-
-  // Get qualified companies
+  // Get qualified companies with domains
   const { data: companies } = await supabase
     .from('tam_companies')
     .select('*')
     .eq('project_id', job.project_id)
-    .eq('qualification_status', 'qualified');
+    .eq('qualification_status', 'qualified')
+    .not('domain', 'is', null);
 
   if (!companies || companies.length === 0) {
-    return { contactsFound: 0, emailsFound: 0, total: 0, enrichment: enrichResult };
+    // Update project status even if no companies
+    await supabase.from('tam_projects').update({ status: 'complete' }).eq('id', job.project_id);
+    return { contactsFound: 0, emailsFound: 0, totalCompanies: 0 };
   }
 
   let contactsFound = 0;
   let emailsFound = 0;
-  const maxResults = icpProfile.contactsPerCompany || 1;
-  const cascade = buildCascade(icpProfile);
+  const maxContactsPerCompany = icpProfile.contactsPerCompany || 1;
 
-  for (let i = 0; i < companies.length; i++) {
-    const company = companies[i];
+  // Batch companies into groups of up to 500 domains (Prospeo limit)
+  const batchSize = Math.min(companies.length, 500);
+  const companyBatches: any[][] = [];
+  for (let i = 0; i < companies.length; i += batchSize) {
+    companyBatches.push(companies.slice(i, i + batchSize));
+  }
 
-    try {
-      let contacts: any[] = [];
+  for (let batchIdx = 0; batchIdx < companyBatches.length; batchIdx++) {
+    const batch = companyBatches[batchIdx];
+    const domains = batch.map((c: any) => c.domain).filter(Boolean);
+    const domainToCompany = new Map(batch.map((c: any) => [c.domain, c]));
 
-      if (company.linkedin_url) {
-        // Waterfall ICP search for companies with LinkedIn URLs
-        const response = await fetch(`${BLITZAPI_BASE}/search/waterfall-icp-keyword`, {
+    // Search for people at these companies
+    const personFilters = buildProspeoPersonFilters(icpProfile, domains);
+    const companyContactCounts = new Map<string, number>();
+
+    // Paginate through results
+    const maxPages = Math.ceil((domains.length * maxContactsPerCompany) / 25);
+    const pageLimit = Math.min(maxPages, 20); // Cap at 20 pages (500 results)
+
+    for (let page = 1; page <= pageLimit; page++) {
+      try {
+        const response = await fetch(`${PROSPEO_BASE}/search-person`, {
           method: 'POST',
-          headers: blitzApiHeaders(blitzApiKey),
-          body: JSON.stringify({
-            company_linkedin_url: company.linkedin_url,
-            cascade,
-            max_results: maxResults,
-          }),
+          headers: prospeoHeaders(prospeoKey),
+          body: JSON.stringify({ filters: personFilters, page }),
         });
 
         const data = await response.json();
-        contacts = (data.results || []).map((r: any) => ({
-          firstName: r.person?.first_name || r.person?.firstName || null,
-          lastName: r.person?.last_name || r.person?.lastName || null,
-          title: r.person?.title || r.person?.position || null,
-          linkedinUrl: r.person?.linkedin_url || r.person?.linkedinUrl || null,
-          email: r.person?.email || null,
-          phone: r.person?.phone || null,
-          icpLevel: r.icp,
-          ranking: r.ranking,
-          whatMatched: r.what_matched,
-        }));
-      } else if (company.domain) {
-        // Fallback: Employee Finder for companies without LinkedIn URLs
-        const response = await fetch(`${BLITZAPI_BASE}/search/employee-finder`, {
-          method: 'POST',
-          headers: blitzApiHeaders(blitzApiKey),
-          body: JSON.stringify({
-            company_linkedin_url: `https://linkedin.com/company/${company.domain.replace(/\.[^.]+$/, '').replace(/\.[^.]+$/, '')}`,
-            job_level: icpProfile.seniorityPreference?.length
-              ? icpProfile.seniorityPreference.map((s: string) => {
-                  if (s === 'C-Suite') return 'C-Team';
-                  return s;
-                })
-              : ['C-Team', 'VP', 'Director'],
-            max_results: maxResults,
-          }),
-        });
 
-        const data = await response.json();
-        contacts = (Array.isArray(data) ? data : data.results || []).map((c: any) => ({
-          firstName: c.first_name || c.firstName || null,
-          lastName: c.last_name || c.lastName || null,
-          title: c.title || c.position || null,
-          linkedinUrl: c.linkedin_url || c.linkedinUrl || null,
-          email: c.email || null,
-          phone: c.phone || null,
-        }));
+        if (data.error) {
+          if (data.error_code === 'NO_RESULTS') break;
+          if (data.error_code === 'RATE_LIMITED') {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+          break;
+        }
+
+        for (const result of data.results || []) {
+          const person = result.person || {};
+          const company = result.company || {};
+          const companyDomain = company.domain || company.website || null;
+
+          // Match to our company record
+          const matchedCompany = companyDomain ? domainToCompany.get(companyDomain) : null;
+          if (!matchedCompany) continue;
+
+          // Check per-company limit
+          const currentCount = companyContactCounts.get(matchedCompany.id) || 0;
+          if (currentCount >= maxContactsPerCompany) continue;
+          companyContactCounts.set(matchedCompany.id, currentCount + 1);
+
+          // Enrich person to get email
+          let email: string | null = null;
+          let emailStatus = 'not_found';
+          let phone: string | null = null;
+
+          if (person.person_id) {
+            try {
+              const enrichResponse = await fetch(`${PROSPEO_BASE}/enrich-person`, {
+                method: 'POST',
+                headers: prospeoHeaders(prospeoKey),
+                body: JSON.stringify({
+                  data: { person_id: person.person_id },
+                  only_verified_email: false,
+                }),
+              });
+
+              const enrichData = await enrichResponse.json();
+              if (!enrichData.error && enrichData.person) {
+                if (enrichData.person.email?.email) {
+                  email = enrichData.person.email.email;
+                  emailStatus =
+                    enrichData.person.email.status === 'verified' ? 'verified' : 'found';
+                }
+                if (enrichData.person.mobile?.mobile) {
+                  phone = enrichData.person.mobile.mobile;
+                }
+              }
+            } catch {
+              // Continue without enrichment
+            }
+
+            // Rate limit enrichment calls
+            await new Promise((r) => setTimeout(r, 200));
+          }
+
+          // Insert contact
+          await supabase.from('tam_contacts').insert({
+            company_id: matchedCompany.id,
+            project_id: job.project_id,
+            first_name: person.first_name || null,
+            last_name: person.last_name || null,
+            title: person.current_job_title || null,
+            linkedin_url: person.linkedin_url || null,
+            email: email,
+            email_status: emailStatus,
+            phone: phone,
+            source: 'prospeo',
+            raw_data: { person, company },
+          });
+
+          contactsFound++;
+          if (email) emailsFound++;
+        }
+
+        // Stop if we got fewer than a full page
+        const totalPages = data.pagination?.total_page || 1;
+        if (page >= totalPages) break;
+
+        // Rate limit between pages
+        await new Promise((r) => setTimeout(r, 300));
+      } catch {
+        break;
       }
-
-      for (const contact of contacts.slice(0, maxResults)) {
-        await supabase.from('tam_contacts').insert({
-          company_id: company.id,
-          project_id: job.project_id,
-          first_name: contact.firstName || null,
-          last_name: contact.lastName || null,
-          title: contact.title || null,
-          linkedin_url: contact.linkedinUrl || null,
-          email: contact.email || null,
-          email_status: contact.email ? 'found' : 'not_found',
-          phone: contact.phone || null,
-          source: 'blitzapi',
-          raw_data: contact,
-        });
-
-        contactsFound++;
-        if (contact.email) emailsFound++;
-      }
-    } catch {
-      // Skip company on error
     }
 
-    // Rate limit: 200ms between requests
-    await new Promise((r) => setTimeout(r, 200));
-
-    const progress = Math.round(((i + 1) / companies.length) * 100);
+    // Update progress per batch
+    const progress = Math.round(((batchIdx + 1) / companyBatches.length) * 100);
     await supabase.from('tam_job_queue').update({ progress }).eq('id', job.id);
   }
 
   // Update project status to complete
   await supabase.from('tam_projects').update({ status: 'complete' }).eq('id', job.project_id);
 
-  return { contactsFound, emailsFound, totalCompanies: companies.length, enrichment: enrichResult };
+  return { contactsFound, emailsFound, totalCompanies: companies.length };
 }
 
 // ============================================
-// LinkedIn Activity Check
+// LinkedIn Activity Check (Bright Data)
 // ============================================
 
 async function handleCheckLinkedin(supabase: any, job: any, _project: any) {

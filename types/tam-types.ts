@@ -8,13 +8,14 @@ export type TamCompanySource =
   | 'apollo'
   | 'blitzapi'
   | 'smartscout'
-  | 'discolike';
+  | 'discolike'
+  | 'prospeo';
 
 export type TamQualificationStatus = 'pending' | 'qualified' | 'disqualified';
 
 export type TamEmailStatus = 'found' | 'verified' | 'catch_all' | 'invalid' | 'not_found';
 
-export type TamContactSource = 'blitzapi' | 'apollo';
+export type TamContactSource = 'blitzapi' | 'apollo' | 'prospeo';
 
 export type TamJobType =
   | 'source_companies'
