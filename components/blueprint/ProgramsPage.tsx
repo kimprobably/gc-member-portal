@@ -32,6 +32,7 @@ const NavBar: React.FC = () => (
         </Link>
         <Link
           to="/"
+          onClick={() => window.scrollTo(0, 0)}
           className="text-sm font-semibold px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"
         >
           Get Your Blueprint
@@ -223,6 +224,7 @@ const Recommendation: React.FC<RecommendationProps> = ({ recommended, onReset })
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/"
+              onClick={() => window.scrollTo(0, 0)}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-base font-semibold bg-violet-600 hover:bg-violet-700 text-white transition-colors shadow-lg shadow-violet-500/25"
             >
               Get Your Blueprint <ArrowRight className="w-4 h-4" />
