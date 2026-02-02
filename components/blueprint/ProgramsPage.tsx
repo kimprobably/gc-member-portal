@@ -222,10 +222,10 @@ const Recommendation: React.FC<RecommendationProps> = ({ recommended, onReset })
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to={`/offer/${offer.id}`}
+              to="/"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-base font-semibold bg-violet-600 hover:bg-violet-700 text-white transition-colors shadow-lg shadow-violet-500/25"
             >
-              Learn More About {offer.name} <ArrowRight className="w-4 h-4" />
+              Get Your Blueprint <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -352,14 +352,14 @@ const CompareCard: React.FC<{
 
     <div className="mt-auto">
       <Link
-        to={`/offer/${offer.id}`}
+        to="/"
         className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
           isRecommended
             ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25'
             : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900'
         }`}
       >
-        Learn More <ArrowRight className="w-4 h-4" />
+        Get Your Blueprint <ArrowRight className="w-4 h-4" />
       </Link>
     </div>
   </div>
@@ -379,22 +379,12 @@ const FallbackCTA: React.FC = () => (
         Start with a free LinkedIn Authority Blueprint. We&apos;ll analyze your profile and show you
         exactly where to focus.
       </p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white transition-colors shadow-lg shadow-violet-500/25"
-        >
-          Get a Free Blueprint <ArrowRight className="w-4 h-4" />
-        </Link>
-        <a
-          href={import.meta.env.VITE_CALCOM_BOOKING_URL || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold border-2 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors"
-        >
-          Book a Call
-        </a>
-      </div>
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white transition-colors shadow-lg shadow-violet-500/25"
+      >
+        Get Your Blueprint <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
   </section>
 );
