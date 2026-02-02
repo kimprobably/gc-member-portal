@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CourseData, Lesson, User } from '../../types';
 import { AITool } from '../../types/chat-types';
 import {
@@ -65,7 +64,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   hasBlueprint = false,
 }) => {
   const { logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -321,18 +319,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                           {toolGroups.gpts.map(renderToolItem)}
                           <button
                             onClick={() => {
-                              navigate('/bootcamp/tam-builder');
+                              onSelectLesson({
+                                id: 'virtual:tam-builder',
+                                title: 'TAM Builder',
+                                embedUrl: 'virtual:tam-builder',
+                              });
                               onCloseMobile();
                             }}
                             className={`flex items-center w-full py-1.5 px-3 rounded-lg text-[11px] transition-all ${
-                              window.location.pathname === '/bootcamp/tam-builder'
+                              currentLessonId === 'virtual:tam-builder'
                                 ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium'
                                 : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                           >
                             <span
                               className={`mr-2.5 shrink-0 ${
-                                window.location.pathname === '/bootcamp/tam-builder'
+                                currentLessonId === 'virtual:tam-builder'
                                   ? 'text-violet-500'
                                   : 'text-zinc-400 dark:text-zinc-600'
                               }`}

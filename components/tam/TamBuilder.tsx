@@ -1,41 +1,48 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, MessageSquare, List, Loader2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Plus, MessageSquare, List, Loader2, BarChart3 } from 'lucide-react';
 import { IcpProfile } from '../../types/tam-types';
+import { queryKeys } from '../../lib/queryClient';
 import {
   useTamProjects,
   useTamProject,
   useCreateTamProjectMutation,
   useUpdateTamProjectMutation,
 } from '../../hooks/useTamProject';
+import { useTamPipeline } from '../../hooks/useTamPipeline';
 import IcpWizard from './IcpWizard';
 import TamDashboard from './TamDashboard';
+import PipelineProgress from './PipelineProgress';
 import { ChatInterface } from '../chat';
 
-type Phase = 'wizard' | 'chat' | 'dashboard';
-type TabView = 'strategy' | 'list';
+type Phase = 'wizard' | 'pipeline' | 'chat' | 'dashboard';
+type TabView = 'strategy' | 'pipeline' | 'list';
 
 interface TamBuilderProps {
   userId: string;
 }
 
 const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
+  const queryClient = useQueryClient();
   const [phase, setPhase] = useState<Phase>('wizard');
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabView>('strategy');
   const [initialized, setInitialized] = useState(false);
 
   // Queries
-  const { data: projects, isLoading: projectsLoading } = useTamProjects(userId);
+  const { data: projects, isLoading: projectsLoading } = useTamProjects(userId || undefined);
   const { data: activeProject } = useTamProject(activeProjectId ?? undefined);
 
   // Mutations
   const createProject = useCreateTamProjectMutation();
   const updateProject = useUpdateTamProjectMutation();
 
+  // Pipeline orchestration
+  const pipeline = useTamPipeline();
+
   // Find the most recent incomplete project for resume logic
   const resumableProject = useMemo(() => {
     if (!projects || projects.length === 0) return null;
-    // Find the most recently updated project that is not complete
     const incomplete = projects
       .filter((p) => p.status !== 'complete')
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
@@ -52,7 +59,6 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
       switch (resumableProject.status) {
         case 'draft':
           if (resumableProject.icpProfile) {
-            // ICP already filled out, go to chat
             setPhase('chat');
             setActiveTab('strategy');
           } else {
@@ -72,7 +78,6 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
           setPhase('wizard');
       }
     } else {
-      // Check if there's a completed project to view
       const completedProject = projects
         ?.filter((p) => p.status === 'complete')
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
@@ -89,8 +94,21 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
     setInitialized(true);
   }, [projects, projectsLoading, resumableProject, initialized]);
 
-  // Handle ICP Wizard completion: create project and transition to chat
+  // When pipeline completes, invalidate caches and transition to dashboard
+  useEffect(() => {
+    if (pipeline.isComplete && activeProjectId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tamProject(activeProjectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tamCompanies(activeProjectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tamContacts(activeProjectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tamStats(activeProjectId) });
+      setPhase('dashboard');
+      setActiveTab('list');
+    }
+  }, [pipeline.isComplete, activeProjectId, queryClient]);
+
+  // Handle ICP Wizard completion: create project and start pipeline
   const handleWizardComplete = async (icpProfile: IcpProfile) => {
+    if (!userId) return;
     try {
       const project = await createProject.mutateAsync({
         userId,
@@ -98,8 +116,11 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
         icpProfile,
       });
       setActiveProjectId(project.id);
-      setPhase('chat');
-      setActiveTab('strategy');
+      setPhase('pipeline');
+      setActiveTab('pipeline');
+
+      // Auto-start the pipeline
+      pipeline.startPipeline(project.id);
     } catch (err) {
       console.error('Failed to create TAM project:', err);
     }
@@ -132,7 +153,7 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header with tab navigation (shown in chat/dashboard phases) */}
+      {/* Header with tab navigation (shown in non-wizard phases with active project) */}
       {phase !== 'wizard' && activeProjectId && (
         <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-3">
           <div className="flex items-center gap-1">
@@ -150,6 +171,22 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
               <MessageSquare className="w-4 h-4" />
               Strategy
             </button>
+            {pipeline.isRunning && (
+              <button
+                onClick={() => {
+                  setPhase('pipeline');
+                  setActiveTab('pipeline');
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  phase === 'pipeline'
+                    ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                Pipeline
+              </button>
+            )}
             <button
               onClick={() => {
                 setPhase('dashboard');
@@ -200,6 +237,13 @@ const TamBuilder: React.FC<TamBuilderProps> = ({ userId }) => {
               </p>
             </div>
             <IcpWizard onComplete={handleWizardComplete} userId={userId} />
+          </div>
+        )}
+
+        {/* Pipeline Phase */}
+        {phase === 'pipeline' && activeProjectId && (
+          <div className="p-6 flex items-center justify-center min-h-[500px]">
+            <PipelineProgress steps={pipeline.steps} error={pipeline.error} />
           </div>
         )}
 

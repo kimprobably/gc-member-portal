@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { fetchCourseData } from '../../services/airtable';
@@ -37,6 +37,8 @@ import {
 } from '../../types/bootcamp-types';
 import { queryKeys } from '../../lib/queryClient';
 import { Menu, X, Terminal, Users } from 'lucide-react';
+
+const TamBuilder = lazy(() => import('../../components/tam/TamBuilder'));
 
 const BootcampApp: React.FC = () => {
   const queryClient = useQueryClient();
@@ -540,7 +542,17 @@ const BootcampApp: React.FC = () => {
                 onDismiss={() => setDismissedBanner(true)}
               />
             )}
-            {currentLesson.id === 'virtual:my-posts' ? (
+            {currentLesson.id === 'virtual:tam-builder' ? (
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center h-96">
+                    <div className="w-8 h-8 border-2 border-zinc-300 dark:border-zinc-700 border-t-violet-500 rounded-full animate-spin" />
+                  </div>
+                }
+              >
+                <TamBuilder userId={bootcampStudent?.id || ''} />
+              </Suspense>
+            ) : currentLesson.id === 'virtual:my-posts' ? (
               <MyPosts prospectId={bootcampStudent?.prospectId} />
             ) : (
               <LessonView

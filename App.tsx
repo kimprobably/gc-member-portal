@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
@@ -62,7 +62,6 @@ const AdminBlueprintsPage = lazy(() => import('./components/admin/blueprints/Adm
 
 // Lazy-loaded: Bootcamp
 const BootcampApp = lazy(() => import('./pages/bootcamp/BootcampApp'));
-const TamBuilder = lazy(() => import('./components/tam/TamBuilder'));
 
 // Lazy-loaded: Affiliate
 const ReferralLandingPage = lazy(() => import('./components/affiliate/ReferralLandingPage'));
@@ -75,40 +74,6 @@ const AffiliateAssetsPage = lazy(() => import('./components/affiliate/AffiliateA
 const AffiliateSettingsPage = lazy(() => import('./components/affiliate/AffiliateSettingsPage'));
 const AffiliateOnboard = lazy(() => import('./components/affiliate/AffiliateOnboard'));
 const AdminAffiliatesPage = lazy(() => import('./components/admin/affiliates/AdminAffiliatesPage'));
-
-/** Wrapper that resolves the bootcamp student ID for the TamBuilder route */
-const TamBuilderRoute: React.FC = () => {
-  const [studentId, setStudentId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('lms_user_obj');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        import('./services/bootcamp-supabase').then(({ verifyBootcampStudent }) =>
-          verifyBootcampStudent(user.email).then((student) => {
-            if (student) setStudentId(student.id);
-          })
-        );
-      } catch {
-        // ignore parse errors
-      }
-    }
-  }, []);
-
-  if (!studentId) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-zinc-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-zinc-300 dark:border-zinc-700 border-t-violet-500 rounded-full animate-spin" />
-          <p className="text-xs font-medium text-zinc-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return <TamBuilder userId={studentId} />;
-};
 
 const App: React.FC = () => {
   const { isAuthenticated, isLoading, mode } = useAuth();
@@ -207,7 +172,6 @@ const App: React.FC = () => {
         </Route>
 
         {/* Bootcamp LMS - /bootcamp path */}
-        <Route path="/bootcamp/tam-builder" element={<TamBuilderRoute />} />
         <Route path="/bootcamp/*" element={<BootcampApp />} />
 
         {/* Blueprint Public Pages (no auth required) */}

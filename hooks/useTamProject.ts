@@ -14,7 +14,7 @@ import {
   createTamJob,
   updateTamJob,
 } from '../services/tam-supabase';
-import { TamProject, TamCompany, TamContact, TamProjectInput } from '../types/tam-types';
+import { TamProject, TamCompany, TamJob, TamProjectInput } from '../types/tam-types';
 
 // ============================================
 // Query Hooks
@@ -142,7 +142,7 @@ export function useUpdateTamJobMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ jobId, updates }: { jobId: string; updates: Partial<TamContact> }) =>
+    mutationFn: ({ jobId, updates }: { jobId: string; updates: Partial<TamJob> }) =>
       updateTamJob(jobId, updates),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tamJobs(data.projectId) });
