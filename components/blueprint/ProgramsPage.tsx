@@ -31,10 +31,10 @@ const NavBar: React.FC = () => (
           Affiliates
         </Link>
         <Link
-          to="/login"
-          className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+          to="/"
+          className="text-sm font-semibold px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors"
         >
-          Login
+          Get Your Blueprint
         </Link>
         <ThemeToggle inline />
       </div>
