@@ -21,6 +21,23 @@ import {
 import ThemeToggle from './ThemeToggle';
 
 // ============================================
+// Helpers
+// ============================================
+
+/**
+ * Convert YouTube watch URLs to embed format
+ */
+function toEmbedUrl(url: string): string {
+  if (!url) return url;
+  if (url.includes('/embed/')) return url;
+  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  return url;
+}
+
+// ============================================
 // Types
 // ============================================
 
@@ -251,7 +268,7 @@ const OfferPage: React.FC = () => {
               style={{ paddingBottom: '56.25%' }}
             >
               <iframe
-                src={offerVideoUrl}
+                src={toEmbedUrl(offerVideoUrl)}
                 title="Offer video"
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

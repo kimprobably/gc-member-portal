@@ -39,6 +39,23 @@ import ScrollReveal from './ScrollReveal';
 import { useTenantBranding, getTenantColors } from '../../services/tenant-branding';
 
 // ============================================
+// Helpers
+// ============================================
+
+/**
+ * Convert YouTube watch URLs to embed format
+ */
+function toEmbedUrl(url: string): string {
+  if (!url) return url;
+  if (url.includes('/embed/')) return url;
+  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  return url;
+}
+
+// ============================================
 // Types
 // ============================================
 
@@ -380,7 +397,7 @@ const BlueprintPage: React.FC = () => {
                 style={{ paddingBottom: '56.25%' }}
               >
                 <iframe
-                  src={settings.blueprintVideoUrl}
+                  src={toEmbedUrl(settings.blueprintVideoUrl)}
                   title="Blueprint scorecard walkthrough"
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

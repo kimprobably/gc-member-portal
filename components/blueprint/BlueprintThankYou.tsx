@@ -8,6 +8,36 @@ import { getBlueprintSettings } from '../../services/blueprint-supabase';
 import { queryKeys } from '../../lib/queryClient';
 
 // ============================================
+// Helpers
+// ============================================
+
+/**
+ * Convert YouTube watch URLs to embed format
+ * Handles: youtube.com/watch?v=ID, youtu.be/ID, and already-embed URLs
+ */
+function toEmbedUrl(url: string): string {
+  if (!url) return url;
+
+  // Already an embed URL
+  if (url.includes('/embed/')) return url;
+
+  // youtube.com/watch?v=VIDEO_ID
+  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  if (watchMatch) {
+    return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  }
+
+  // youtu.be/VIDEO_ID
+  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch) {
+    return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  }
+
+  // Loom, Vimeo, or other URLs - return as-is
+  return url;
+}
+
+// ============================================
 // Constants
 // ============================================
 
@@ -71,7 +101,7 @@ const BlueprintThankYou: React.FC = () => {
               style={{ paddingBottom: '56.25%' }}
             >
               <iframe
-                src={settings.thankYouVideoUrl}
+                src={toEmbedUrl(settings.thankYouVideoUrl)}
                 title="Thank you video"
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
