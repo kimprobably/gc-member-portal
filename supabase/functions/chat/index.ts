@@ -211,7 +211,7 @@ serve(async (req) => {
         const { data: prospect, error: prospectError } = await supabase
           .from('prospects')
           .select(
-            'full_name, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, whats_working_1, whats_working_2, whats_working_3, revenue_leaks_1, revenue_leaks_2, revenue_leaks_3, buyer_persona, strategic_gap, strategic_opportunity, bottom_line, current_headline, recommended_headline, voice_style_guide, knowledge_base, next_steps_30_day, next_steps_90_day'
+            'full_name, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, whats_working_1, whats_working_2, whats_working_3, buyer_persona, strategic_gap, strategic_opportunity, bottom_line, current_headline, recommended_headline, voice_style_guide, knowledge_base'
           )
           .ilike('email', student.email)
           .eq('status', 'complete')
@@ -268,16 +268,6 @@ serve(async (req) => {
             lines.push(...strengths);
           }
 
-          // Revenue Leaks
-          const leaks: string[] = [];
-          if (prospect.revenue_leaks_1) leaks.push(`- ${prospect.revenue_leaks_1}`);
-          if (prospect.revenue_leaks_2) leaks.push(`- ${prospect.revenue_leaks_2}`);
-          if (prospect.revenue_leaks_3) leaks.push(`- ${prospect.revenue_leaks_3}`);
-          if (leaks.length > 0) {
-            lines.push('', 'REVENUE LEAKS:');
-            lines.push(...leaks);
-          }
-
           // Strategic Analysis
           const strategic: string[] = [];
           if (prospect.buyer_persona) strategic.push(`Buyer Persona: ${prospect.buyer_persona}`);
@@ -307,15 +297,6 @@ serve(async (req) => {
           if (prospect.knowledge_base) {
             lines.push('', 'KNOWLEDGE BASE:');
             lines.push(prospect.knowledge_base);
-          }
-
-          // Action Plans
-          const actions: string[] = [];
-          if (prospect.next_steps_30_day) actions.push(`30-Day: ${prospect.next_steps_30_day}`);
-          if (prospect.next_steps_90_day) actions.push(`90-Day: ${prospect.next_steps_90_day}`);
-          if (actions.length > 0) {
-            lines.push('', 'ACTION PLANS:');
-            lines.push(...actions);
           }
 
           lines.push('=== END BLUEPRINT CONTEXT ===');
