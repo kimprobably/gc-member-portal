@@ -22,6 +22,7 @@ import {
   Settings,
   FileText,
   Target,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -342,6 +343,32 @@ const Sidebar: React.FC<SidebarProps> = ({
                               <Target size={14} />
                             </span>
                             <span className="truncate">TAM Builder</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              onSelectLesson({
+                                id: 'virtual:connection-qualifier',
+                                title: 'Connection Qualifier',
+                                embedUrl: 'virtual:connection-qualifier',
+                              });
+                              onCloseMobile();
+                            }}
+                            className={`flex items-center w-full py-1.5 px-3 rounded-lg text-[11px] transition-all ${
+                              currentLessonId === 'virtual:connection-qualifier'
+                                ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium'
+                                : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+                            }`}
+                          >
+                            <span
+                              className={`mr-2.5 shrink-0 ${
+                                currentLessonId === 'virtual:connection-qualifier'
+                                  ? 'text-violet-500'
+                                  : 'text-zinc-400 dark:text-zinc-600'
+                              }`}
+                            >
+                              <Users size={14} />
+                            </span>
+                            <span className="truncate">Connection Qualifier</span>
                           </button>
                         </div>
                       )}

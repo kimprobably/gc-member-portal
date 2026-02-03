@@ -7,6 +7,7 @@ import {
   Wand2,
   MessageSquare,
   Target,
+  Users,
 } from 'lucide-react';
 
 interface AITool {
@@ -53,6 +54,12 @@ const DEFAULT_TOOLS: AITool[] = [
     name: 'Content Creator',
     description: 'Create engaging LinkedIn posts and articles that attract your ideal clients.',
     icon: <Wand2 className="w-5 h-5" />,
+  },
+  {
+    id: 'connection-qualifier',
+    name: 'Connection Qualifier',
+    description: 'Upload your LinkedIn connections and find qualified leads using AI filtering.',
+    icon: <Users className="w-5 h-5" />,
     badge: 'New',
   },
 ];
