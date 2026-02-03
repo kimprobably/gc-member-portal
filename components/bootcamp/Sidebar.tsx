@@ -111,7 +111,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           titleUpper.includes('SLACK') ||
           titleUpper.includes('ACCESS') ||
           titleUpper.includes('LOGIN') ||
-          url.startsWith('text:');
+          url.startsWith('text:') ||
+          url.startsWith('credentials:');
         const isTool =
           titleUpper.startsWith('TOOL:') ||
           titleUpper.includes('AGENT') ||
