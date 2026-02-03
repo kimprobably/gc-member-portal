@@ -211,7 +211,7 @@ serve(async (req) => {
         const { data: prospect, error: prospectError } = await supabase
           .from('prospects')
           .select(
-            'full_name, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, whats_working_1, whats_working_2, whats_working_3, revenue_leaks_1, revenue_leaks_2, revenue_leaks_3, buyer_persona, strategic_gap, strategic_opportunity, bottom_line, current_headline, recommended_headline, voice_style_guide, next_steps_30_day, next_steps_90_day'
+            'full_name, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, whats_working_1, whats_working_2, whats_working_3, revenue_leaks_1, revenue_leaks_2, revenue_leaks_3, buyer_persona, strategic_gap, strategic_opportunity, bottom_line, current_headline, recommended_headline, voice_style_guide, knowledge_base, next_steps_30_day, next_steps_90_day'
           )
           .ilike('email', student.email)
           .eq('status', 'complete')
@@ -301,6 +301,12 @@ serve(async (req) => {
           if (profile.length > 0) {
             lines.push('', 'PROFILE:');
             lines.push(...profile);
+          }
+
+          // Knowledge Base (deep insights about their business, ICP, expertise)
+          if (prospect.knowledge_base) {
+            lines.push('', 'KNOWLEDGE BASE:');
+            lines.push(prospect.knowledge_base);
           }
 
           // Action Plans
