@@ -124,6 +124,7 @@ src/
 - **Blueprint Backend** (`VITE_BLUEPRINT_BACKEND_URL`) -- Blueprint-specific backend operations.
 - **GTM System** (`VITE_GTM_SYSTEM_URL`) -- Cross-system GTM operations.
 - **Airtable** -- Legacy data via `services/airtable.ts`.
+- **Call Access Grants** -- Config stored in `bootcamp_settings` key `call_grant_config` (`CallGrantConfig` type). Admin UI at `components/admin/bootcamp/settings/CallGrantConfigEditor.tsx`. gtm-system's `grant-call-access` Trigger.dev task reads this config to auto-create student accounts with AI tool credits when prospects attend Cal.com calls.
 
 ## Environment Variables
 
