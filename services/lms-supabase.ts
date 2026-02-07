@@ -27,6 +27,27 @@ import {
 } from '../types/lms-types';
 import { StudentEnrollment } from '../types/bootcamp-types';
 
+// Explicit column lists (avoid select('*'))
+const LMS_COHORT_COLUMNS =
+  'id, name, description, status, start_date, end_date, sidebar_label, icon, sort_order, product_type, thrivecart_product_id, onboarding_config, created_at, updated_at';
+
+const LMS_WEEK_COLUMNS =
+  'id, cohort_id, title, description, sort_order, is_visible, created_at, updated_at';
+
+const LMS_LESSON_COLUMNS =
+  'id, week_id, title, description, sort_order, is_visible, created_at, updated_at';
+
+const LMS_CONTENT_ITEM_COLUMNS =
+  'id, lesson_id, title, content_type, embed_url, ai_tool_slug, content_text, credentials_data, description, sort_order, is_visible, created_at, updated_at';
+
+const LMS_ACTION_ITEM_COLUMNS =
+  'id, week_id, text, description, video_url, sort_order, assigned_to_email, is_visible, created_at, updated_at';
+
+const LMS_LESSON_PROGRESS_COLUMNS = 'id, student_id, lesson_id, completed_at, notes, created_at';
+
+const LMS_ACTION_ITEM_PROGRESS_COLUMNS =
+  'id, student_id, action_item_id, completed_at, proof_of_work, notes, created_at';
+
 // ============================================
 // Cohorts
 // ============================================
@@ -34,7 +55,7 @@ import { StudentEnrollment } from '../types/bootcamp-types';
 export async function fetchAllLmsCohorts(): Promise<LmsCohort[]> {
   const { data, error } = await supabase
     .from('lms_cohorts')
-    .select('*')
+    .select(LMS_COHORT_COLUMNS)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -44,7 +65,7 @@ export async function fetchAllLmsCohorts(): Promise<LmsCohort[]> {
 export async function fetchActiveLmsCohorts(): Promise<LmsCohort[]> {
   const { data, error } = await supabase
     .from('lms_cohorts')
-    .select('*')
+    .select(LMS_COHORT_COLUMNS)
     .eq('status', 'Active')
     .order('name', { ascending: true });
 
@@ -55,7 +76,7 @@ export async function fetchActiveLmsCohorts(): Promise<LmsCohort[]> {
 export async function fetchLmsCohortById(cohortId: string): Promise<LmsCohort | null> {
   const { data, error } = await supabase
     .from('lms_cohorts')
-    .select('*')
+    .select(LMS_COHORT_COLUMNS)
     .eq('id', cohortId)
     .single();
 
@@ -66,7 +87,7 @@ export async function fetchLmsCohortById(cohortId: string): Promise<LmsCohort | 
 export async function fetchLmsCohortByName(name: string): Promise<LmsCohort | null> {
   const { data, error } = await supabase
     .from('lms_cohorts')
-    .select('*')
+    .select(LMS_COHORT_COLUMNS)
     .ilike('name', name)
     .single();
 
@@ -137,12 +158,14 @@ export async function deleteLmsCohort(cohortId: string): Promise<void> {
 export async function duplicateLmsCohort(
   sourceCohortId: string,
   newName: string,
-  newDescription?: string
+  newDescription?: string,
+  newStatus?: string
 ): Promise<string> {
   const { data, error } = await supabase.rpc('duplicate_lms_cohort', {
     source_cohort_id: sourceCohortId,
     new_cohort_name: newName,
     new_cohort_description: newDescription,
+    new_cohort_status: newStatus || 'Draft',
   });
 
   if (error) throw new Error(error.message);
@@ -175,7 +198,7 @@ function mapLmsCohort(record: Record<string, unknown>): LmsCohort {
 export async function fetchLmsWeeksByCohort(cohortId: string): Promise<LmsWeek[]> {
   const { data, error } = await supabase
     .from('lms_weeks')
-    .select('*')
+    .select(LMS_WEEK_COLUMNS)
     .eq('cohort_id', cohortId)
     .order('sort_order', { ascending: true });
 
@@ -186,7 +209,7 @@ export async function fetchLmsWeeksByCohort(cohortId: string): Promise<LmsWeek[]
 export async function fetchVisibleLmsWeeksByCohort(cohortId: string): Promise<LmsWeek[]> {
   const { data, error } = await supabase
     .from('lms_weeks')
-    .select('*')
+    .select(LMS_WEEK_COLUMNS)
     .eq('cohort_id', cohortId)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
@@ -196,7 +219,11 @@ export async function fetchVisibleLmsWeeksByCohort(cohortId: string): Promise<Lm
 }
 
 export async function fetchLmsWeekById(weekId: string): Promise<LmsWeek | null> {
-  const { data, error } = await supabase.from('lms_weeks').select('*').eq('id', weekId).single();
+  const { data, error } = await supabase
+    .from('lms_weeks')
+    .select(LMS_WEEK_COLUMNS)
+    .eq('id', weekId)
+    .single();
 
   if (error || !data) return null;
   return mapLmsWeek(data);
@@ -283,7 +310,7 @@ function mapLmsWeek(record: Record<string, unknown>): LmsWeek {
 export async function fetchLmsLessonsByWeek(weekId: string): Promise<LmsLesson[]> {
   const { data, error } = await supabase
     .from('lms_lessons')
-    .select('*')
+    .select(LMS_LESSON_COLUMNS)
     .eq('week_id', weekId)
     .order('sort_order', { ascending: true });
 
@@ -294,7 +321,7 @@ export async function fetchLmsLessonsByWeek(weekId: string): Promise<LmsLesson[]
 export async function fetchVisibleLmsLessonsByWeek(weekId: string): Promise<LmsLesson[]> {
   const { data, error } = await supabase
     .from('lms_lessons')
-    .select('*')
+    .select(LMS_LESSON_COLUMNS)
     .eq('week_id', weekId)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
@@ -306,7 +333,7 @@ export async function fetchVisibleLmsLessonsByWeek(weekId: string): Promise<LmsL
 export async function fetchLmsLessonById(lessonId: string): Promise<LmsLesson | null> {
   const { data, error } = await supabase
     .from('lms_lessons')
-    .select('*')
+    .select(LMS_LESSON_COLUMNS)
     .eq('id', lessonId)
     .single();
 
@@ -394,7 +421,7 @@ function mapLmsLesson(record: Record<string, unknown>): LmsLesson {
 export async function fetchLmsContentItemsByLesson(lessonId: string): Promise<LmsContentItem[]> {
   const { data, error } = await supabase
     .from('lms_content_items')
-    .select('*')
+    .select(LMS_CONTENT_ITEM_COLUMNS)
     .eq('lesson_id', lessonId)
     .order('sort_order', { ascending: true });
 
@@ -407,7 +434,7 @@ export async function fetchVisibleLmsContentItemsByLesson(
 ): Promise<LmsContentItem[]> {
   const { data, error } = await supabase
     .from('lms_content_items')
-    .select('*')
+    .select(LMS_CONTENT_ITEM_COLUMNS)
     .eq('lesson_id', lessonId)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
@@ -421,7 +448,7 @@ export async function fetchLmsContentItemById(
 ): Promise<LmsContentItem | null> {
   const { data, error } = await supabase
     .from('lms_content_items')
-    .select('*')
+    .select(LMS_CONTENT_ITEM_COLUMNS)
     .eq('id', contentItemId)
     .single();
 
@@ -528,7 +555,7 @@ function mapLmsContentItem(record: Record<string, unknown>): LmsContentItem {
 export async function fetchLmsActionItemsByWeek(weekId: string): Promise<LmsActionItem[]> {
   const { data, error } = await supabase
     .from('lms_action_items')
-    .select('*')
+    .select(LMS_ACTION_ITEM_COLUMNS)
     .eq('week_id', weekId)
     .order('sort_order', { ascending: true });
 
@@ -542,7 +569,7 @@ export async function fetchVisibleLmsActionItemsByWeek(
 ): Promise<LmsActionItem[]> {
   let query = supabase
     .from('lms_action_items')
-    .select('*')
+    .select(LMS_ACTION_ITEM_COLUMNS)
     .eq('week_id', weekId)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
@@ -566,7 +593,7 @@ export async function fetchVisibleLmsActionItemsByWeek(
 export async function fetchLmsActionItemById(actionItemId: string): Promise<LmsActionItem | null> {
   const { data, error } = await supabase
     .from('lms_action_items')
-    .select('*')
+    .select(LMS_ACTION_ITEM_COLUMNS)
     .eq('id', actionItemId)
     .single();
 
@@ -668,7 +695,7 @@ export async function fetchLessonProgress(
 ): Promise<LmsLessonProgress | null> {
   const { data, error } = await supabase
     .from('lms_student_lesson_progress')
-    .select('*')
+    .select(LMS_LESSON_PROGRESS_COLUMNS)
     .eq('student_id', studentId)
     .eq('lesson_id', lessonId)
     .single();
@@ -680,7 +707,7 @@ export async function fetchLessonProgress(
 export async function fetchAllLessonProgress(studentId: string): Promise<LmsLessonProgress[]> {
   const { data, error } = await supabase
     .from('lms_student_lesson_progress')
-    .select('*')
+    .select(LMS_LESSON_PROGRESS_COLUMNS)
     .eq('student_id', studentId);
 
   if (error) throw new Error(error.message);
@@ -737,7 +764,7 @@ export async function fetchActionItemProgress(
 ): Promise<LmsActionItemProgress | null> {
   const { data, error } = await supabase
     .from('lms_student_action_item_progress')
-    .select('*')
+    .select(LMS_ACTION_ITEM_PROGRESS_COLUMNS)
     .eq('student_id', studentId)
     .eq('action_item_id', actionItemId)
     .single();
@@ -751,7 +778,7 @@ export async function fetchAllActionItemProgress(
 ): Promise<LmsActionItemProgress[]> {
   const { data, error } = await supabase
     .from('lms_student_action_item_progress')
-    .select('*')
+    .select(LMS_ACTION_ITEM_PROGRESS_COLUMNS)
     .eq('student_id', studentId);
 
   if (error) throw new Error(error.message);
@@ -885,7 +912,7 @@ export async function completeEnrollmentOnboarding(
 export async function fetchCohortByProductId(productId: string): Promise<LmsCohort | null> {
   const { data, error } = await supabase
     .from('lms_cohorts')
-    .select('*')
+    .select(LMS_COHORT_COLUMNS)
     .eq('thrivecart_product_id', productId)
     .single();
 

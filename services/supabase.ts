@@ -20,6 +20,28 @@ import {
   ProgressStatus,
 } from '../types/gc-types';
 
+// Explicit column lists (avoid select('*'))
+const GC_MEMBER_COLUMNS =
+  'id, email, name, company, website, linkedin, plan, status, start_date, slack_handle, calendar_link, notes';
+
+const TOOL_ACCESS_COLUMNS =
+  'id, record_name, member_id, tool, login_url, username, password, access_type, status, setup_doc, notes';
+
+const ONBOARDING_CHECKLIST_COLUMNS =
+  'id, item, category, support_type, sort_order, description, doc_link, plan_required';
+
+const MEMBER_PROGRESS_COLUMNS =
+  'id, member_id, checklist_item_id, status, completed_date, notes, updated_at';
+
+const MEMBER_ICP_COLUMNS =
+  'id, member_id, company_name, target_description, verticals, company_size, job_titles, geography, pain_points, social_proof, differentiator, common_objections, offer';
+
+const CAMPAIGN_COLUMNS =
+  'id, campaign_name, member_id, channel, status, icp_segment, messaging_angle, email_1, email_2, linkedin_dm, start_date, contacts_reached, opens, replies, positive_replies, meetings_booked, last_updated_by_member, notes';
+
+const RESOURCE_COLUMNS =
+  'id, title, category, description, url, tool, sort_order, plan_required, featured';
+
 // ============================================
 // GC Members
 // ============================================
@@ -28,7 +50,7 @@ export async function verifyGCMember(email: string): Promise<GCMember | null> {
   try {
     const { data, error } = await supabase
       .from('gc_members')
-      .select('*')
+      .select(GC_MEMBER_COLUMNS)
       .ilike('email', email)
       .single();
 
@@ -69,7 +91,7 @@ export async function fetchMemberTools(memberId: string): Promise<ToolAccess[]> 
   try {
     const { data, error } = await supabase
       .from('tool_access')
-      .select('*')
+      .select(TOOL_ACCESS_COLUMNS)
       .eq('member_id', memberId);
 
     if (error) {
@@ -108,7 +130,7 @@ export async function fetchOnboardingChecklist(): Promise<OnboardingChecklistIte
   try {
     const { data, error } = await supabase
       .from('onboarding_checklist')
-      .select('*')
+      .select(ONBOARDING_CHECKLIST_COLUMNS)
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -144,7 +166,7 @@ export async function fetchMemberProgress(memberId: string): Promise<MemberProgr
   try {
     const { data, error } = await supabase
       .from('member_progress')
-      .select('*')
+      .select(MEMBER_PROGRESS_COLUMNS)
       .eq('member_id', memberId);
 
     if (error) {
@@ -324,7 +346,7 @@ export async function fetchMemberICP(memberId: string): Promise<MemberICP | null
   try {
     const { data, error } = await supabase
       .from('member_icp')
-      .select('*')
+      .select(MEMBER_ICP_COLUMNS)
       .eq('member_id', memberId)
       .maybeSingle();
 
@@ -430,7 +452,7 @@ export async function fetchMemberCampaigns(memberId: string): Promise<Campaign[]
   try {
     const { data, error } = await supabase
       .from('campaigns')
-      .select('*')
+      .select(CAMPAIGN_COLUMNS)
       .eq('member_id', memberId)
       .order('start_date', { ascending: false });
 
@@ -510,7 +532,7 @@ export async function fetchResources(memberPlan: MemberPlan): Promise<Resource[]
   try {
     const { data, error } = await supabase
       .from('resources')
-      .select('*')
+      .select(RESOURCE_COLUMNS)
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -570,7 +592,7 @@ export async function fetchFeaturedResources(memberPlan: MemberPlan): Promise<Re
   try {
     const { data, error } = await supabase
       .from('resources')
-      .select('*')
+      .select(RESOURCE_COLUMNS)
       .eq('featured', true)
       .order('sort_order', { ascending: true });
 
@@ -599,7 +621,7 @@ export async function fetchFeaturedResources(memberPlan: MemberPlan): Promise<Re
 export async function fetchAllMembers(): Promise<GCMember[]> {
   const { data, error } = await supabase
     .from('gc_members')
-    .select('*')
+    .select(GC_MEMBER_COLUMNS)
     .order('name', { ascending: true });
 
   if (error) throw new Error(error.message);

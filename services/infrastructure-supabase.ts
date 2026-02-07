@@ -73,7 +73,9 @@ function mapDomain(data: Record<string, unknown>): InfraDomain {
 export async function fetchActiveTiers(): Promise<InfraTier[]> {
   const { data, error } = await supabase
     .from('infra_tiers')
-    .select('*')
+    .select(
+      'id, name, slug, domain_count, mailboxes_per_domain, setup_fee_cents, monthly_fee_cents, stripe_setup_price_id, stripe_monthly_price_id, is_active, sort_order, created_at, updated_at'
+    )
     .eq('is_active', true)
     .order('sort_order', { ascending: true });
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsWithProgress } from '../../../../services/bootcamp-supabase';
 import { queryKeys } from '../../../../lib/queryClient';
@@ -83,78 +83,91 @@ const AdminStudentsPage: React.FC = () => {
   }, [students]);
 
   // Handlers
-  const handleAddStudent = () => {
+  const handleAddStudent = useCallback(() => {
     setEditingStudent(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleEditStudent = (student: BootcampStudent) => {
+  const handleEditStudent = useCallback((student: BootcampStudent) => {
     setEditingStudent(student);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleSubmit = async (data: Partial<BootcampStudent>) => {
-    if (editingStudent) {
-      await updateMutation.mutateAsync({ studentId: editingStudent.id, updates: data });
-    } else {
-      await createMutation.mutateAsync(data);
-    }
-    setIsModalOpen(false);
-    setEditingStudent(null);
-  };
+  const handleSubmit = useCallback(
+    async (data: Partial<BootcampStudent>) => {
+      if (editingStudent) {
+        await updateMutation.mutateAsync({ studentId: editingStudent.id, updates: data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      setIsModalOpen(false);
+      setEditingStudent(null);
+    },
+    [editingStudent, updateMutation, createMutation]
+  );
 
-  const handleMarkSlackDone = async (student: BootcampStudent) => {
-    setSlackLoadingId(student.id);
-    try {
-      await slackMutation.mutateAsync(student.id);
-    } catch (error) {
-      console.error('Mark Slack done failed:', error);
-    } finally {
-      setSlackLoadingId(undefined);
-    }
-  };
+  const handleMarkSlackDone = useCallback(
+    async (student: BootcampStudent) => {
+      setSlackLoadingId(student.id);
+      try {
+        await slackMutation.mutateAsync(student.id);
+      } catch (error) {
+        console.error('Mark Slack done failed:', error);
+      } finally {
+        setSlackLoadingId(undefined);
+      }
+    },
+    [slackMutation]
+  );
 
-  const handleMarkCalendarDone = async (student: BootcampStudent) => {
-    setCalendarLoadingId(student.id);
-    try {
-      await calendarMutation.mutateAsync(student.id);
-    } catch (error) {
-      console.error('Mark calendar done failed:', error);
-    } finally {
-      setCalendarLoadingId(undefined);
-    }
-  };
+  const handleMarkCalendarDone = useCallback(
+    async (student: BootcampStudent) => {
+      setCalendarLoadingId(student.id);
+      try {
+        await calendarMutation.mutateAsync(student.id);
+      } catch (error) {
+        console.error('Mark calendar done failed:', error);
+      } finally {
+        setCalendarLoadingId(undefined);
+      }
+    },
+    [calendarMutation]
+  );
 
-  const handleViewProgress = (student: BootcampStudent) => {
+  const handleViewProgress = useCallback((student: BootcampStudent) => {
     // Could open a progress modal or navigate to a detail page
     console.log('View progress for:', student.id);
-  };
+  }, []);
 
-  const handleViewSurvey = (student: StudentWithProgress) => {
+  const handleViewSurvey = useCallback((student: StudentWithProgress) => {
     setSurveyStudent(student);
-  };
+  }, []);
 
-  const handleGenerateBlueprint = (student: BootcampStudent) => {
+  const handleGenerateBlueprint = useCallback((student: BootcampStudent) => {
     setBlueprintStudent(student);
-  };
+  }, []);
 
-  const handleToggleSelect = (id: string) => {
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedIds(newSelected);
-  };
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedIds.size === filteredStudents.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredStudents.map((s) => s.id)));
-    }
-  };
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === filteredStudents.length) {
+        return new Set();
+      } else {
+        return new Set(filteredStudents.map((s) => s.id));
+      }
+    });
+  }, [filteredStudents]);
 
   return (
     <div className="space-y-6">
@@ -321,4 +334,4 @@ const AdminStudentsPage: React.FC = () => {
   );
 };
 
-export default AdminStudentsPage;
+export default memo(AdminStudentsPage);

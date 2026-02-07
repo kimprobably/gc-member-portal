@@ -21,7 +21,22 @@ import {
   ToolGrant,
   FunnelToolPresets,
   CallGrantConfig,
+  EnrollmentConfig,
 } from '../types/bootcamp-types';
+
+// Explicit column lists (avoid select('*'))
+const BOOTCAMP_STUDENT_COLUMNS =
+  'id, email, name, company, cohort, status, access_level, purchase_date, onboarding_completed_at, slack_invited, slack_invited_at, calendar_added, calendar_added_at, payment_source, payment_id, subscription_status, subscription_id, subscription_started_at, subscription_ends_at, stripe_customer_id, notes, prospect_id, access_expires_at, created_at, updated_at';
+
+const BOOTCAMP_CHECKLIST_COLUMNS =
+  'id, item, category, description, video_url, doc_link, ai_tool_id, sort_order, is_required, is_visible, created_at';
+
+const BOOTCAMP_PROGRESS_COLUMNS = 'id, student_id, checklist_item_id, status, completed_at, notes';
+
+const BOOTCAMP_SURVEY_COLUMNS =
+  'id, student_id, company_name, website, industry, company_size, role_title, primary_goal, biggest_challenges, linkedin_experience, target_audience, current_lead_gen_methods, monthly_outreach_volume, tools_currently_using, completed_at, created_at, updated_at';
+
+const BOOTCAMP_COHORT_COLUMNS = 'id, name, description, status, created_at, updated_at';
 
 // ============================================
 // Bootcamp Students
@@ -31,7 +46,7 @@ export async function verifyBootcampStudent(email: string): Promise<BootcampStud
   try {
     const { data, error } = await supabase
       .from('bootcamp_students')
-      .select('*')
+      .select(BOOTCAMP_STUDENT_COLUMNS)
       .ilike('email', email)
       .single();
 
@@ -50,8 +65,9 @@ export async function verifyBootcampStudent(email: string): Promise<BootcampStud
 export async function fetchAllBootcampStudents(): Promise<BootcampStudent[]> {
   const { data, error } = await supabase
     .from('bootcamp_students')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select(BOOTCAMP_STUDENT_COLUMNS)
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapBootcampStudent);
@@ -60,7 +76,7 @@ export async function fetchAllBootcampStudents(): Promise<BootcampStudent[]> {
 export async function fetchBootcampStudentById(studentId: string): Promise<BootcampStudent | null> {
   const { data, error } = await supabase
     .from('bootcamp_students')
-    .select('*')
+    .select(BOOTCAMP_STUDENT_COLUMNS)
     .eq('id', studentId)
     .single();
 
@@ -196,7 +212,7 @@ export async function fetchBootcampOnboardingChecklist(): Promise<BootcampCheckl
   try {
     const { data, error } = await supabase
       .from('bootcamp_onboarding_checklist')
-      .select('*')
+      .select(BOOTCAMP_CHECKLIST_COLUMNS)
       .eq('is_visible', true)
       .order('sort_order', { ascending: true });
 
@@ -215,8 +231,9 @@ export async function fetchBootcampOnboardingChecklist(): Promise<BootcampCheckl
 export async function fetchAllBootcampChecklistItems(): Promise<BootcampChecklistItem[]> {
   const { data, error } = await supabase
     .from('bootcamp_onboarding_checklist')
-    .select('*')
-    .order('sort_order', { ascending: true });
+    .select(BOOTCAMP_CHECKLIST_COLUMNS)
+    .order('sort_order', { ascending: true })
+    .limit(500);
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapBootcampChecklistItem);
@@ -306,7 +323,7 @@ export async function fetchBootcampStudentProgress(
   try {
     const { data, error } = await supabase
       .from('bootcamp_student_progress')
-      .select('*')
+      .select(BOOTCAMP_PROGRESS_COLUMNS)
       .eq('student_id', studentId);
 
     if (error) {
@@ -454,7 +471,7 @@ export async function fetchBootcampStudentSurvey(
   try {
     const { data, error } = await supabase
       .from('bootcamp_student_survey')
-      .select('*')
+      .select(BOOTCAMP_SURVEY_COLUMNS)
       .eq('student_id', studentId)
       .maybeSingle();
 
@@ -634,23 +651,74 @@ export async function fetchStudentsWithProgress(): Promise<
   Array<BootcampStudent & { onboardingProgress: number; survey: BootcampStudentSurvey | null }>
 > {
   const students = await fetchAllBootcampStudents();
+  if (students.length === 0) return [];
 
-  const studentsWithProgress = await Promise.all(
-    students.map(async (student) => {
-      const [progress, survey] = await Promise.all([
-        calculateStudentOnboardingProgress(student.id),
-        fetchBootcampStudentSurvey(student.id),
-      ]);
+  const studentIds = students.map((s) => s.id);
 
-      return {
-        ...student,
-        onboardingProgress: progress,
-        survey,
-      };
-    })
-  );
+  // Batch fetch: checklist, all progress, and all surveys in parallel
+  const [checklist, allProgressData, allSurveyData] = await Promise.all([
+    fetchBootcampOnboardingChecklist(),
+    (async () => {
+      const { data, error } = await supabase
+        .from('bootcamp_student_progress')
+        .select(BOOTCAMP_PROGRESS_COLUMNS)
+        .in('student_id', studentIds);
+      if (error) {
+        console.error('Failed to batch fetch student progress:', error);
+        return [];
+      }
+      return data || [];
+    })(),
+    (async () => {
+      const { data, error } = await supabase
+        .from('bootcamp_student_survey')
+        .select(BOOTCAMP_SURVEY_COLUMNS)
+        .in('student_id', studentIds);
+      if (error) {
+        console.error('Failed to batch fetch student surveys:', error);
+        return [];
+      }
+      return data || [];
+    })(),
+  ]);
 
-  return studentsWithProgress;
+  // Index progress by student_id
+  const progressByStudent = new Map<string, Array<Record<string, unknown>>>();
+  for (const row of allProgressData) {
+    const sid = row.student_id as string;
+    if (!progressByStudent.has(sid)) progressByStudent.set(sid, []);
+    progressByStudent.get(sid)!.push(row);
+  }
+
+  // Index surveys by student_id
+  const surveyByStudent = new Map<string, BootcampStudentSurvey>();
+  for (const row of allSurveyData) {
+    surveyByStudent.set(
+      row.student_id as string,
+      mapBootcampStudentSurvey(row as Record<string, unknown>)
+    );
+  }
+
+  // Required checklist items for progress calculation
+  const requiredItems = checklist.filter((i) => i.isRequired);
+
+  return students.map((student) => {
+    const studentProgress = (progressByStudent.get(student.id) || []).map((r) =>
+      mapBootcampStudentProgress(r as Record<string, unknown>)
+    );
+    const progressSet = new Set(
+      studentProgress.filter((p) => p.status === 'Complete').map((p) => p.checklistItemId)
+    );
+    const completedRequired = requiredItems.filter((i) => progressSet.has(i.id)).length;
+    const totalProgress =
+      requiredItems.length > 0 ? Math.round((completedRequired / requiredItems.length) * 100) : 0;
+
+    return {
+      ...student,
+      onboardingProgress: totalProgress,
+      survey: surveyByStudent.get(student.id) || null,
+    };
+  });
 }
 
 // ============================================
@@ -692,8 +760,9 @@ export async function checkBootcampProgressExists(checklistItemId: string): Prom
 export async function fetchAllCohorts(): Promise<BootcampCohort[]> {
   const { data, error } = await supabase
     .from('bootcamp_cohorts')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select(BOOTCAMP_COHORT_COLUMNS)
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapBootcampCohort);
@@ -702,7 +771,7 @@ export async function fetchAllCohorts(): Promise<BootcampCohort[]> {
 export async function fetchActiveCohorts(): Promise<BootcampCohort[]> {
   const { data, error } = await supabase
     .from('bootcamp_cohorts')
-    .select('*')
+    .select(BOOTCAMP_COHORT_COLUMNS)
     .eq('status', 'Active')
     .order('name', { ascending: true });
 
@@ -713,7 +782,7 @@ export async function fetchActiveCohorts(): Promise<BootcampCohort[]> {
 export async function fetchCohortById(cohortId: string): Promise<BootcampCohort | null> {
   const { data, error } = await supabase
     .from('bootcamp_cohorts')
-    .select('*')
+    .select(BOOTCAMP_COHORT_COLUMNS)
     .eq('id', cohortId)
     .single();
 
@@ -808,7 +877,8 @@ export async function fetchAllInviteCodes(): Promise<BootcampInviteCode[]> {
       bootcamp_cohorts (name)
     `
     )
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapBootcampInviteCode);
@@ -1080,6 +1150,43 @@ export async function registerBootcampStudent(
     status: 'Onboarding',
     accessLevel,
   });
+
+  // 4b. Enroll student in matching LMS cohort + Resources
+  try {
+    const { data: lmsCohort } = await supabase
+      .from('lms_cohorts')
+      .select('id')
+      .ilike('name', cohort.name)
+      .maybeSingle();
+
+    if (lmsCohort) {
+      await supabase.from('student_cohorts').upsert(
+        {
+          student_id: student.id,
+          cohort_id: lmsCohort.id,
+          role: 'student',
+          access_level: accessLevel,
+          enrollment_source: 'invite_code',
+          enrollment_metadata: { code: validCode.code },
+          joined_at: new Date().toISOString(),
+        },
+        { onConflict: 'student_id,cohort_id' }
+      );
+    }
+
+    // Also enroll in Resources cohort
+    await supabase.from('student_cohorts').upsert(
+      {
+        student_id: student.id,
+        cohort_id: '00000000-0000-0000-0000-000000000001',
+        role: 'resources',
+        joined_at: new Date().toISOString(),
+      },
+      { onConflict: 'student_id,cohort_id' }
+    );
+  } catch (e) {
+    console.error('Failed to enroll student in cohorts (non-fatal):', e);
+  }
 
   // 5. Grant tool credits if code specifies them
   if (validCode.toolGrants && validCode.toolGrants.length > 0) {
@@ -1407,4 +1514,33 @@ export async function saveCallGrantConfig(config: CallGrantConfig): Promise<void
   });
 
   if (error) throw new Error(`Failed to save call grant config: ${error.message}`);
+}
+
+// ============================================
+// Enrollment Config
+// ============================================
+
+export async function fetchEnrollmentConfig(): Promise<EnrollmentConfig | null> {
+  try {
+    const { data, error } = await supabase
+      .from('bootcamp_settings')
+      .select('value')
+      .eq('key', 'enrollment_config')
+      .single();
+
+    if (error || !data) return null;
+    return data.value as EnrollmentConfig;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveEnrollmentConfig(config: EnrollmentConfig): Promise<void> {
+  const { error } = await supabase.from('bootcamp_settings').upsert({
+    key: 'enrollment_config',
+    value: config,
+    description: 'Active enrollment configuration per product type',
+  });
+
+  if (error) throw new Error(`Failed to save enrollment config: ${error.message}`);
 }

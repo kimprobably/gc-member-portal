@@ -645,7 +645,9 @@ async function handleQualify(supabase: any, job: any, project: any) {
 
   const { data: companies } = await supabase
     .from('tam_companies')
-    .select('*')
+    .select(
+      'id, project_id, name, domain, linkedin_url, source, industry, employee_count, location, description, digital_footprint_score, qualification_status, qualification_reason, raw_data, created_at'
+    )
     .eq('project_id', job.project_id)
     .eq('qualification_status', 'pending');
 
@@ -752,7 +754,9 @@ async function handleFindContacts(supabase: any, job: any, project: any) {
   // Get qualified companies with domains
   const { data: companies } = await supabase
     .from('tam_companies')
-    .select('*')
+    .select(
+      'id, project_id, name, domain, linkedin_url, source, industry, employee_count, location, description, digital_footprint_score, qualification_status, qualification_reason, raw_data, created_at'
+    )
     .eq('project_id', job.project_id)
     .eq('qualification_status', 'qualified')
     .not('domain', 'is', null);
@@ -906,7 +910,9 @@ async function handleCheckLinkedin(supabase: any, job: any, _project: any) {
 
   const { data: contacts } = await supabase
     .from('tam_contacts')
-    .select('*')
+    .select(
+      'id, company_id, project_id, first_name, last_name, title, linkedin_url, email, email_status, phone, linkedin_last_post_date, linkedin_active, source, raw_data, created_at'
+    )
     .eq('project_id', job.project_id)
     .not('linkedin_url', 'is', null);
 
@@ -994,7 +1000,9 @@ serve(async (req) => {
     // Load job
     const { data: job, error: jobError } = await supabase
       .from('tam_job_queue')
-      .select('*')
+      .select(
+        'id, project_id, job_type, status, progress, result_summary, created_at, completed_at'
+      )
       .eq('id', jobId)
       .single();
 
@@ -1011,7 +1019,7 @@ serve(async (req) => {
     // Load project for ICP context
     const { data: project } = await supabase
       .from('tam_projects')
-      .select('*')
+      .select('id, user_id, name, status, icp_profile, sourcing_strategy, created_at, updated_at')
       .eq('id', job.project_id)
       .single();
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { TamCompany, TamContact, TamQualificationStatus } from '../../../types/tam-types';
 import ContactRow from './ContactRow';
@@ -35,15 +35,17 @@ const CompanyTable: React.FC<CompanyTableProps> = ({
 }) => {
   const [expandedCompanyIds, setExpandedCompanyIds] = useState<Set<string>>(new Set());
 
-  const toggleCompany = (companyId: string) => {
-    const newExpanded = new Set(expandedCompanyIds);
-    if (newExpanded.has(companyId)) {
-      newExpanded.delete(companyId);
-    } else {
-      newExpanded.add(companyId);
-    }
-    setExpandedCompanyIds(newExpanded);
-  };
+  const toggleCompany = useCallback((companyId: string) => {
+    setExpandedCompanyIds((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(companyId)) {
+        newExpanded.delete(companyId);
+      } else {
+        newExpanded.add(companyId);
+      }
+      return newExpanded;
+    });
+  }, []);
 
   return (
     <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
@@ -160,4 +162,4 @@ const CompanyTable: React.FC<CompanyTableProps> = ({
   );
 };
 
-export default CompanyTable;
+export default memo(CompanyTable);

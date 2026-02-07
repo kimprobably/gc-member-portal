@@ -15,6 +15,21 @@ import {
   BlueprintContentBlockType,
 } from '../types/blueprint-types';
 
+// Explicit column lists (select('*') fails silently on Vercel)
+const PROSPECT_COLUMNS =
+  'id, full_name, first_name, last_name, email, phone, company, location, linkedin_url, normalized_linkedin_url, profile_photo, banner_image, company_logo, current_headline, current_bio, job_title, connections, business_type, linkedin_challenge, linkedin_help_area, posting_frequency, has_funnel, learning_investment, monthly_income, interested_in_mas, timezone, source_url, lead_magnet_source, submission_date, posts_clean_text, their_existing_posts, raw_profile_json, raw_company_research, knowledge_base, authority_score, score_profile_optimization, score_content_presence, score_outbound_systems, score_inbound_infrastructure, score_social_proof, score_summary, whats_working_1, whats_working_2, whats_working_3, revenue_leaks_1, revenue_leaks_2, revenue_leaks_3, bottom_line, buyer_persona, strategic_gap, strategic_opportunity, fit_score, fit_assessment, how_to_take_further, recommended_headline, headline_outcome_based, headline_authority_based, headline_hybrid, headline_recommendation, headline_recommendation_reason, recommended_bio, profile_analysis, profile_rewrite, voice_style_guide, improvement_suggestions, lm_card_1, lm_card_2, lm_card_3, lm_1_content_type, lm_1_headline, lm_1_subheadline, lm_1_match, lm_1_est_hours, lm_2_content_type, lm_2_headline, lm_2_subheadline, lm_2_match, lm_2_est_hours, lm_3_content_type, lm_3_headline, lm_3_subheadline, lm_3_match, lm_3_est_hours, lead_mag_1, lead_mag_2, lead_mag_3, lm_post_1, lm_post_2, lm_post_3, featured_slot_1, featured_slot_2, featured_slot_3, next_steps_30_day, next_steps_90_day, formatted_report, status, processing_step, analysis_status, analysis_date, error_log, email_sent_at, send_email, slug, offer_unlocked, recommended_offer, offer_note, created_at, updated_at';
+
+const POST_COLUMNS =
+  'id, prospect_id, template_id, name, post_content, first_sentence, post_ready, to_fix, action_items, number, created_at';
+
+const BLUEPRINT_SETTINGS_COLUMNS =
+  'id, sticky_cta_enabled, foundations_payment_url, engineering_payment_url, cal_booking_link, show_bootcamp_offer, show_gc_offer, show_dfy_offer, bootcamp_offer_title, bootcamp_offer_description, bootcamp_offer_cta, gc_offer_title, gc_offer_description, gc_offer_cta, dfy_offer_title, dfy_offer_description, dfy_offer_cta, dfy_offer_url, default_offer_unlocked, next_cohort_date_foundations, next_cohort_date_engineering, spots_remaining_foundations, spots_remaining_engineering, blueprint_video_url, call_booked_video_url, thank_you_video_url, foundations_offer_video_url, engineering_offer_video_url, senja_widget_url, max_logos_landing, max_logos_blueprint, created_at, updated_at';
+
+const CONTENT_BLOCK_COLUMNS =
+  'id, block_type, title, content, image_url, cta_text, cta_url, sort_order, is_visible, target_offer, created_at, updated_at';
+
+const CLIENT_LOGO_COLUMNS = 'id, name, image_url, sort_order, is_visible, created_at';
+
 // ============================================
 // Prospect Filters Interface
 // ============================================
@@ -291,7 +306,11 @@ function mapBlueprintContentBlock(record: Record<string, unknown>): BlueprintCon
  */
 export async function getProspectBySlug(slug: string): Promise<Prospect | null> {
   try {
-    const { data, error } = await supabase.from('prospects').select('*').eq('slug', slug).single();
+    const { data, error } = await supabase
+      .from('prospects')
+      .select(PROSPECT_COLUMNS)
+      .eq('slug', slug)
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -316,7 +335,11 @@ export async function getProspectBySlug(slug: string): Promise<Prospect | null> 
  */
 export async function getProspectById(id: string): Promise<Prospect | null> {
   try {
-    const { data, error } = await supabase.from('prospects').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from('prospects')
+      .select(PROSPECT_COLUMNS)
+      .eq('id', id)
+      .single();
 
     if (error || !data) {
       console.error('Error fetching prospect by id:', error);
@@ -335,7 +358,10 @@ export async function getProspectById(id: string): Promise<Prospect | null> {
  */
 export async function listProspects(filters?: ProspectFilters): Promise<Prospect[]> {
   try {
-    let query = supabase.from('prospects').select('*').order('created_at', { ascending: false });
+    let query = supabase
+      .from('prospects')
+      .select(PROSPECT_COLUMNS)
+      .order('created_at', { ascending: false });
 
     // Apply filters
     if (filters?.status) {
@@ -506,7 +532,7 @@ export async function getProspectPosts(prospectId: string): Promise<ProspectPost
   try {
     const { data, error } = await supabase
       .from('posts')
-      .select('*')
+      .select(POST_COLUMNS)
       .eq('prospect_id', prospectId)
       .order('number', { ascending: true });
 
@@ -557,7 +583,11 @@ export async function getProspectCount(): Promise<number> {
  */
 export async function getBlueprintSettings(): Promise<BlueprintSettings | null> {
   try {
-    const { data, error } = await supabase.from('blueprint_settings').select('*').limit(1).single();
+    const { data, error } = await supabase
+      .from('blueprint_settings')
+      .select(BLUEPRINT_SETTINGS_COLUMNS)
+      .limit(1)
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -755,7 +785,7 @@ export async function getContentBlock(
   try {
     const { data, error } = await supabase
       .from('blueprint_content_blocks')
-      .select('*')
+      .select(CONTENT_BLOCK_COLUMNS)
       .eq('block_type', key)
       .eq('is_visible', true)
       .order('sort_order', { ascending: true })
@@ -785,7 +815,7 @@ export async function getAllContentBlocks(): Promise<BlueprintContentBlock[]> {
   try {
     const { data, error } = await supabase
       .from('blueprint_content_blocks')
-      .select('*')
+      .select(CONTENT_BLOCK_COLUMNS)
       .eq('is_visible', true)
       .order('sort_order', { ascending: true });
 
@@ -808,7 +838,7 @@ export async function getAllContentBlocksAdmin(): Promise<BlueprintContentBlock[
   try {
     const { data, error } = await supabase
       .from('blueprint_content_blocks')
-      .select('*')
+      .select(CONTENT_BLOCK_COLUMNS)
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -968,7 +998,7 @@ export async function getClientLogos(): Promise<ClientLogo[]> {
   try {
     const { data, error } = await supabase
       .from('client_logos')
-      .select('*')
+      .select(CLIENT_LOGO_COLUMNS)
       .eq('is_visible', true)
       .order('sort_order', { ascending: true });
 
@@ -991,7 +1021,7 @@ export async function getAllClientLogos(): Promise<ClientLogo[]> {
   try {
     const { data, error } = await supabase
       .from('client_logos')
-      .select('*')
+      .select(CLIENT_LOGO_COLUMNS)
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -1136,7 +1166,7 @@ export async function getProspectByEmail(email: string): Promise<Prospect | null
   try {
     const { data, error } = await supabase
       .from('prospects')
-      .select('*')
+      .select(PROSPECT_COLUMNS)
       .ilike('email', email)
       .maybeSingle();
 

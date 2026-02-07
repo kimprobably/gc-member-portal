@@ -13,6 +13,19 @@ import {
   TamProjectStats,
 } from '../types/tam-types';
 
+// Explicit column lists (avoid select('*'))
+const TAM_PROJECT_COLUMNS =
+  'id, user_id, name, status, icp_profile, sourcing_strategy, created_at, updated_at';
+
+const TAM_COMPANY_COLUMNS =
+  'id, project_id, name, domain, linkedin_url, source, industry, employee_count, location, description, qualification_status, qualification_reason, us_employee_pct, digital_footprint_score, segment_tags, raw_data, created_at';
+
+const TAM_CONTACT_COLUMNS =
+  'id, company_id, project_id, first_name, last_name, title, linkedin_url, email, email_status, phone, linkedin_last_post_date, linkedin_active, source, raw_data, created_at';
+
+const TAM_JOB_COLUMNS =
+  'id, project_id, job_type, status, config, progress, result_summary, created_at, completed_at';
+
 // ============================================
 // Mapper Functions
 // ============================================
@@ -111,7 +124,7 @@ export async function createTamProject(
 export async function fetchTamProject(projectId: string): Promise<TamProject | null> {
   const { data, error } = await supabase
     .from('tam_projects')
-    .select('*')
+    .select(TAM_PROJECT_COLUMNS)
     .eq('id', projectId)
     .single();
 
@@ -122,7 +135,7 @@ export async function fetchTamProject(projectId: string): Promise<TamProject | n
 export async function fetchTamProjectsByUser(userId: string): Promise<TamProject[]> {
   const { data, error } = await supabase
     .from('tam_projects')
-    .select('*')
+    .select(TAM_PROJECT_COLUMNS)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -161,7 +174,10 @@ export async function fetchTamCompanies(
   projectId: string,
   filters?: { qualificationStatus?: string; source?: string }
 ): Promise<TamCompany[]> {
-  let query = supabase.from('tam_companies').select('*').eq('project_id', projectId);
+  let query = supabase
+    .from('tam_companies')
+    .select(TAM_COMPANY_COLUMNS)
+    .eq('project_id', projectId);
 
   if (filters?.qualificationStatus) {
     query = query.eq('qualification_status', filters.qualificationStatus);
@@ -246,7 +262,7 @@ export async function fetchTamContacts(
   projectId: string,
   filters?: { emailStatus?: string; linkedinActive?: boolean }
 ): Promise<TamContact[]> {
-  let query = supabase.from('tam_contacts').select('*').eq('project_id', projectId);
+  let query = supabase.from('tam_contacts').select(TAM_CONTACT_COLUMNS).eq('project_id', projectId);
 
   if (filters?.emailStatus) {
     query = query.eq('email_status', filters.emailStatus);
@@ -265,7 +281,7 @@ export async function fetchTamContacts(
 export async function fetchTamContactsByCompany(companyId: string): Promise<TamContact[]> {
   const { data, error } = await supabase
     .from('tam_contacts')
-    .select('*')
+    .select(TAM_CONTACT_COLUMNS)
     .eq('company_id', companyId)
     .order('created_at', { ascending: false });
 
@@ -304,7 +320,7 @@ export async function insertTamContacts(
 export async function fetchTamJobs(projectId: string): Promise<TamJob[]> {
   const { data, error } = await supabase
     .from('tam_job_queue')
-    .select('*')
+    .select(TAM_JOB_COLUMNS)
     .eq('project_id', projectId)
     .order('created_at', { ascending: true });
 

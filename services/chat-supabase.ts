@@ -14,6 +14,15 @@ import {
   ConversationWithMessages,
 } from '../types/chat-types';
 
+// Explicit column lists (avoid select('*'))
+const AI_TOOL_COLUMNS =
+  'id, slug, name, description, system_prompt, model, max_tokens, welcome_message, suggested_prompts, is_active, sort_order, created_at, updated_at';
+
+const CONVERSATION_COLUMNS = 'id, student_id, tool_id, title, created_at, updated_at';
+
+const MESSAGE_COLUMNS =
+  'id, conversation_id, role, content, input_tokens, output_tokens, created_at';
+
 // ============================================
 // Mapping Functions
 // ============================================
@@ -66,7 +75,7 @@ function mapChatMessage(data: Record<string, unknown>): ChatMessage {
 export async function fetchAllAITools(): Promise<AITool[]> {
   const { data, error } = await supabase
     .from('ai_tools')
-    .select('*')
+    .select(AI_TOOL_COLUMNS)
     .order('sort_order', { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -76,7 +85,7 @@ export async function fetchAllAITools(): Promise<AITool[]> {
 export async function fetchActiveAITools(): Promise<AITool[]> {
   const { data, error } = await supabase
     .from('ai_tools')
-    .select('*')
+    .select(AI_TOOL_COLUMNS)
     .eq('is_active', true)
     .order('sort_order', { ascending: true });
 
@@ -85,14 +94,22 @@ export async function fetchActiveAITools(): Promise<AITool[]> {
 }
 
 export async function fetchAIToolById(toolId: string): Promise<AITool | null> {
-  const { data, error } = await supabase.from('ai_tools').select('*').eq('id', toolId).single();
+  const { data, error } = await supabase
+    .from('ai_tools')
+    .select(AI_TOOL_COLUMNS)
+    .eq('id', toolId)
+    .single();
 
   if (error || !data) return null;
   return mapAITool(data);
 }
 
 export async function fetchAIToolBySlug(slug: string): Promise<AITool | null> {
-  const { data, error } = await supabase.from('ai_tools').select('*').eq('slug', slug).single();
+  const { data, error } = await supabase
+    .from('ai_tools')
+    .select(AI_TOOL_COLUMNS)
+    .eq('slug', slug)
+    .single();
 
   if (error || !data) return null;
   return mapAITool(data);
@@ -197,7 +214,7 @@ export async function reorderAITools(toolIds: string[]): Promise<void> {
 export async function fetchConversationsByStudent(studentId: string): Promise<ChatConversation[]> {
   const { data, error } = await supabase
     .from('chat_conversations')
-    .select('*')
+    .select(CONVERSATION_COLUMNS)
     .eq('student_id', studentId)
     .order('updated_at', { ascending: false });
 
@@ -211,7 +228,7 @@ export async function fetchConversationsByStudentAndTool(
 ): Promise<ChatConversation[]> {
   const { data, error } = await supabase
     .from('chat_conversations')
-    .select('*')
+    .select(CONVERSATION_COLUMNS)
     .eq('student_id', studentId)
     .eq('tool_id', toolId)
     .order('updated_at', { ascending: false });
@@ -225,7 +242,7 @@ export async function fetchConversationById(
 ): Promise<ChatConversation | null> {
   const { data, error } = await supabase
     .from('chat_conversations')
-    .select('*')
+    .select(CONVERSATION_COLUMNS)
     .eq('id', conversationId)
     .single();
 
@@ -293,7 +310,7 @@ export async function deleteConversation(conversationId: string): Promise<void> 
 export async function fetchMessagesByConversation(conversationId: string): Promise<ChatMessage[]> {
   const { data, error } = await supabase
     .from('chat_messages')
-    .select('*')
+    .select(MESSAGE_COLUMNS)
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
 
@@ -356,7 +373,7 @@ export async function getOrCreateConversation(
   // Try to find the most recent conversation for this student/tool
   const { data, error } = await supabase
     .from('chat_conversations')
-    .select('*')
+    .select(CONVERSATION_COLUMNS)
     .eq('student_id', studentId)
     .eq('tool_id', toolId)
     .order('updated_at', { ascending: false })

@@ -341,7 +341,9 @@ serve(async (req) => {
         try {
           const { data: tamProject } = await supabase
             .from('tam_projects')
-            .select('*')
+            .select(
+              'id, user_id, name, status, icp_profile, sourcing_strategy, created_at, updated_at'
+            )
             .eq('user_id', studentId)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -350,7 +352,9 @@ serve(async (req) => {
           if (tamProject) {
             const { data: jobs } = await supabase
               .from('tam_job_queue')
-              .select('*')
+              .select(
+                'id, project_id, job_type, status, progress, result_summary, created_at, completed_at'
+              )
               .eq('project_id', tamProject.id)
               .order('created_at', { ascending: true });
 

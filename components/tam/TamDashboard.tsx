@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { TamContact } from '../../types/tam-types';
 import { useTamCompanies, useTamContacts, useTamStats } from '../../hooks/useTamProject';
@@ -117,23 +117,27 @@ const TamDashboard: React.FC<TamDashboardProps> = ({ projectId, onOpenChat }) =>
     return Array.from(contactSet);
   }, [filteredCompanies, contactsByCompany]);
 
-  const toggleContact = (contactId: string) => {
-    const newSelected = new Set(selectedContactIds);
-    if (newSelected.has(contactId)) {
-      newSelected.delete(contactId);
-    } else {
-      newSelected.add(contactId);
-    }
-    setSelectedContactIds(newSelected);
-  };
+  const toggleContact = useCallback((contactId: string) => {
+    setSelectedContactIds((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(contactId)) {
+        newSelected.delete(contactId);
+      } else {
+        newSelected.add(contactId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const selectAllContacts = () => {
-    if (selectedContactIds.size === allFilteredContacts.length) {
-      setSelectedContactIds(new Set());
-    } else {
-      setSelectedContactIds(new Set(allFilteredContacts.map((c) => c.id)));
-    }
-  };
+  const selectAllContacts = useCallback(() => {
+    setSelectedContactIds((prev) => {
+      if (prev.size === allFilteredContacts.length) {
+        return new Set();
+      } else {
+        return new Set(allFilteredContacts.map((c) => c.id));
+      }
+    });
+  }, [allFilteredContacts]);
 
   const segmentTabs: { key: SegmentTab; label: string }[] = [
     { key: 'all', label: 'All' },
@@ -192,4 +196,4 @@ const TamDashboard: React.FC<TamDashboardProps> = ({ projectId, onOpenChat }) =>
   );
 };
 
-export default TamDashboard;
+export default memo(TamDashboard);

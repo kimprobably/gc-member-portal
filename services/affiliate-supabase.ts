@@ -18,6 +18,19 @@ import {
   AssetType,
 } from '../types/affiliate-types';
 
+// Explicit column lists (avoid select('*'))
+const AFFILIATE_COLUMNS =
+  'id, email, name, company, slug, code, status, commission_amount, stripe_connect_account_id, stripe_connect_onboarded, bootcamp_student_id, photo_url, bio, application_note, created_at, updated_at';
+
+const REFERRAL_COLUMNS =
+  'id, affiliate_id, referred_email, referred_name, bootcamp_student_id, total_price, amount_paid, status, attributed_at, enrolled_at, paid_in_full_at, commission_paid_at, created_at';
+
+const PAYOUT_COLUMNS =
+  'id, affiliate_id, referral_id, amount, stripe_transfer_id, status, created_at, paid_at';
+
+const ASSET_COLUMNS =
+  'id, title, description, asset_type, content_text, file_url, sort_order, is_visible, created_at';
+
 // ============================================
 // Mappers
 // ============================================
@@ -98,7 +111,7 @@ export async function fetchAffiliateBySlug(slug: string): Promise<Affiliate | nu
   try {
     const { data, error } = await supabase
       .from('affiliates')
-      .select('*')
+      .select(AFFILIATE_COLUMNS)
       .eq('slug', slug)
       .eq('status', 'active')
       .single();
@@ -119,7 +132,7 @@ export async function fetchAffiliateByCode(code: string): Promise<Affiliate | nu
   try {
     const { data, error } = await supabase
       .from('affiliates')
-      .select('*')
+      .select(AFFILIATE_COLUMNS)
       .eq('code', code)
       .eq('status', 'active')
       .single();
@@ -140,7 +153,7 @@ export async function fetchAffiliateByEmail(email: string): Promise<Affiliate | 
   try {
     const { data, error } = await supabase
       .from('affiliates')
-      .select('*')
+      .select(AFFILIATE_COLUMNS)
       .ilike('email', email)
       .single();
 
@@ -201,7 +214,7 @@ export async function fetchAffiliateStats(affiliateId: string): Promise<Affiliat
     // Fetch referrals for this affiliate
     const { data: referrals, error: refError } = await supabase
       .from('affiliate_referrals')
-      .select('*')
+      .select(REFERRAL_COLUMNS)
       .eq('affiliate_id', affiliateId);
 
     if (refError) {
@@ -212,7 +225,7 @@ export async function fetchAffiliateStats(affiliateId: string): Promise<Affiliat
     // Fetch payouts for this affiliate
     const { data: payouts, error: payError } = await supabase
       .from('affiliate_payouts')
-      .select('*')
+      .select(PAYOUT_COLUMNS)
       .eq('affiliate_id', affiliateId);
 
     if (payError) {
@@ -243,7 +256,7 @@ export async function fetchAffiliateStats(affiliateId: string): Promise<Affiliat
 export async function fetchAffiliateReferrals(affiliateId: string): Promise<Referral[]> {
   const { data, error } = await supabase
     .from('affiliate_referrals')
-    .select('*')
+    .select(REFERRAL_COLUMNS)
     .eq('affiliate_id', affiliateId)
     .order('created_at', { ascending: false });
 
@@ -254,7 +267,7 @@ export async function fetchAffiliateReferrals(affiliateId: string): Promise<Refe
 export async function fetchAffiliatePayouts(affiliateId: string): Promise<AffiliatePayout[]> {
   const { data, error } = await supabase
     .from('affiliate_payouts')
-    .select('*')
+    .select(PAYOUT_COLUMNS)
     .eq('affiliate_id', affiliateId)
     .order('created_at', { ascending: false });
 
@@ -269,7 +282,7 @@ export async function fetchAffiliatePayouts(affiliateId: string): Promise<Affili
 export async function fetchAllAffiliates(): Promise<Affiliate[]> {
   const { data, error } = await supabase
     .from('affiliates')
-    .select('*')
+    .select(AFFILIATE_COLUMNS)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -405,7 +418,7 @@ export async function createReferralClick(affiliateId: string, email?: string): 
   if (email) {
     const { data: existing } = await supabase
       .from('affiliate_referrals')
-      .select('*')
+      .select(REFERRAL_COLUMNS)
       .eq('affiliate_id', affiliateId)
       .ilike('referred_email', email)
       .maybeSingle();
@@ -444,7 +457,7 @@ export async function attributeReferralToStudent(
     // Find the most recent clicked referral for this email
     const { data: existing, error: findError } = await supabase
       .from('affiliate_referrals')
-      .select('*')
+      .select(REFERRAL_COLUMNS)
       .ilike('referred_email', email)
       .eq('status', 'clicked')
       .order('created_at', { ascending: false })
@@ -484,7 +497,7 @@ export async function attributeReferralToStudent(
 export async function fetchAffiliateAssets(): Promise<AffiliateAsset[]> {
   const { data, error } = await supabase
     .from('affiliate_assets')
-    .select('*')
+    .select(ASSET_COLUMNS)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
 
@@ -495,7 +508,7 @@ export async function fetchAffiliateAssets(): Promise<AffiliateAsset[]> {
 export async function fetchAllAffiliateAssets(): Promise<AffiliateAsset[]> {
   const { data, error } = await supabase
     .from('affiliate_assets')
-    .select('*')
+    .select(ASSET_COLUMNS)
     .order('sort_order', { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -563,7 +576,7 @@ export async function deleteAffiliateAsset(id: string): Promise<void> {
 export async function fetchAllReferrals(): Promise<Referral[]> {
   const { data, error } = await supabase
     .from('affiliate_referrals')
-    .select('*')
+    .select(REFERRAL_COLUMNS)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -573,7 +586,7 @@ export async function fetchAllReferrals(): Promise<Referral[]> {
 export async function fetchAllPayouts(): Promise<AffiliatePayout[]> {
   const { data, error } = await supabase
     .from('affiliate_payouts')
-    .select('*')
+    .select(PAYOUT_COLUMNS)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
