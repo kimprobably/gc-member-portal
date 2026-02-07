@@ -37,7 +37,7 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
   // Convert cents to dollars for display
   const setupFee = tier.setupFeeCents / 100;
   const monthlyFee = tier.monthlyFeeCents / 100;
-  const totalOneTime = setupFee;
+  const totalOneTime = setupFee + totalDomainCost;
 
   // Generate mailbox previews
   const mailboxPreviews = domains.flatMap((domain) => [
@@ -147,10 +147,20 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
           <div className="flex items-center justify-between pb-3 border-b border-zinc-700/50">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-zinc-500" />
-              <span className="text-sm">One-time setup</span>
+              <span className="text-sm">Setup fee</span>
             </div>
-            <span className="font-mono font-semibold">${totalOneTime.toFixed(2)}</span>
+            <span className="font-mono font-semibold">${setupFee.toFixed(2)}</span>
           </div>
+
+          {totalDomainCost > 0 && (
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-700/50">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-zinc-500" />
+                <span className="text-sm">Domains ({domains.length})</span>
+              </div>
+              <span className="font-mono font-semibold">${totalDomainCost.toFixed(2)}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pb-3 border-b border-zinc-700/50">
             <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Globe, Check, Loader2, X } from 'lucide-react';
+import { Search, Globe, Check, Loader2, X, AlertCircle } from 'lucide-react';
 import {
   DomainAvailability,
   InfraTier,
@@ -41,6 +41,7 @@ export default function DomainPicker({
   const [brandName, setBrandName] = useState('');
   const [availableDomains, setAvailableDomains] = useState<DomainAvailability[]>([]);
   const [checking, setChecking] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const maxDomains = tier.domainCount;
 
@@ -48,12 +49,22 @@ export default function DomainPicker({
     const suggestions = suggestDomains(brandName);
     if (!suggestions.length) return;
     setChecking(true);
+    setFetchError(null);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const infraKey = import.meta.env.VITE_INFRA_API_KEY;
+      if (infraKey) {
+        headers['x-infra-key'] = infraKey;
+      }
       const res = await fetch(`${gtmSystemUrl}/api/infrastructure/domains/check`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ domains: suggestions }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Domain check failed (${res.status})`);
+      }
       const data = await res.json();
       const domainsWithProvider = (data.domains || []).map(
         (d: Omit<DomainAvailability, 'serviceProvider'>) => ({
@@ -63,6 +74,8 @@ export default function DomainPicker({
       );
       setAvailableDomains(domainsWithProvider);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Domain check failed';
+      setFetchError(message);
       console.error('Domain check failed:', err);
     } finally {
       setChecking(false);
@@ -120,6 +133,14 @@ export default function DomainPicker({
           {checking ? <Loader2 size={14} className="animate-spin" /> : 'Search'}
         </button>
       </div>
+
+      {/* Error display */}
+      {fetchError && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+          <AlertCircle size={14} className="text-red-500 flex-shrink-0" />
+          <p className="text-sm text-red-500">{fetchError}</p>
+        </div>
+      )}
 
       {/* Selected count */}
       <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
