@@ -1,13 +1,20 @@
 import { Check } from 'lucide-react';
-import { InfraTier } from '../../../../types/infrastructure-types';
+import { InfraTier, ServiceProvider } from '../../../../types/infrastructure-types';
 import { useInfraTiers } from '../../../../hooks/useInfrastructure';
 
 interface Props {
   selectedTier: InfraTier | null;
   onSelect: (tier: InfraTier) => void;
+  serviceProvider: ServiceProvider;
+  onServiceProviderChange: (provider: ServiceProvider) => void;
 }
 
-export default function TierSelection({ selectedTier, onSelect }: Props) {
+export default function TierSelection({
+  selectedTier,
+  onSelect,
+  serviceProvider,
+  onServiceProviderChange,
+}: Props) {
   const { data: tiers, isLoading } = useInfraTiers();
 
   if (isLoading) {
@@ -23,8 +30,30 @@ export default function TierSelection({ selectedTier, onSelect }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Choose Your Package</h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-          Select the infrastructure tier that matches your outreach volume.
+          Select your email provider and infrastructure tier.
         </p>
+      </div>
+
+      {/* Service Provider Toggle */}
+      <div>
+        <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+          Email Provider
+        </div>
+        <div className="flex gap-2">
+          {(['GOOGLE', 'MICROSOFT'] as const).map((provider) => (
+            <button
+              key={provider}
+              onClick={() => onServiceProviderChange(provider)}
+              className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg border-2 transition-all ${
+                serviceProvider === provider
+                  ? 'border-violet-500 bg-violet-500/5 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                  : 'border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
+              }`}
+            >
+              {provider === 'GOOGLE' ? 'Google Workspace' : 'Microsoft 365'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

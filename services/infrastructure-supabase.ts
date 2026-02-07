@@ -35,6 +35,7 @@ function mapProvision(data: Record<string, unknown>): InfraProvision {
     studentId: data.student_id as string,
     tierId: data.tier_id as string,
     status: data.status as InfraProvision['status'],
+    serviceProvider: (data.service_provider as InfraProvision['serviceProvider']) || 'GOOGLE',
     stripeCheckoutSessionId: data.stripe_checkout_session_id as string | null,
     stripeSubscriptionId: data.stripe_subscription_id as string | null,
     stripeCustomerId: data.stripe_customer_id as string | null,
@@ -81,7 +82,7 @@ export async function fetchActiveTiers(): Promise<InfraTier[]> {
 
 // Explicit columns — excludes sensitive fields (zapmail_workspace_key, plusvibe_client_password)
 const PROVISION_COLUMNS = `
-  id, student_id, tier_id, status,
+  id, student_id, tier_id, status, service_provider,
   stripe_checkout_session_id, stripe_subscription_id, stripe_customer_id,
   mailbox_pattern_1, mailbox_pattern_2,
   zapmail_workspace_id, plusvibe_workspace_id, plusvibe_client_id,
@@ -128,6 +129,7 @@ export async function fetchProvisioningLog(provisionId: string): Promise<Provisi
 export async function createProvision(input: {
   studentId: string;
   tierId: string;
+  serviceProvider?: 'GOOGLE' | 'MICROSOFT';
   mailboxPattern1: string;
   mailboxPattern2: string;
 }): Promise<InfraProvision> {
@@ -136,6 +138,7 @@ export async function createProvision(input: {
     .insert({
       student_id: input.studentId,
       tier_id: input.tierId,
+      service_provider: input.serviceProvider || 'GOOGLE',
       mailbox_pattern_1: input.mailboxPattern1,
       mailbox_pattern_2: input.mailboxPattern2,
       status: 'pending_payment',

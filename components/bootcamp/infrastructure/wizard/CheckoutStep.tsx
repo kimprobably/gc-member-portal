@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { CreditCard, Check, Loader2, DollarSign, Calendar } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
 import { supabase } from '../../../../lib/supabaseClient';
-import type { InfraTier, DomainAvailability } from '../../../../types/infrastructure-types';
+import type {
+  InfraTier,
+  DomainAvailability,
+  ServiceProvider,
+} from '../../../../types/infrastructure-types';
 
 interface CheckoutStepProps {
   userId: string;
   tier: InfraTier;
   domains: DomainAvailability[];
+  serviceProvider: ServiceProvider;
   pattern1: string;
   pattern2: string;
 }
@@ -16,6 +21,7 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
   userId,
   tier,
   domains,
+  serviceProvider,
   pattern1,
   pattern2,
 }) => {
@@ -50,6 +56,7 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
         .insert({
           student_id: userId,
           tier_id: tier.id,
+          service_provider: serviceProvider,
           status: 'pending_payment',
           mailbox_pattern_1: pattern1,
           mailbox_pattern_2: pattern2,

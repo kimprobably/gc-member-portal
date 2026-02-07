@@ -21,6 +21,7 @@ export default function InfraWizard({ userId, existingProvision }: Props) {
     step: 1,
     selectedTier: null,
     selectedDomains: [],
+    serviceProvider: existingProvision?.serviceProvider || 'GOOGLE',
     mailboxPattern1: existingProvision?.mailboxPattern1 || '',
     mailboxPattern2: existingProvision?.mailboxPattern2 || '',
   });
@@ -129,6 +130,8 @@ export default function InfraWizard({ userId, existingProvision }: Props) {
           <TierSelection
             selectedTier={wizardState.selectedTier}
             onSelect={(tier: InfraTier) => updateState({ selectedTier: tier })}
+            serviceProvider={wizardState.serviceProvider}
+            onServiceProviderChange={(p) => updateState({ serviceProvider: p })}
           />
         )}
 
@@ -158,6 +161,7 @@ export default function InfraWizard({ userId, existingProvision }: Props) {
             userId={userId}
             tier={wizardState.selectedTier}
             domains={wizardState.selectedDomains}
+            serviceProvider={wizardState.serviceProvider}
             pattern1={wizardState.mailboxPattern1}
             pattern2={wizardState.mailboxPattern2}
           />

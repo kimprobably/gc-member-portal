@@ -26,11 +26,14 @@ export type ProvisionStatus =
   | 'cancelled'
   | 'upgrading';
 
+export type ServiceProvider = 'GOOGLE' | 'MICROSOFT';
+
 export interface InfraProvision {
   id: string;
   studentId: string;
   tierId: string;
   status: ProvisionStatus;
+  serviceProvider: ServiceProvider;
   stripeCheckoutSessionId: string | null;
   stripeSubscriptionId: string | null;
   stripeCustomerId: string | null;
@@ -87,6 +90,7 @@ export interface WizardState {
   step: number;
   selectedTier: InfraTier | null;
   selectedDomains: DomainAvailability[];
+  serviceProvider: ServiceProvider;
   mailboxPattern1: string;
   mailboxPattern2: string;
 }
