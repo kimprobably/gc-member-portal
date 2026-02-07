@@ -128,4 +128,11 @@ export const queryKeys = {
   tamContactsByCompany: (companyId: string) => ['tam', 'contacts', 'company', companyId] as const,
   tamJobs: (projectId: string) => ['tam', 'jobs', projectId] as const,
   tamStats: (projectId: string) => ['tam', 'stats', projectId] as const,
+
+  // Cold Email Recipes
+  coldEmailRecipes: (studentId: string) => ['coldEmail', 'recipes', studentId] as const,
+  coldEmailRecipe: (recipeId: string) => ['coldEmail', 'recipe', recipeId] as const,
+  coldEmailContactLists: (studentId: string) => ['coldEmail', 'contactLists', studentId] as const,
+  coldEmailContacts: (listId: string, limit?: number, offset?: number) =>
+    ['coldEmail', 'contacts', listId, limit, offset] as const,
 };

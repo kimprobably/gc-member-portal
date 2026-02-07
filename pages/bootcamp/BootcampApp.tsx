@@ -59,6 +59,9 @@ const ConnectionQualifier = lazy(
 const InfrastructurePage = lazy(
   () => import('../../components/bootcamp/infrastructure/InfrastructurePage')
 );
+const ColdEmailRecipesPage = lazy(
+  () => import('../../components/bootcamp/cold-email-recipes/ColdEmailRecipesPage')
+);
 
 const BootcampApp: React.FC = () => {
   const queryClient = useQueryClient();
@@ -712,6 +715,16 @@ const BootcampApp: React.FC = () => {
                   }
                 >
                   <InfrastructurePage userId={bootcampStudent?.id || ''} />
+                </Suspense>
+              ) : currentLesson.id === 'virtual:cold-email-recipes' ? (
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-96">
+                      <div className="w-8 h-8 border-2 border-zinc-300 dark:border-zinc-700 border-t-violet-500 rounded-full animate-spin" />
+                    </div>
+                  }
+                >
+                  <ColdEmailRecipesPage userId={bootcampStudent?.id || ''} />
                 </Suspense>
               ) : currentLesson.id === 'virtual:my-posts' ? (
                 <MyPosts prospectId={bootcampStudent?.prospectId} />

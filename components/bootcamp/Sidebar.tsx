@@ -27,6 +27,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Server,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { FunnelAccessState } from '../../hooks/useFunnelAccess';
@@ -558,6 +559,54 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <Server size={14} />
                           </span>
                           <span className="truncate">Setup & Dashboard</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cold Email */}
+                  <div className="space-y-0.5">
+                    <button
+                      onClick={() => toggleGroup('cold-email')}
+                      className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 text-xs font-medium">
+                        <Mail size={12} className="text-orange-500" />
+                        <span>Cold Email</span>
+                      </div>
+                      {isGroupExpanded('cold-email') ? (
+                        <ChevronDown size={12} />
+                      ) : (
+                        <ChevronRight size={12} />
+                      )}
+                    </button>
+                    {isGroupExpanded('cold-email') && (
+                      <div className="ml-4 border-l border-zinc-200 dark:border-zinc-800 pl-1.5">
+                        <button
+                          onClick={() => {
+                            onSelectLesson({
+                              id: 'virtual:cold-email-recipes',
+                              title: 'Recipe Builder',
+                              embedUrl: 'virtual:cold-email-recipes',
+                            });
+                            onCloseMobile();
+                          }}
+                          className={`flex items-center w-full py-1.5 px-3 rounded-lg text-[11px] transition-all ${
+                            currentLessonId === 'virtual:cold-email-recipes'
+                              ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium'
+                              : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+                          }`}
+                        >
+                          <span
+                            className={`mr-2.5 shrink-0 ${
+                              currentLessonId === 'virtual:cold-email-recipes'
+                                ? 'text-violet-500'
+                                : 'text-zinc-400 dark:text-zinc-600'
+                            }`}
+                          >
+                            <Mail size={14} />
+                          </span>
+                          <span className="truncate">Recipe Builder</span>
                         </button>
                       </div>
                     )}
