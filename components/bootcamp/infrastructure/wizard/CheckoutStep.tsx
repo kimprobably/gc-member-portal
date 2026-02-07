@@ -68,10 +68,11 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
         throw new Error(`Failed to create provision: ${provisionError.message}`);
       }
 
-      // Step 2: Create domain records
+      // Step 2: Create domain records (with per-domain service provider)
       const domainRecords = domains.map((domain) => ({
         provision_id: provision.id,
         domain_name: domain.domainName,
+        service_provider: domain.serviceProvider || serviceProvider,
         status: 'pending',
       }));
 
@@ -190,6 +191,15 @@ const CheckoutStep: React.FC<CheckoutStepProps> = ({
                   className={`w-4 h-4 ${isDarkMode ? 'text-violet-400' : 'text-violet-600'}`}
                 />
                 <span className="font-mono text-sm">{domain.domainName}</span>
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded ${
+                    domain.serviceProvider === 'MICROSOFT'
+                      ? 'bg-blue-500/10 text-blue-500'
+                      : 'bg-emerald-500/10 text-emerald-500'
+                  }`}
+                >
+                  {domain.serviceProvider === 'MICROSOFT' ? 'MS 365' : 'Google'}
+                </span>
               </div>
               <span className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>
                 ${domain.domainPrice.toFixed(2)}

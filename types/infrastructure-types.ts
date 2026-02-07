@@ -69,6 +69,7 @@ export interface InfraDomain {
   provisionId: string;
   domainName: string;
   zapmailDomainId: string | null;
+  serviceProvider: ServiceProvider;
   status: DomainStatus;
   mailboxes: DomainMailbox[];
   createdAt: string;
@@ -100,6 +101,7 @@ export interface DomainAvailability {
   status: 'AVAILABLE' | 'UNAVAILABLE';
   domainPrice: number;
   renewPrice: number;
+  serviceProvider: ServiceProvider;
 }
 
 // Provision with related data (for dashboard)

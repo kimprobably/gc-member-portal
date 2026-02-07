@@ -58,6 +58,7 @@ function mapDomain(data: Record<string, unknown>): InfraDomain {
     provisionId: data.provision_id as string,
     domainName: data.domain_name as string,
     zapmailDomainId: data.zapmail_domain_id as string | null,
+    serviceProvider: (data.service_provider as InfraDomain['serviceProvider']) || 'GOOGLE',
     status: data.status as InfraDomain['status'],
     mailboxes: (data.mailboxes as InfraDomain['mailboxes']) || [],
     createdAt: data.created_at as string,

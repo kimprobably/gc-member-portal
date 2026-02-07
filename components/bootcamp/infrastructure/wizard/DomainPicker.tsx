@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { Search, Globe, Check, Loader2, X } from 'lucide-react';
-import { DomainAvailability, InfraTier } from '../../../../types/infrastructure-types';
+import {
+  DomainAvailability,
+  InfraTier,
+  ServiceProvider,
+} from '../../../../types/infrastructure-types';
 
 interface Props {
   tier: InfraTier;
   selectedDomains: DomainAvailability[];
   onDomainsChange: (domains: DomainAvailability[]) => void;
   gtmSystemUrl: string;
+  defaultServiceProvider: ServiceProvider;
 }
 
 function suggestDomains(brandName: string): string[] {
@@ -31,6 +36,7 @@ export default function DomainPicker({
   selectedDomains,
   onDomainsChange,
   gtmSystemUrl,
+  defaultServiceProvider,
 }: Props) {
   const [brandName, setBrandName] = useState('');
   const [availableDomains, setAvailableDomains] = useState<DomainAvailability[]>([]);
@@ -49,7 +55,13 @@ export default function DomainPicker({
         body: JSON.stringify({ domains: suggestions }),
       });
       const data = await res.json();
-      setAvailableDomains(data.domains || []);
+      const domainsWithProvider = (data.domains || []).map(
+        (d: Omit<DomainAvailability, 'serviceProvider'>) => ({
+          ...d,
+          serviceProvider: defaultServiceProvider,
+        })
+      );
+      setAvailableDomains(domainsWithProvider);
     } catch (err) {
       console.error('Domain check failed:', err);
     } finally {
@@ -63,8 +75,18 @@ export default function DomainPicker({
     if (exists) {
       onDomainsChange(selectedDomains.filter((d) => d.domainName !== domain.domainName));
     } else if (selectedDomains.length < maxDomains) {
-      onDomainsChange([...selectedDomains, domain]);
+      onDomainsChange([...selectedDomains, { ...domain, serviceProvider: defaultServiceProvider }]);
     }
+  };
+
+  const toggleDomainProvider = (domainName: string) => {
+    onDomainsChange(
+      selectedDomains.map((d) =>
+        d.domainName === domainName
+          ? { ...d, serviceProvider: d.serviceProvider === 'GOOGLE' ? 'MICROSOFT' : 'GOOGLE' }
+          : d
+      )
+    );
   };
 
   return (
@@ -72,7 +94,8 @@ export default function DomainPicker({
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Pick Your Domains</h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-          Enter your brand name and we'll suggest available domains. Select {maxDomains}.
+          Enter your brand name and we'll suggest available domains. Select {maxDomains}. You can
+          mix Google Workspace and Microsoft 365 across domains.
         </p>
       </div>
 
@@ -103,23 +126,49 @@ export default function DomainPicker({
         {selectedDomains.length} / {maxDomains} domains selected
       </div>
 
-      {/* Selected domains pills */}
+      {/* Selected domains with provider toggle */}
       {selectedDomains.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
           {selectedDomains.map((d) => (
-            <span
+            <div
               key={d.domainName}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-full"
+              className="flex items-center justify-between p-3 rounded-lg border border-violet-500/30 bg-violet-500/5 dark:bg-violet-500/10"
             >
-              <Globe size={10} />
-              {d.domainName}
-              <button
-                onClick={() => toggleDomain(d)}
-                className="hover:text-violet-800 dark:hover:text-violet-200"
-              >
-                <X size={10} />
-              </button>
-            </span>
+              <div className="flex items-center gap-2">
+                <Globe size={12} className="text-violet-500" />
+                <span className="text-sm font-medium text-violet-600 dark:text-violet-400">
+                  {d.domainName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleDomainProvider(d.domainName)}
+                  className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                    d.serviceProvider === 'GOOGLE'
+                      ? 'bg-violet-500 text-white'
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  Google
+                </button>
+                <button
+                  onClick={() => toggleDomainProvider(d.domainName)}
+                  className={`px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                    d.serviceProvider === 'MICROSOFT'
+                      ? 'bg-violet-500 text-white'
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  Microsoft
+                </button>
+                <button
+                  onClick={() => toggleDomain(d)}
+                  className="ml-1 text-zinc-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}

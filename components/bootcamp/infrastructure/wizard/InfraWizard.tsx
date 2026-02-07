@@ -143,6 +143,7 @@ export default function InfraWizard({ userId, existingProvision }: Props) {
               updateState({ selectedDomains: domains })
             }
             gtmSystemUrl={gtmSystemUrl}
+            defaultServiceProvider={wizardState.serviceProvider}
           />
         )}
 
